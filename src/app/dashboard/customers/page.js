@@ -14,66 +14,66 @@ import { CustomersPagination } from "@/components/dashboard/customer/customers-p
 import { CustomersSelectionProvider } from "@/components/dashboard/customer/customers-selection-context";
 import { CustomersTable } from "@/components/dashboard/customer/customers-table";
 
-export const metadata = { title: `List | Customers | Dashboard | ${appConfig.name}` };
+export const metadata = { title: `Lista | Clientes | Dashboard | ${appConfig.name}` };
 
 const customers = [
 	{
-		id: "USR-005",
+		id_card: "1.034.567.891",
 		name: "Fran Perez",
 		avatar: "/assets/avatar-5.png",
 		email: "fran.perez@domain.com",
 		phone: "(815) 704-0045",
-		quota: 50,
+		address: "Carrera 12 #45-67",
 		status: "active",
-		createdAt: dayjs().subtract(1, "hour").toDate(),
+		amount_borrowed: "$1.000.000",
 	},
 	{
-		id: "USR-004",
+		id_card: "7.892.345.120",
 		name: "Penjani Inyene",
 		avatar: "/assets/avatar-4.png",
 		email: "penjani.inyene@domain.com",
 		phone: "(803) 937-8925",
-		quota: 100,
+		address: "Calle 8A #34-22",
 		status: "active",
-		createdAt: dayjs().subtract(3, "hour").toDate(),
+		amount_borrowed: "$300.000",
 	},
 	{
-		id: "USR-003",
+		id_card: "52.340.678",
 		name: "Carson Darrin",
 		avatar: "/assets/avatar-3.png",
 		email: "carson.darrin@domain.com",
 		phone: "(715) 278-5041",
-		quota: 10,
-		status: "blocked",
-		createdAt: dayjs().subtract(1, "hour").subtract(1, "day").toDate(),
+		address: "Transversal 30 #19-10",
+		status: "pending",
+		amount_borrowed: "$150.000",
 	},
 	{
-		id: "USR-002",
+		id_card: "10.456.789",
 		name: "Siegbert Gottfried",
 		avatar: "/assets/avatar-2.png",
 		email: "siegbert.gottfried@domain.com",
 		phone: "(603) 766-0431",
-		quota: 0,
+		address: "Carrera 7 #23-45",
 		status: "pending",
-		createdAt: dayjs().subtract(7, "hour").subtract(1, "day").toDate(),
+		amount_borrowed: "$700.000",
 	},
 	{
-		id: "USR-001",
+		id_card: "98.123.456",
 		name: "Miron Vitold",
 		avatar: "/assets/avatar-1.png",
 		email: "miron.vitold@domain.com",
 		phone: "(425) 434-5535",
-		quota: 50,
+		address: "Calle 14 #8-50",
 		status: "active",
-		createdAt: dayjs().subtract(2, "hour").subtract(2, "day").toDate(),
+		amount_borrowed: "$1.500.000",
 	},
 ];
 
 export default async function Page({ searchParams }) {
 	const { email, phone, sortDir, status } = await searchParams;
 
-	const sortedCustomers = applySort(customers, sortDir);
-	const filteredCustomers = applyFilters(sortedCustomers, { email, phone, status });
+	// const sortedCustomers = applySort(customers, sortDir);
+	// const filteredCustomers = applyFilters(sortedCustomers, { email, phone, status });
 
 	return (
 		<Box
@@ -87,23 +87,23 @@ export default async function Page({ searchParams }) {
 			<Stack spacing={4}>
 				<Stack direction={{ xs: "column", sm: "row" }} spacing={3} sx={{ alignItems: "flex-start" }}>
 					<Box sx={{ flex: "1 1 auto" }}>
-						<Typography variant="h4">Customers</Typography>
+						<Typography variant="h4">Clientes</Typography>
 					</Box>
-					<Box sx={{ display: "flex", justifyContent: "flex-end" }}>
+					{/* <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
 						<Button startIcon={<PlusIcon />} variant="contained">
 							Add
 						</Button>
-					</Box>
+					</Box> */}
 				</Stack>
-				<CustomersSelectionProvider customers={filteredCustomers}>
+				<CustomersSelectionProvider customers={customers}>
 					<Card>
 						<CustomersFilters filters={{ email, phone, status }} sortDir={sortDir} />
 						<Divider />
 						<Box sx={{ overflowX: "auto" }}>
-							<CustomersTable rows={filteredCustomers} />
+							<CustomersTable rows={customers} />
 						</Box>
 						<Divider />
-						<CustomersPagination count={filteredCustomers.length + 100} page={0} />
+						<CustomersPagination count={customers.length + 100} page={0} />
 					</Card>
 				</CustomersSelectionProvider>
 			</Stack>

@@ -21,10 +21,10 @@ import { useCustomersSelection } from "./customers-selection-context";
 
 // The tabs should be generated using API data.
 const tabs = [
-	{ label: "All", value: "", count: 5 },
-	{ label: "Active", value: "active", count: 3 },
-	{ label: "Pending", value: "pending", count: 1 },
-	{ label: "Blocked", value: "blocked", count: 1 },
+	{ label: "Todos", value: "", count: 5 },
+	{ label: "Activos", value: "active", count: 3 },
+	{ label: "Pendientes", value: "pending", count: 1 },
+	// { label: "Blocked", value: "blocked", count: 1 },
 ];
 
 export function CustomersFilters({ filters = {}, sortDir = "desc" }) {
@@ -113,7 +113,7 @@ export function CustomersFilters({ filters = {}, sortDir = "desc" }) {
 				<Stack direction="row" spacing={2} sx={{ alignItems: "center", flex: "1 1 auto", flexWrap: "wrap" }}>
 					<FilterButton
 						displayValue={email}
-						label="Email"
+						label="Correo"
 						onFilterApply={(value) => {
 							handleEmailChange(value);
 						}}
@@ -125,7 +125,7 @@ export function CustomersFilters({ filters = {}, sortDir = "desc" }) {
 					/>
 					<FilterButton
 						displayValue={phone}
-						label="Phone number"
+						label="Celular"
 						onFilterApply={(value) => {
 							handlePhoneChange(value);
 						}}
@@ -147,9 +147,9 @@ export function CustomersFilters({ filters = {}, sortDir = "desc" }) {
 						</Button>
 					</Stack>
 				) : null}
-				<Select name="sort" onChange={handleSortChange} sx={{ maxWidth: "100%", width: "120px" }} value={sortDir}>
-					<Option value="desc">Newest</Option>
-					<Option value="asc">Oldest</Option>
+				<Select name="sort" onChange={handleSortChange} sx={{ maxWidth: "100%", width: "150px" }} value={sortDir}>
+					<Option value="desc">Mas reciente</Option>
+					<Option value="asc">Menos reciente</Option>
 				</Select>
 			</Stack>
 		</div>

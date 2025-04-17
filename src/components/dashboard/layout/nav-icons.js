@@ -1,3 +1,4 @@
+import { Article as ArticleIcon} from "@phosphor-icons/react/dist/ssr/Article";
 import { AddressBook as AddressBookIcon } from "@phosphor-icons/react/dist/ssr/AddressBook";
 import { AlignLeft as AlignLeftIcon } from "@phosphor-icons/react/dist/ssr/AlignLeft";
 import { CalendarCheck as CalendarCheckIcon } from "@phosphor-icons/react/dist/ssr/CalendarCheck";
@@ -60,4 +61,5 @@ export const icons = {
 	truck: TruckIcon,
 	upload: UploadIcon,
 	users: UsersIcon,
+	article: ArticleIcon,
 };

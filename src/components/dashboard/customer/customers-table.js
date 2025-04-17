@@ -22,6 +22,19 @@ import { DataTable } from "@/components/core/data-table";
 import { useCustomersSelection } from "./customers-selection-context";
 
 const columns = [
+	// {
+	// 	formatter: (row) => (
+	// 		<Stack direction="row" spacing={2} sx={{ alignItems: "center" }}>
+	// 			<LinearProgress sx={{ flex: "1 1 auto" }} value={row.quota} variant="determinate" />
+	// 			<Typography color="text.secondary" variant="body2">
+	// 				{new Intl.NumberFormat("en-US", { style: "percent", maximumFractionDigits: 2 }).format(row.quota / 100)}
+	// 			</Typography>
+	// 		</Stack>
+	// 	),
+	// 	name: "Quota",
+	// 	width: "250px",
+	// },
+	{ field: "id_card", name: "Identificación", width: "150px" },
 	{
 		formatter: (row) => (
 			<Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
@@ -42,29 +55,20 @@ const columns = [
 				</div>
 			</Stack>
 		),
-		name: "Name",
+		name: "Nombre Completo",
 		width: "250px",
 	},
-	{
-		formatter: (row) => (
-			<Stack direction="row" spacing={2} sx={{ alignItems: "center" }}>
-				<LinearProgress sx={{ flex: "1 1 auto" }} value={row.quota} variant="determinate" />
-				<Typography color="text.secondary" variant="body2">
-					{new Intl.NumberFormat("en-US", { style: "percent", maximumFractionDigits: 2 }).format(row.quota / 100)}
-				</Typography>
-			</Stack>
-		),
-		name: "Quota",
-		width: "250px",
-	},
-	{ field: "phone", name: "Phone number", width: "150px" },
-	{
-		formatter(row) {
-			return dayjs(row.createdAt).format("MMM D, YYYY h:mm A");
-		},
-		name: "Created at",
-		width: "200px",
-	},
+	{ field: "phone", name: "Celular", width: "150px" },
+	{ field: "address", name: "Dirección", width: "150px" },
+	{ field: "amount_borrowed", name: "Monto Prestado", width: "150px" },
+	{ field: "job_info", name: "Info. Laboral", width: "150px" },
+	// {
+	// 	formatter(row) {
+	// 		return dayjs(row.createdAt).format("MMM D, YYYY h:mm A");
+	// 	},
+	// 	name: "Created at",
+	// 	width: "200px",
+	// },
 	{
 		formatter: (row) => {
 			const mapping = {
@@ -76,7 +80,7 @@ const columns = [
 
 			return <Chip icon={icon} label={label} size="small" variant="outlined" />;
 		},
-		name: "Status",
+		name: "Estado",
 		width: "150px",
 	},
 	{
@@ -114,7 +118,7 @@ export function CustomersTable({ rows }) {
 			{rows.length === 0 ? (
 				<Box sx={{ p: 3 }}>
 					<Typography color="text.secondary" sx={{ textAlign: "center" }} variant="body2">
-						No customers found
+						No se encontraron clientes
 					</Typography>
 				</Box>
 			) : null}

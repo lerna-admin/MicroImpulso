@@ -12,16 +12,17 @@ import { CaretRight as CaretRightIcon } from "@phosphor-icons/react/dist/ssr/Car
 
 import { paths } from "@/paths";
 import { isNavItemActive } from "@/lib/is-nav-item-active";
-import { Logo } from "@/components/core/logo";
+// import { Logo } from "@/components/core/logo";
 
 import { icons } from "../nav-icons";
-import { WorkspacesSwitch } from "../workspaces-switch";
+// import { WorkspacesSwitch } from "../workspaces-switch";
 import { navColorStyles } from "./styles";
 
-const logoColors = {
-	dark: { blend_in: "light", discrete: "light", evident: "light" },
-	light: { blend_in: "dark", discrete: "dark", evident: "light" },
-};
+
+// const logoColors = {
+// 	dark: { blend_in: "light", discrete: "light", evident: "light" },
+// 	light: { blend_in: "dark", discrete: "dark", evident: "light" },
+// };
 
 export function SideNav({ color = "evident", items = [] }) {
 	const pathname = usePathname();
@@ -29,7 +30,7 @@ export function SideNav({ color = "evident", items = [] }) {
 	const { colorScheme = "light" } = useColorScheme();
 
 	const styles = navColorStyles[colorScheme][color];
-	const logoColor = logoColors[colorScheme][color];
+	// const logoColor = logoColors[colorScheme][color];
 
 	return (
 		<Box
@@ -50,11 +51,12 @@ export function SideNav({ color = "evident", items = [] }) {
 		>
 			<Stack spacing={2} sx={{ p: 2 }}>
 				<div>
-					<Box component={RouterLink} href={paths.home} sx={{ display: "inline-flex" }}>
-						<Logo color={logoColor} height={32} width={122} />
+					<Box component={RouterLink} href={paths.home} sx={{ display: "inline-flex", textDecoration: "none" }}>
+						{/* <Logo color={logoColor} height={32} width={122} /> */}
+						<Typography variant="body1" color="white">MicroImpulso</Typography>
 					</Box>
 				</div>
-				<WorkspacesSwitch />
+				{/* <WorkspacesSwitch /> No se necesita */}
 			</Stack>
 			<Box
 				component="nav"

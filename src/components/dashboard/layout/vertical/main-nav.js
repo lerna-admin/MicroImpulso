@@ -4,24 +4,24 @@ import * as React from "react";
 import Avatar from "@mui/material/Avatar";
 import Badge from "@mui/material/Badge";
 import Box from "@mui/material/Box";
-import Divider from "@mui/material/Divider";
+// import Divider from "@mui/material/Divider";
 import IconButton from "@mui/material/IconButton";
 import Stack from "@mui/material/Stack";
 import Tooltip from "@mui/material/Tooltip";
 import { Bell as BellIcon } from "@phosphor-icons/react/dist/ssr/Bell";
-import { List as ListIcon } from "@phosphor-icons/react/dist/ssr/List";
-import { MagnifyingGlass as MagnifyingGlassIcon } from "@phosphor-icons/react/dist/ssr/MagnifyingGlass";
-import { Users as UsersIcon } from "@phosphor-icons/react/dist/ssr/Users";
-import { useTranslation } from "react-i18next";
+// import { List as ListIcon } from "@phosphor-icons/react/dist/ssr/List";
+// import { MagnifyingGlass as MagnifyingGlassIcon } from "@phosphor-icons/react/dist/ssr/MagnifyingGlass";
+// import { Users as UsersIcon } from "@phosphor-icons/react/dist/ssr/Users";
+// import { useTranslation } from "react-i18next";
 
-import { useDialog } from "@/hooks/use-dialog";
+// import { useDialog } from "@/hooks/use-dialog";
 import { usePopover } from "@/hooks/use-popover";
 
-import { ContactsPopover } from "../contacts-popover";
-import { languageFlags, LanguagePopover } from "../language-popover";
+// import { ContactsPopover } from "../contacts-popover";
+// import { languageFlags, LanguagePopover } from "../language-popover";
 import { MobileNav } from "../mobile-nav";
 import { NotificationsPopover } from "../notifications-popover";
-import { SearchDialog } from "../search-dialog";
+// import { SearchDialog } from "../search-dialog";
 import { UserPopover } from "../user-popover";
 
 export function MainNav({ items }) {
@@ -53,7 +53,7 @@ export function MainNav({ items }) {
 						py: 1,
 					}}
 				>
-					<Stack direction="row" spacing={2} sx={{ alignItems: "center", flex: "1 1 auto" }}>
+					{/* <Stack direction="row" spacing={2} sx={{ alignItems: "center", flex: "1 1 auto" }}>
 						<IconButton
 							onClick={() => {
 								setOpenNav(true);
@@ -63,20 +63,20 @@ export function MainNav({ items }) {
 							<ListIcon />
 						</IconButton>
 						<SearchButton />
-					</Stack>
+					</Stack> */}
 					<Stack
 						direction="row"
 						spacing={2}
 						sx={{ alignItems: "center", flex: "1 1 auto", justifyContent: "flex-end" }}
 					>
 						<NotificationsButton />
-						<ContactsButton />
-						<Divider
+						{/* <ContactsButton /> */}
+						{/* <Divider
 							flexItem
 							orientation="vertical"
 							sx={{ borderColor: "var(--MainNav-divider)", display: { xs: "none", lg: "block" } }}
 						/>
-						<LanguageSwitch />
+						<LanguageSwitch /> */}
 						<UserButton />
 					</Stack>
 				</Box>
@@ -92,35 +92,35 @@ export function MainNav({ items }) {
 	);
 }
 
-function SearchButton() {
-	const dialog = useDialog();
+// function SearchButton() {
+// 	const dialog = useDialog();
 
-	return (
-		<React.Fragment>
-			<Tooltip title="Search">
-				<IconButton onClick={dialog.handleOpen} sx={{ display: { xs: "none", lg: "inline-flex" } }}>
-					<MagnifyingGlassIcon />
-				</IconButton>
-			</Tooltip>
-			<SearchDialog onClose={dialog.handleClose} open={dialog.open} />
-		</React.Fragment>
-	);
-}
+// 	return (
+// 		<React.Fragment>
+// 			<Tooltip title="Search">
+// 				<IconButton onClick={dialog.handleOpen} sx={{ display: { xs: "none", lg: "inline-flex" } }}>
+// 					<MagnifyingGlassIcon />
+// 				</IconButton>
+// 			</Tooltip>
+// 			<SearchDialog onClose={dialog.handleClose} open={dialog.open} />
+// 		</React.Fragment>
+// 	);
+// }
 
-function ContactsButton() {
-	const popover = usePopover();
+// function ContactsButton() {
+// 	const popover = usePopover();
 
-	return (
-		<React.Fragment>
-			<Tooltip title="Contacts">
-				<IconButton onClick={popover.handleOpen} ref={popover.anchorRef}>
-					<UsersIcon />
-				</IconButton>
-			</Tooltip>
-			<ContactsPopover anchorEl={popover.anchorRef.current} onClose={popover.handleClose} open={popover.open} />
-		</React.Fragment>
-	);
-}
+// 	return (
+// 		<React.Fragment>
+// 			<Tooltip title="Contacts">
+// 				<IconButton onClick={popover.handleOpen} ref={popover.anchorRef}>
+// 					<UsersIcon />
+// 				</IconButton>
+// 			</Tooltip>
+// 			<ContactsPopover anchorEl={popover.anchorRef.current} onClose={popover.handleClose} open={popover.open} />
+// 		</React.Fragment>
+// 	);
+// }
 
 function NotificationsButton() {
 	const popover = usePopover();
@@ -143,29 +143,29 @@ function NotificationsButton() {
 	);
 }
 
-function LanguageSwitch() {
-	const { i18n } = useTranslation();
-	const popover = usePopover();
-	const language = i18n.language || "en";
-	const flag = languageFlags[language];
+// function LanguageSwitch() {
+// 	const { i18n } = useTranslation();
+// 	const popover = usePopover();
+// 	const language = i18n.language || "en";
+// 	const flag = languageFlags[language];
 
-	return (
-		<React.Fragment>
-			<Tooltip title="Language">
-				<IconButton
-					onClick={popover.handleOpen}
-					ref={popover.anchorRef}
-					sx={{ display: { xs: "none", lg: "inline-flex" } }}
-				>
-					<Box sx={{ height: "24px", width: "24px" }}>
-						<Box alt={language} component="img" src={flag} sx={{ height: "auto", width: "100%" }} />
-					</Box>
-				</IconButton>
-			</Tooltip>
-			<LanguagePopover anchorEl={popover.anchorRef.current} onClose={popover.handleClose} open={popover.open} />
-		</React.Fragment>
-	);
-}
+// 	return (
+// 		<React.Fragment>
+// 			<Tooltip title="Language">
+// 				<IconButton
+// 					onClick={popover.handleOpen}
+// 					ref={popover.anchorRef}
+// 					sx={{ display: { xs: "none", lg: "inline-flex" } }}
+// 				>
+// 					<Box sx={{ height: "24px", width: "24px" }}>
+// 						<Box alt={language} component="img" src={flag} sx={{ height: "auto", width: "100%" }} />
+// 					</Box>
+// 				</IconButton>
+// 			</Tooltip>
+// 			<LanguagePopover anchorEl={popover.anchorRef.current} onClose={popover.handleClose} open={popover.open} />
+// 		</React.Fragment>
+// 	);
+// }
 
 const user = {
 	id: "USR-000",
