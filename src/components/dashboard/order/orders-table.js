@@ -47,50 +47,51 @@ const columns = [
 					>
 						{row.id}
 					</Link>
-					<Typography color="text.secondary" variant="body2">
+					{/* <Typography color="text.secondary" variant="body2">
 						{row.lineItems} products •{" "}
 						<Box component="span" sx={{ whiteSpace: "nowrap" }}>
 							{new Intl.NumberFormat("en-US", { style: "currency", currency: row.currency }).format(row.totalAmount)}
 						</Box>
-					</Typography>
+					</Typography> */}
 				</div>
 			</Stack>
 		),
-		name: "Order",
+		name: "Solicitud",
 		width: "250px",
 	},
-	{
-		formatter: (row) => {
-			if (!row.paymentMethod) return null;
+	// {
+	// 	formatter: (row) => {
+	// 		if (!row.paymentMethod) return null;
 
-			const mapping = {
-				mastercard: { name: "Mastercard", logo: "/assets/payment-method-1.png" },
-				visa: { name: "Visa", logo: "/assets/payment-method-2.png" },
-				amex: { name: "American Express", logo: "/assets/payment-method-3.png" },
-				applepay: { name: "Apple Pay", logo: "/assets/payment-method-4.png" },
-				googlepay: { name: "Google Pay", logo: "/assets/payment-method-5.png" },
-			};
-			const { name, logo } = mapping[row.paymentMethod.type] ?? { name: "Unknown", logo: null };
+	// 		const mapping = {
+	// 			mastercard: { name: "Mastercard", logo: "/assets/payment-method-1.png" },
+	// 			visa: { name: "Visa", logo: "/assets/payment-method-2.png" },
+	// 			amex: { name: "American Express", logo: "/assets/payment-method-3.png" },
+	// 			applepay: { name: "Apple Pay", logo: "/assets/payment-method-4.png" },
+	// 			googlepay: { name: "Google Pay", logo: "/assets/payment-method-5.png" },
+	// 		};
+	// 		const { name, logo } = mapping[row.paymentMethod.type] ?? { name: "Unknown", logo: null };
 
-			return (
-				<Stack direction="row" spacing={2} sx={{ alignItems: "center" }}>
-					<Avatar sx={{ bgcolor: "var(--mui-palette-background-paper)", boxShadow: "var(--mui-shadows-8)" }}>
-						<Box component="img" src={logo} sx={{ borderRadius: "50px", height: "auto", width: "35px" }} />
-					</Avatar>
-					<div>
-						<Typography variant="body2">{name}</Typography>
-						{row.paymentMethod.last4 ? (
-							<Typography color="text.secondary" variant="body2">
-								**** {row.paymentMethod.last4}
-							</Typography>
-						) : null}
-					</div>
-				</Stack>
-			);
-		},
-		name: "Payment Method",
-		width: "200px",
-	},
+	// 		return (
+	// 			<Stack direction="row" spacing={2} sx={{ alignItems: "center" }}>
+	// 				<Avatar sx={{ bgcolor: "var(--mui-palette-background-paper)", boxShadow: "var(--mui-shadows-8)" }}>
+	// 					<Box component="img" src={logo} sx={{ borderRadius: "50px", height: "auto", width: "35px" }} />
+	// 				</Avatar>
+	// 				<div>
+	// 					<Typography variant="body2">{name}</Typography>
+	// 					{row.paymentMethod.last4 ? (
+	// 						<Typography color="text.secondary" variant="body2">
+	// 							**** {row.paymentMethod.last4}
+	// 						</Typography>
+	// 					) : null}
+	// 				</div>
+	// 			</Stack>
+	// 		);
+	// 	},
+	// 	name: "Payment Method",
+	// 	width: "200px",
+	// },
+	{ field: "frequency", name: "Frecuencia de pago", width: "150px" },
 	{
 		formatter: (row) => (
 			<Stack direction="row" spacing={2} sx={{ alignItems: "center" }}>
@@ -103,25 +104,25 @@ const columns = [
 				</div>
 			</Stack>
 		),
-		name: "Customer",
+		name: "Cliente",
 		width: "250px",
 	},
 	{
 		formatter: (row) => {
 			const mapping = {
-				pending: { label: "Pending", icon: <ClockIcon color="var(--mui-palette-warning-main)" weight="fill" /> },
+				pending: { label: "Pendiente", icon: <ClockIcon color="var(--mui-palette-warning-main)" weight="fill" /> },
 				completed: {
-					label: "Completed",
+					label: "Completado",
 					icon: <CheckCircleIcon color="var(--mui-palette-success-main)" weight="fill" />,
 				},
-				canceled: { label: "Canceled", icon: <XCircleIcon color="var(--mui-palette-error-main)" weight="fill" /> },
-				rejected: { label: "Rejected", icon: <MinusIcon color="var(--mui-palette-error-main)" /> },
+				canceled: { label: "Cancelado", icon: <XCircleIcon color="var(--mui-palette-error-main)" weight="fill" /> },
+				rejected: { label: "Rechazado", icon: <MinusIcon color="var(--mui-palette-error-main)" /> },
 			};
 			const { label, icon } = mapping[row.status] ?? { label: "Unknown", icon: null };
 
 			return <Chip icon={icon} label={label} size="small" variant="outlined" />;
 		},
-		name: "Status",
+		name: "Estado",
 		width: "100px",
 	},
 	{

@@ -11,9 +11,10 @@ import Tooltip from "@mui/material/Tooltip";
 import Typography from "@mui/material/Typography";
 import { Archive as ArchiveIcon } from "@phosphor-icons/react/dist/ssr/Archive";
 import { Bell as BellIcon } from "@phosphor-icons/react/dist/ssr/Bell";
-import { Camera as CameraIcon } from "@phosphor-icons/react/dist/ssr/Camera";
+// import { Camera as CameraIcon } from "@phosphor-icons/react/dist/ssr/Camera";
 import { DotsThree as DotsThreeIcon } from "@phosphor-icons/react/dist/ssr/DotsThree";
-import { Phone as PhoneIcon } from "@phosphor-icons/react/dist/ssr/Phone";
+import { PencilSimple as PencilSimpleIcon } from "@phosphor-icons/react/dist/ssr/PencilSimple";
+// import { Phone as PhoneIcon } from "@phosphor-icons/react/dist/ssr/Phone";
 import { Prohibit as ProhibitIcon } from "@phosphor-icons/react/dist/ssr/Prohibit";
 import { Trash as TrashIcon } from "@phosphor-icons/react/dist/ssr/Trash";
 
@@ -30,6 +31,10 @@ export function ThreadToolbar({ thread }) {
 	const popover = usePopover();
 
 	const recipients = (thread.participants ?? []).filter((participant) => participant.id !== user.id);
+
+	const handleTest = React.useCallback(() => {
+		console.log("asd");
+	}, []);
 
 	return (
 		<React.Fragment>
@@ -74,12 +79,12 @@ export function ThreadToolbar({ thread }) {
 					</Box>
 				</Stack>
 				<Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
-					<IconButton>
+					{/* <IconButton>
 						<PhoneIcon />
 					</IconButton>
 					<IconButton>
 						<CameraIcon />
-					</IconButton>
+					</IconButton> */}
 					<Tooltip title="More options">
 						<IconButton onClick={popover.handleOpen} ref={popover.anchorRef}>
 							<DotsThreeIcon weight="bold" />
@@ -99,6 +104,12 @@ export function ThreadToolbar({ thread }) {
 						<TrashIcon />
 					</ListItemIcon>
 					<Typography>Delete</Typography>
+				</MenuItem>
+				<MenuItem onClick={handleTest}>
+					<ListItemIcon>
+						<PencilSimpleIcon />
+					</ListItemIcon>
+					<Typography>Edit</Typography>
 				</MenuItem>
 				<MenuItem>
 					<ListItemIcon>

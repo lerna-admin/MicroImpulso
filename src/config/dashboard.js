@@ -42,13 +42,13 @@ export const dashboardConfig = {
 					href: paths.dashboard.customers.list,
 					matcher: { type: "startsWith", href: "/dashboard/customers" },
 				},
-				// {
-				// 	key: "users_management",
-				// 	title: "Usuarios",
-				// 	icon: "users",
-				// 	href: paths.dashboard.customers.list,
-				// 	matcher: { type: "startsWith", href: "/dashboard/customers" },
-				// },
+				{
+					key: "users_management",
+					title: "Empleados",
+					icon: "users",
+					href: paths.dashboard.employees,
+					matcher: { type: "startsWith", href: "/dashboard/employees" },
+				},
 				{
 					key: "request_management",
 					title: "Solicitudes",

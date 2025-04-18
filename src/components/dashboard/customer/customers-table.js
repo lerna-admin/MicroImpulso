@@ -6,7 +6,6 @@ import Avatar from "@mui/material/Avatar";
 import Box from "@mui/material/Box";
 import Chip from "@mui/material/Chip";
 import IconButton from "@mui/material/IconButton";
-import LinearProgress from "@mui/material/LinearProgress";
 import Link from "@mui/material/Link";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
@@ -22,19 +21,7 @@ import { DataTable } from "@/components/core/data-table";
 import { useCustomersSelection } from "./customers-selection-context";
 
 const columns = [
-	// {
-	// 	formatter: (row) => (
-	// 		<Stack direction="row" spacing={2} sx={{ alignItems: "center" }}>
-	// 			<LinearProgress sx={{ flex: "1 1 auto" }} value={row.quota} variant="determinate" />
-	// 			<Typography color="text.secondary" variant="body2">
-	// 				{new Intl.NumberFormat("en-US", { style: "percent", maximumFractionDigits: 2 }).format(row.quota / 100)}
-	// 			</Typography>
-	// 		</Stack>
-	// 	),
-	// 	name: "Quota",
-	// 	width: "250px",
-	// },
-	{ field: "id_card", name: "Identificación", width: "150px" },
+	{ field: "id", name: "Identificación", width: "150px" },
 	{
 		formatter: (row) => (
 			<Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
@@ -62,19 +49,19 @@ const columns = [
 	{ field: "address", name: "Dirección", width: "150px" },
 	{ field: "amount_borrowed", name: "Monto Prestado", width: "150px" },
 	{ field: "job_info", name: "Info. Laboral", width: "150px" },
-	// {
-	// 	formatter(row) {
-	// 		return dayjs(row.createdAt).format("MMM D, YYYY h:mm A");
-	// 	},
-	// 	name: "Created at",
-	// 	width: "200px",
-	// },
+	{
+		formatter(row) {
+			return dayjs(row.createdAt).format("MMM D, YYYY h:mm A");
+		},
+		name: "Fecha de creación",
+		width: "200px",
+	},
 	{
 		formatter: (row) => {
 			const mapping = {
-				active: { label: "Active", icon: <CheckCircleIcon color="var(--mui-palette-success-main)" weight="fill" /> },
-				blocked: { label: "Blocked", icon: <MinusIcon color="var(--mui-palette-error-main)" /> },
-				pending: { label: "Pending", icon: <ClockIcon color="var(--mui-palette-warning-main)" weight="fill" /> },
+				active: { label: "Activo", icon: <CheckCircleIcon color="var(--mui-palette-success-main)" weight="fill" /> },
+				blocked: { label: "Bloqueado", icon: <MinusIcon color="var(--mui-palette-error-main)" /> },
+				pending: { label: "Pendiente", icon: <ClockIcon color="var(--mui-palette-warning-main)" weight="fill" /> },
 			};
 			const { label, icon } = mapping[row.status] ?? { label: "Unknown", icon: null };
 

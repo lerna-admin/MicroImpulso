@@ -147,7 +147,7 @@ export function CustomersFilters({ filters = {}, sortDir = "desc" }) {
 						</Button>
 					</Stack>
 				) : null}
-				<Select name="sort" onChange={handleSortChange} sx={{ maxWidth: "100%", width: "150px" }} value={sortDir}>
+				<Select name="sort" onChange={handleSortChange} sx={{ maxWidth: "100%", width: "170px" }} value={sortDir}>
 					<Option value="desc">Mas reciente</Option>
 					<Option value="asc">Menos reciente</Option>
 				</Select>
