@@ -1,34 +1,129 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# 💸 MicroImpulso – Plataforma de Micropréstamos
 
-## Getting Started
+---
 
-First, run the development server:
+## 📦 Estructura del Repositorio
+
+Este repositorio contiene tanto la interfaz web como el backend de **MicroImpulso**, una plataforma para gestionar solicitudes de microcréditos.
+
+```
+/               → Frontend en Next.js (aplicación principal)
+/backend/       → Backend desacoplado (Node.js, Express, etc.)
+```
+
+---
+
+## 🚀 Inicio Rápido – Frontend
+
+### Requisitos Previos
+
+- Node.js ≥ 16.x
+- Yarn o npm
+
+### Pasos para ejecución
+
+1. Clona el repositorio:
+
+```bash
+git clone https://github.com/your-org/microimpulso.git
+cd microimpulso
+```
+
+2. Instala las dependencias:
+
+```bash
+npm install
+# o
+yarn install
+```
+
+3. Ejecuta el servidor de desarrollo:
 
 ```bash
 npm run dev
-# or
+# o
 yarn dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+4. Abre [http://localhost:3000](http://localhost:3000) en tu navegador.
 
-You can start editing the page by modifying `pages/index.tsx`. The page auto-updates as you edit the file.
+> 💡 La interfaz carga correctamente sin backend, pero las funcionalidades dependerán de una API activa.
 
-[API routes](https://nextjs.org/docs/api-routes/introduction) can be accessed on [http://localhost:3000/api/hello](http://localhost:3000/api/hello). This endpoint can be edited in `pages/api/hello.ts`.
+---
 
-The `pages/api` directory is mapped to `/api/*`. Files in this directory are treated as [API routes](https://nextjs.org/docs/api-routes/introduction) instead of React pages.
+## 🛠 Backend – Subproyecto
 
-## Learn More
+El backend, ubicado en la carpeta `/backend`, contiene:
 
-To learn more about Next.js, take a look at the following resources:
+- Lógica de autenticación
+- Gestión de solicitudes
+- Asignación automática de asesores
+- Generación de documentos y contratos
+- Paneles de administración y alertas
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### Cómo ejecutarlo
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
+Consulta las instrucciones en [`/backend/README.md`](./backend/README.md).
 
-## Deploy on Vercel
+> El backend **no se ejecuta** con `npm run dev` desde la raíz. Es un servicio independiente.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+---
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+## 🧩 Funcionalidades Clave
+
+- Registro y login de usuarios
+- Simulador de préstamos
+- Envío de solicitud
+- Seguimiento del estado
+- Generación de documentos (milestone 5)
+- Reportes y alertas (milestone 6)
+
+---
+
+## 🌐 Variables de entorno (Frontend)
+
+```env
+NEXT_PUBLIC_API_URL=https://api.microimpulso.com
+MAX_LOAN_AMOUNT=500000
+MAX_LOAN_TERM_MONTHS=3
+```
+
+---
+
+## ☁️ Despliegue
+
+La aplicación será desplegada en **AWS Lightsail**, utilizando Node.js y Nginx o PM2, con configuración HTTPS vía Let's Encrypt.
+
+---
+
+## 👥 Equipo
+
+- **Henry Gomez** – Líder Técnico / Backend
+- **Yulman** – Frontend
+- **Felipe** – Lógica de negocio
+
+---
+
+> ⚠️ Proyecto en desarrollo activo. Cualquier contribución debe ajustarse a los hitos planificados.
+
+---
+
+# 🌍 MicroImpulso – Microloan Web Platform
+
+> ⚠️ **Note:** This file includes both **Spanish** and **English** documentation for bilingual/international teams. Spanish comes first.
+
+---
+
+## 📦 Repository Structure
+
+This monorepo includes both the **frontend** and a decoupled **backend** for the MicroImpulso platform.
+
+```
+/               → Next.js frontend (main app)
+/backend/       → Node.js/Express-based backend API (runs independently)
+```
+
+---
+
+
+> ⚠️ This is an active development project. All contributions should align with our sprint and milestone roadmap.
