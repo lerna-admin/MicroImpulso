@@ -14,8 +14,8 @@ import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxi
 import { NoSsr } from "@/components/core/no-ssr";
 
 const bars = [
-	{ name: "This year", dataKey: "v1", color: "var(--mui-palette-primary-400)" },
-	{ name: "Last year", dataKey: "v2", color: "var(--mui-palette-primary-600)" },
+	{ name: "Este año", dataKey: "v1", color: "var(--mui-palette-primary-400)" },
+	{ name: "Ultimo año", dataKey: "v2", color: "var(--mui-palette-primary-600)" },
 ];
 
 export function AppUsage({ data }) {
@@ -23,7 +23,7 @@ export function AppUsage({ data }) {
 
 	return (
 		<Card>
-			<CardHeader title="App usage" />
+			<CardHeader title="Solicitudes creadas" />
 			<CardContent>
 				<Stack direction={{ xs: "column", sm: "row" }} spacing={3}>
 					<Stack spacing={3} sx={{ flex: "0 0 auto", justifyContent: "space-between", width: "240px" }}>
@@ -32,19 +32,19 @@ export function AppUsage({ data }) {
 								+28%
 							</Typography>
 							<Typography color="text.secondary">
-								increase in app usage with{" "}
+								de aumento con{" "}
 								<Typography color="text.primary" component="span">
 									6,521
 								</Typography>{" "}
-								new products purchased
+								nuevas solicitudes
 							</Typography>
 						</Stack>
 						<div>
 							<Typography color="text.secondary" variant="body2">
 								<Typography color="primary.main" component="span" variant="subtitle2">
-									This year
+									Este año
 								</Typography>{" "}
-								is forecasted to increase in your traffic by the end of the current month
+								se prevé un aumento en su solicitudes para finales del mes actual.
 							</Typography>
 						</div>
 					</Stack>

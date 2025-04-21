@@ -13,7 +13,7 @@ export function Tip({ message }) {
 			<LightbulbIcon />
 			<Typography color="text.secondary" variant="caption">
 				<Typography component="span" sx={{ fontWeight: 700 }} variant="inherit">
-					Tip.
+					Consejo.
 				</Typography>{" "}
 				{message}
 			</Typography>

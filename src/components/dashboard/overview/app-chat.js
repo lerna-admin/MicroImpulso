@@ -1,3 +1,5 @@
+"use client";
+
 import * as React from "react";
 import Avatar from "@mui/material/Avatar";
 import Badge from "@mui/material/Badge";
@@ -6,7 +8,7 @@ import Card from "@mui/material/Card";
 import CardActions from "@mui/material/CardActions";
 import CardHeader from "@mui/material/CardHeader";
 import Divider from "@mui/material/Divider";
-import IconButton from "@mui/material/IconButton";
+// import IconButton from "@mui/material/IconButton";
 import List from "@mui/material/List";
 import ListItem from "@mui/material/ListItem";
 import ListItemAvatar from "@mui/material/ListItemAvatar";
@@ -15,25 +17,27 @@ import ListItemText from "@mui/material/ListItemText";
 import Typography from "@mui/material/Typography";
 import { ArrowRight as ArrowRightIcon } from "@phosphor-icons/react/dist/ssr/ArrowRight";
 import { ChatCircleText as ChatCircleTextIcon } from "@phosphor-icons/react/dist/ssr/ChatCircleText";
-import { DotsThree as DotsThreeIcon } from "@phosphor-icons/react/dist/ssr/DotsThree";
 
-import { dayjs } from "@/lib/dayjs";
+// import { DotsThree as DotsThreeIcon } from "@phosphor-icons/react/dist/ssr/DotsThree";
+
+// import { dayjs } from "@/lib/dayjs";
 
 export function AppChat({ messages }) {
+	const [count, setCount] = React.useState(1);
 	return (
 		<Card>
 			<CardHeader
-				action={
-					<IconButton>
-						<DotsThreeIcon weight="bold" />
-					</IconButton>
-				}
+				// action={
+				// 	<IconButton>
+				// 		<DotsThreeIcon weight="bold" />
+				// 	</IconButton>
+				// }
 				avatar={
 					<Avatar>
 						<ChatCircleTextIcon fontSize="var(--Icon-fontSize)" />
 					</Avatar>
 				}
-				title="App chat"
+				title="Agentes con mas pendientes "
 			/>
 			<List
 				disablePadding
@@ -54,13 +58,9 @@ export function AppChat({ messages }) {
 					<ListItem disablePadding key={message.id}>
 						<ListItemButton>
 							<ListItemAvatar>
-								{message.author.status === "online" ? (
-									<Badge anchorOrigin={{ horizontal: "right", vertical: "bottom" }} color="success" variant="dot">
-										<Avatar src={message.author.avatar} />
-									</Badge>
-								) : (
+								<Badge color="warning" badgeContent={message.pendings}>
 									<Avatar src={message.author.avatar} />
-								)}
+								</Badge>
 							</ListItemAvatar>
 							<ListItemText
 								disableTypography
@@ -69,15 +69,15 @@ export function AppChat({ messages }) {
 										{message.author.name}
 									</Typography>
 								}
-								secondary={
-									<Typography color="text.secondary" noWrap variant="body2">
-										{message.content}
-									</Typography>
-								}
+								// secondary={
+								// 	<Typography color="text.secondary" noWrap variant="body2">
+								// 		{message.content}
+								// 	</Typography>
+								// }
 							/>
-							<Typography color="text.secondary" sx={{ whiteSpace: "nowrap" }} variant="caption">
+							{/* <Typography color="text.secondary" sx={{ whiteSpace: "nowrap" }} variant="caption">
 								{dayjs(message.createdAt).fromNow()}
-							</Typography>
+							</Typography> */}
 						</ListItemButton>
 					</ListItem>
 				))}
@@ -85,7 +85,7 @@ export function AppChat({ messages }) {
 			<Divider />
 			<CardActions>
 				<Button color="secondary" endIcon={<ArrowRightIcon />} size="small">
-					Go to chat
+					Ver todos los agentes
 				</Button>
 			</CardActions>
 		</Card>

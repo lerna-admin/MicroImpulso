@@ -1,6 +1,11 @@
-import { Article as ArticleIcon} from "@phosphor-icons/react/dist/ssr/Article";
+import { CardsThree as CardsThreeIcon } from "@phosphor-icons/react";
+import {
+	EnvelopeSimpleOpen as EnvelopeSimpleOpenIcon,
+	IdentificationBadge as IdentificationBadgeIcon,
+} from "@phosphor-icons/react/dist/ssr";
 import { AddressBook as AddressBookIcon } from "@phosphor-icons/react/dist/ssr/AddressBook";
 import { AlignLeft as AlignLeftIcon } from "@phosphor-icons/react/dist/ssr/AlignLeft";
+import { Article as ArticleIcon } from "@phosphor-icons/react/dist/ssr/Article";
 import { CalendarCheck as CalendarCheckIcon } from "@phosphor-icons/react/dist/ssr/CalendarCheck";
 import { ChartPie as ChartPieIcon } from "@phosphor-icons/react/dist/ssr/ChartPie";
 import { ChatsCircle as ChatsCircleIcon } from "@phosphor-icons/react/dist/ssr/ChatsCircle";
@@ -62,4 +67,7 @@ export const icons = {
 	upload: UploadIcon,
 	users: UsersIcon,
 	article: ArticleIcon,
+	"cards-three": CardsThreeIcon,
+	"identification-badge": IdentificationBadgeIcon,
+	"envelope-simple-open": EnvelopeSimpleOpenIcon,
 };

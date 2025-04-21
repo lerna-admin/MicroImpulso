@@ -47,7 +47,7 @@ export const DirectSearch = React.forwardRef(function ChatSidebarSearch(
 				<OutlinedInput
 					onChange={onChange}
 					onFocus={onFocus}
-					placeholder="Search contacts"
+					placeholder="Buscar contactos"
 					startAdornment={
 						<InputAdornment position="start">
 							<MagnifyingGlassIcon fontSize="var(--icon-fontSize-md)" />
@@ -55,7 +55,7 @@ export const DirectSearch = React.forwardRef(function ChatSidebarSearch(
 					}
 					value={query}
 				/>
-				{showTip ? <Tip message="Enter a contact name" /> : null}
+				{showTip ? <Tip message="Ingrese un nombre de contacto" /> : null}
 				{showResults ? (
 					<React.Fragment>
 						{hasResults ? (

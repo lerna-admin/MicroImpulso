@@ -1,12 +1,10 @@
 import * as React from "react";
-import { redirect } from "next/navigation";
 import GlobalStyles from "@mui/material/GlobalStyles";
 
 import { Footer } from "@/components/marketing/layout/footer";
 import { MainNav } from "@/components/marketing/layout/main-nav";
 
 export default function Layout({ children }) {
-	redirect("/dashboard");
 	return (
 		<React.Fragment>
 			<GlobalStyles
@@ -22,9 +20,9 @@ export default function Layout({ children }) {
 				}}
 			/>
 			<div>
-				{/* <MainNav />
+				<MainNav />
 				<main>{children}</main>
-				<Footer /> */}
+				<Footer />
 			</div>
 		</React.Fragment>
 	);

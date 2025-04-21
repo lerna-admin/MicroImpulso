@@ -23,7 +23,7 @@ export default function Page() {
 			<Stack spacing={2} sx={{ alignItems: "center" }}>
 				<Box component="img" src="/assets/not-found.svg" sx={{ height: "auto", maxWidth: "100%", width: "120px" }} />
 				<Typography color="text.secondary" sx={{ textAlign: "center" }} variant="subtitle1">
-					Start meaningful conversations!
+					Inicia una conversación!
 				</Typography>
 			</Stack>
 		</Box>

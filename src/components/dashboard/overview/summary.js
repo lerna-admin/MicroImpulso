@@ -9,7 +9,7 @@ import Typography from "@mui/material/Typography";
 import { TrendDown as TrendDownIcon } from "@phosphor-icons/react/dist/ssr/TrendDown";
 import { TrendUp as TrendUpIcon } from "@phosphor-icons/react/dist/ssr/TrendUp";
 
-export function Summary({ amount, diff, icon: Icon, title, trend }) {
+export function Summary({ amount, diff, icon: Icon, title, trend, requireTrend = true }) {
 	return (
 		<Card>
 			<CardContent>
@@ -32,31 +32,36 @@ export function Summary({ amount, diff, icon: Icon, title, trend }) {
 					</div>
 				</Stack>
 			</CardContent>
-			<Divider />
-			<Box sx={{ p: "16px" }}>
-				<Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
-					<Box
-						sx={{
-							alignItems: "center",
-							color: trend === "up" ? "var(--mui-palette-success-main)" : "var(--mui-palette-error-main)",
-							display: "flex",
-							justifyContent: "center",
-						}}
-					>
-						{trend === "up" ? (
-							<TrendUpIcon fontSize="var(--icon-fontSize-md)" />
-						) : (
-							<TrendDownIcon fontSize="var(--icon-fontSize-md)" />
-						)}
+
+			{requireTrend ? (
+				<>
+					<Divider />
+					<Box sx={{ p: "16px" }}>
+						<Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
+							<Box
+								sx={{
+									alignItems: "center",
+									color: trend === "up" ? "var(--mui-palette-success-main)" : "var(--mui-palette-error-main)",
+									display: "flex",
+									justifyContent: "center",
+								}}
+							>
+								{trend === "up" ? (
+									<TrendUpIcon fontSize="var(--icon-fontSize-md)" />
+								) : (
+									<TrendDownIcon fontSize="var(--icon-fontSize-md)" />
+								)}
+							</Box>
+							<Typography color="text.secondary" variant="body2">
+								<Typography color={trend === "up" ? "success.main" : "error.main"} component="span" variant="subtitle2">
+									{new Intl.NumberFormat("en-US", { style: "percent", maximumFractionDigits: 2 }).format(diff / 100)}
+								</Typography>{" "}
+								{trend === "up" ? "de incremento" : "de decremento"} respecto al último mes.
+							</Typography>
+						</Stack>
 					</Box>
-					<Typography color="text.secondary" variant="body2">
-						<Typography color={trend === "up" ? "success.main" : "error.main"} component="span" variant="subtitle2">
-							{new Intl.NumberFormat("en-US", { style: "percent", maximumFractionDigits: 2 }).format(diff / 100)}
-						</Typography>{" "}
-						{trend === "up" ? "increase" : "decrease"} vs last month
-					</Typography>
-				</Stack>
-			</Box>
+				</>
+			) : null}
 		</Card>
 	);
 }

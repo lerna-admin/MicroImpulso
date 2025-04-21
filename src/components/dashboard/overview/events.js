@@ -15,7 +15,7 @@ import ListItemText from "@mui/material/ListItemText";
 import Typography from "@mui/material/Typography";
 import { ArrowRight as ArrowRightIcon } from "@phosphor-icons/react/dist/ssr/ArrowRight";
 import { CalendarBlank as CalendarBlankIcon } from "@phosphor-icons/react/dist/ssr/CalendarBlank";
-import { DotsThree as DotsThreeIcon } from "@phosphor-icons/react/dist/ssr/DotsThree";
+// import { DotsThree as DotsThreeIcon } from "@phosphor-icons/react/dist/ssr/DotsThree";
 
 import { dayjs } from "@/lib/dayjs";
 
@@ -23,18 +23,18 @@ export function Events({ events }) {
 	return (
 		<Card>
 			<CardHeader
-				action={
-					<IconButton>
-						<DotsThreeIcon weight="bold" />
-					</IconButton>
-				}
+				// action={
+				// 	<IconButton>
+				// 		<DotsThreeIcon weight="bold" />
+				// 	</IconButton>
+				// }
 				avatar={
 					<Avatar>
 						<CalendarBlankIcon fontSize="var(--Icon-fontSize)" />
 					</Avatar>
 				}
-				subheader="Based on the linked bank accounts"
-				title="Upcoming events"
+				subheader=""
+				title="Proximos pagos"
 			/>
 			<CardContent sx={{ py: "8px" }}>
 				<List disablePadding>
@@ -46,7 +46,7 @@ export function Events({ events }) {
 			<Divider />
 			<CardActions>
 				<Button color="secondary" endIcon={<ArrowRightIcon />} size="small">
-					See all events
+					Ver todos los pagos
 				</Button>
 			</CardActions>
 		</Card>

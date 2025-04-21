@@ -20,6 +20,8 @@ import { Trash as TrashIcon } from "@phosphor-icons/react/dist/ssr/Trash";
 
 import { usePopover } from "@/hooks/use-popover";
 
+import { ChatContext } from "./chat-context";
+
 const user = {
 	id: "USR-000",
 	name: "Sofia Rivers",
@@ -32,9 +34,7 @@ export function ThreadToolbar({ thread }) {
 
 	const recipients = (thread.participants ?? []).filter((participant) => participant.id !== user.id);
 
-	const handleTest = React.useCallback(() => {
-		console.log("asd");
-	}, []);
+	const { setOpenDesktopSidebarRight } = React.useContext(ChatContext);
 
 	return (
 		<React.Fragment>
@@ -73,7 +73,7 @@ export function ThreadToolbar({ thread }) {
 						</Typography>
 						{thread.type === "direct" ? (
 							<Typography color="text.secondary" variant="caption">
-								Recently active
+								Recientemente Activo
 							</Typography>
 						) : null}
 					</Box>
@@ -97,31 +97,36 @@ export function ThreadToolbar({ thread }) {
 					<ListItemIcon>
 						<ProhibitIcon />
 					</ListItemIcon>
-					<Typography>Block</Typography>
+					<Typography>Bloquear</Typography>
 				</MenuItem>
 				<MenuItem>
 					<ListItemIcon>
 						<TrashIcon />
 					</ListItemIcon>
-					<Typography>Delete</Typography>
+					<Typography>Borrar</Typography>
 				</MenuItem>
-				<MenuItem onClick={handleTest}>
+				<MenuItem
+					onClick={() => {
+						setOpenDesktopSidebarRight((prev) => !prev);
+						popover.handleClose();
+					}}
+				>
 					<ListItemIcon>
 						<PencilSimpleIcon />
 					</ListItemIcon>
-					<Typography>Edit</Typography>
+					<Typography>Editar</Typography>
 				</MenuItem>
 				<MenuItem>
 					<ListItemIcon>
 						<ArchiveIcon />
 					</ListItemIcon>
-					<Typography>Archive</Typography>
+					<Typography>Archivar</Typography>
 				</MenuItem>
 				<MenuItem>
 					<ListItemIcon>
 						<BellIcon />
 					</ListItemIcon>
-					<Typography>Mute</Typography>
+					<Typography>Mutear</Typography>
 				</MenuItem>
 			</Menu>
 		</React.Fragment>
