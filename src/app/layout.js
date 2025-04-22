@@ -61,6 +61,9 @@ export default async function Layout({ children }) {
 
 	return (
 		<html dir={direction} lang={language} suppressHydrationWarning>
+			<head>
+				<link rel="icon" href="/favicon.png"/>
+			</head>
 			<body>
 				<InitColorSchemeScript attribute="class" />
 				<AuthProvider>

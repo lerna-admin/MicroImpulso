@@ -5,7 +5,7 @@ export const appConfig = {
 	name: "MicroImpulso",
 	description: "",
 	direction: "ltr",
-	language: "en",
+	language: "es",
 	theme: "light",
 	themeColor: "#090a0b",
 	primaryColor: "neonBlue",

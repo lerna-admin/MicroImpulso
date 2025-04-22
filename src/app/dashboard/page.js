@@ -24,7 +24,7 @@ import { Events } from "@/components/dashboard/overview/events";
 import { Subscriptions } from "@/components/dashboard/overview/subscriptions";
 import { Summary } from "@/components/dashboard/overview/summary";
 
-export const metadata = { title: `Overview | Dashboard | ${appConfig.name}` };
+export const metadata = { title: `Resumen | Dashboard | ${appConfig.name}` };
 
 export default function Page() {
 	return (
