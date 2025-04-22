@@ -23,7 +23,6 @@ import { ChatCircleText as ChatCircleTextIcon } from "@phosphor-icons/react/dist
 // import { dayjs } from "@/lib/dayjs";
 
 export function AppChat({ messages }) {
-	const [count, setCount] = React.useState(1);
 	return (
 		<Card>
 			<CardHeader

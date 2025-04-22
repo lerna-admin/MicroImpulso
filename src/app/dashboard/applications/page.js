@@ -1,11 +1,11 @@
 import * as React from "react";
 import Box from "@mui/material/Box";
-import Button from "@mui/material/Button";
+// import Button from "@mui/material/Button";
 import Card from "@mui/material/Card";
 import Divider from "@mui/material/Divider";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
-import { Plus as PlusIcon } from "@phosphor-icons/react/dist/ssr/Plus";
+// import { Plus as PlusIcon } from "@phosphor-icons/react/dist/ssr/Plus";
 
 import { appConfig } from "@/config/app";
 import { dayjs } from "@/lib/dayjs";
@@ -15,7 +15,7 @@ import { OrdersPagination } from "@/components/dashboard/order/orders-pagination
 import { OrdersSelectionProvider } from "@/components/dashboard/order/orders-selection-context";
 import { OrdersTable } from "@/components/dashboard/order/orders-table";
 
-export const metadata = { title: `List | Orders | Dashboard | ${appConfig.name}` };
+export const metadata = { title: `Lista | Solicitudes | Dashboard | ${appConfig.name}` };
 
 const orders = [
 	{
@@ -26,6 +26,7 @@ const orders = [
 		currency: "USD",
 		totalAmount: 56.7,
 		status: "pending",
+		frequency:"Bimensual",
 		createdAt: dayjs().subtract(3, "hour").toDate(),
 	},
 	{
@@ -35,7 +36,8 @@ const orders = [
 		paymentMethod: { type: "amex", last4: "5678" },
 		currency: "USD",
 		totalAmount: 49.12,
-		status: "completed",
+		status: "approved",
+		frequency:"15 - 30",
 		createdAt: dayjs().subtract(6, "hour").toDate(),
 	},
 	{
@@ -45,7 +47,8 @@ const orders = [
 		paymentMethod: { type: "applepay" },
 		currency: "USD",
 		totalAmount: 18.75,
-		status: "canceled",
+		status: "rejected",
+		frequency:"5 - 20",
 		createdAt: dayjs().subtract(7, "hour").toDate(),
 	},
 	{
@@ -56,6 +59,7 @@ const orders = [
 		currency: "USD",
 		totalAmount: 49.99,
 		status: "rejected",
+		frequency:"10 - 25",
 		createdAt: dayjs().subtract(1, "hour").subtract(1, "day").toDate(),
 	},
 	{
@@ -65,7 +69,8 @@ const orders = [
 		paymentMethod: { type: "mastercard", last4: "4242" },
 		currency: "USD",
 		totalAmount: 94.01,
-		status: "completed",
+		status: "approved",
+		frequency:"Bimensual",
 		createdAt: dayjs().subtract(3, "hour").subtract(1, "day").toDate(),
 	},
 ];
@@ -89,13 +94,13 @@ export default async function Page({ searchParams }) {
 				<Stack spacing={4}>
 					<Stack direction={{ xs: "column", sm: "row" }} spacing={3} sx={{ alignItems: "flex-start" }}>
 						<Box sx={{ flex: "1 1 auto" }}>
-							<Typography variant="h4">Orders</Typography>
+							<Typography variant="h4">Solicitudes</Typography>
 						</Box>
-						<div>
+						{/* <div>
 							<Button startIcon={<PlusIcon />} variant="contained">
 								Add
 							</Button>
-						</div>
+						</div> */}
 					</Stack>
 					<OrdersSelectionProvider orders={filteredOrders}>
 						<Card>

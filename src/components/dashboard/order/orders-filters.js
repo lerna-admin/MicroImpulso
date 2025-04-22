@@ -22,9 +22,8 @@ import { useOrdersSelection } from "./orders-selection-context";
 // The tabs should be generated using API data.
 const tabs = [
 	{ label: "Todos", value: "", count: 5 },
-	{ label: "Completados", value: "completed", count: 2 },
+	{ label: "Aprobados", value: "completed", count: 2 },
 	{ label: "Pendientes", value: "pending", count: 1 },
-	{ label: "Cancelados", value: "canceled", count: 1 },
 	{ label: "Rechazados", value: "rejected", count: 1 },
 ];
 

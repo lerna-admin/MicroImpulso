@@ -111,12 +111,11 @@ const columns = [
 		formatter: (row) => {
 			const mapping = {
 				pending: { label: "Pendiente", icon: <ClockIcon color="var(--mui-palette-warning-main)" weight="fill" /> },
-				completed: {
-					label: "Completado",
+				approved: {
+					label: "Aprobado",
 					icon: <CheckCircleIcon color="var(--mui-palette-success-main)" weight="fill" />,
 				},
-				canceled: { label: "Cancelado", icon: <XCircleIcon color="var(--mui-palette-error-main)" weight="fill" /> },
-				rejected: { label: "Rechazado", icon: <MinusIcon color="var(--mui-palette-error-main)" /> },
+				rejected: { label: "Rechazado", icon: <XCircleIcon color="var(--mui-palette-error-main)" weight="fill" /> },
 			};
 			const { label, icon } = mapping[row.status] ?? { label: "Unknown", icon: null };
 

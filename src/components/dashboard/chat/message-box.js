@@ -9,6 +9,8 @@ import Typography from "@mui/material/Typography";
 
 import { dayjs } from "@/lib/dayjs";
 
+dayjs.locale("es");
+
 const user = {
 	id: "USR-000",
 	name: "Sofia Rivers",

@@ -73,7 +73,7 @@ export function ThreadToolbar({ thread }) {
 						</Typography>
 						{thread.type === "direct" ? (
 							<Typography color="text.secondary" variant="caption">
-								Recientemente Activo
+								Recientemente activo
 							</Typography>
 						) : null}
 					</Box>

@@ -9,9 +9,10 @@ import IconButton from "@mui/material/IconButton";
 import Link from "@mui/material/Link";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
+import { XCircle as XCircleIcon } from "@phosphor-icons/react/dist/ssr";
 import { CheckCircle as CheckCircleIcon } from "@phosphor-icons/react/dist/ssr/CheckCircle";
-import { Clock as ClockIcon } from "@phosphor-icons/react/dist/ssr/Clock";
-import { Minus as MinusIcon } from "@phosphor-icons/react/dist/ssr/Minus";
+// import { Clock as ClockIcon } from "@phosphor-icons/react/dist/ssr/Clock";
+// import { Minus as MinusIcon } from "@phosphor-icons/react/dist/ssr/Minus";
 import { PencilSimple as PencilSimpleIcon } from "@phosphor-icons/react/dist/ssr/PencilSimple";
 
 import { paths } from "@/paths";
@@ -48,7 +49,6 @@ const columns = [
 	{ field: "phone", name: "Celular", width: "150px" },
 	{ field: "address", name: "Dirección", width: "150px" },
 	{ field: "amount_borrowed", name: "Monto Prestado", width: "150px" },
-	{ field: "job_info", name: "Info. Laboral", width: "150px" },
 	{
 		formatter(row) {
 			return dayjs(row.createdAt).format("MMM D, YYYY h:mm A");
@@ -60,8 +60,7 @@ const columns = [
 		formatter: (row) => {
 			const mapping = {
 				active: { label: "Activo", icon: <CheckCircleIcon color="var(--mui-palette-success-main)" weight="fill" /> },
-				blocked: { label: "Bloqueado", icon: <MinusIcon color="var(--mui-palette-error-main)" /> },
-				pending: { label: "Pendiente", icon: <ClockIcon color="var(--mui-palette-warning-main)" weight="fill" /> },
+				inactive: { label: "Inactivo", icon: <XCircleIcon color="var(--mui-palette-error-main)" weight="fill" /> },
 			};
 			const { label, icon } = mapping[row.status] ?? { label: "Unknown", icon: null };
 

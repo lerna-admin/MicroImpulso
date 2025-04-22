@@ -63,7 +63,7 @@ export const dashboardConfig = {
 				},
 				{
 					key: "pqr",
-					title: "PQR",
+					title: "Pqr",
 					href: paths.dashboard.pqr,
 					icon: "envelope-simple-open",
 					matcher: { type: "startsWith", href: "/dashboard/pqr" },

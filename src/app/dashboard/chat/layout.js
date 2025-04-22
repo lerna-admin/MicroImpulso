@@ -143,7 +143,7 @@ const messages = [
 		id: "MSG-007",
 		threadId: "TRD-002",
 		type: "text",
-		content: "Hey, les gustaria colaborar?",
+		content: "Ey, les gustaria colaborar?",
 		author: { id: "USR-007", name: "Nasimiyu Danai", avatar: "/assets/avatar-7.png" },
 		createdAt: dayjs().subtract(46, "minute").subtract(5, "hour").toDate(),
 	},

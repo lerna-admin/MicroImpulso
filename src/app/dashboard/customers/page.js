@@ -1,11 +1,11 @@
 import * as React from "react";
 import Box from "@mui/material/Box";
-import Button from "@mui/material/Button";
+// import Button from "@mui/material/Button";
 import Card from "@mui/material/Card";
 import Divider from "@mui/material/Divider";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
-import { Plus as PlusIcon } from "@phosphor-icons/react/dist/ssr/Plus";
+// import { Plus as PlusIcon } from "@phosphor-icons/react/dist/ssr/Plus";
 
 import { appConfig } from "@/config/app";
 import { dayjs } from "@/lib/dayjs";
@@ -46,7 +46,7 @@ const customers = [
 		email: "carson.darrin@domain.com",
 		phone: "(715) 278-5041",
 		address: "Transversal 30 #19-10",
-		status: "pending",
+		status: "inactive",
 		amount_borrowed: "$150.000",
 		createdAt: dayjs().subtract(1, "hour").subtract(1, "day").toDate(),
 	},
@@ -57,7 +57,7 @@ const customers = [
 		email: "siegbert.gottfried@domain.com",
 		phone: "(603) 766-0431",
 		address: "Carrera 7 #23-45",
-		status: "pending",
+		status: "inactive",
 		amount_borrowed: "$700.000",
 		createdAt: dayjs().subtract(7, "hour").subtract(1, "day").toDate(),
 	},
