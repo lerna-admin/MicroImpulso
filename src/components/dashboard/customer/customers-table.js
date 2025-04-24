@@ -2,7 +2,6 @@
 
 import * as React from "react";
 import RouterLink from "next/link";
-import Avatar from "@mui/material/Avatar";
 import Box from "@mui/material/Box";
 import Chip from "@mui/material/Chip";
 import IconButton from "@mui/material/IconButton";
@@ -11,8 +10,6 @@ import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 import { XCircle as XCircleIcon } from "@phosphor-icons/react/dist/ssr";
 import { CheckCircle as CheckCircleIcon } from "@phosphor-icons/react/dist/ssr/CheckCircle";
-// import { Clock as ClockIcon } from "@phosphor-icons/react/dist/ssr/Clock";
-// import { Minus as MinusIcon } from "@phosphor-icons/react/dist/ssr/Minus";
 import { PencilSimple as PencilSimpleIcon } from "@phosphor-icons/react/dist/ssr/PencilSimple";
 
 import { paths } from "@/paths";
@@ -22,11 +19,10 @@ import { DataTable } from "@/components/core/data-table";
 import { useCustomersSelection } from "./customers-selection-context";
 
 const columns = [
-	{ field: "id", name: "Identificación", width: "150px" },
+	{ field: "documentId", name: "Cedula", width: "100px" },
 	{
 		formatter: (row) => (
 			<Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
-				<Avatar src={row.avatar} />{" "}
 				<div>
 					<Link
 						color="inherit"
@@ -35,7 +31,7 @@ const columns = [
 						sx={{ whiteSpace: "nowrap" }}
 						variant="subtitle2"
 					>
-						{row.name}
+						{row.fullName}
 					</Link>
 					<Typography color="text.secondary" variant="body2">
 						{row.email}
@@ -44,30 +40,43 @@ const columns = [
 			</Stack>
 		),
 		name: "Nombre Completo",
-		width: "250px",
+		width: "200px",
 	},
-	{ field: "phone", name: "Celular", width: "150px" },
+	{ field: "phoneNumber", name: "Celular", width: "130px" },
 	{ field: "address", name: "Dirección", width: "150px" },
-	{ field: "amount_borrowed", name: "Monto Prestado", width: "150px" },
 	{
 		formatter(row) {
-			return dayjs(row.createdAt).format("MMM D, YYYY h:mm A");
+			return `$${row.amountTaken}`;
 		},
-		name: "Fecha de creación",
-		width: "200px",
+		name: "Monto Prestado",
+		width: "100px",
+	},
+	{
+		formatter(row) {
+			return dayjs(row.startDate).format("MMM D, YYYY");
+		},
+		name: "Fecha Inicio",
+		width: "150px",
+	},
+	{
+		formatter(row) {
+			return dayjs(row.endDate).format("MMM D, YYYY");
+		},
+		name: "Fecha Fin",
+		width: "150px",
 	},
 	{
 		formatter: (row) => {
 			const mapping = {
-				active: { label: "Activo", icon: <CheckCircleIcon color="var(--mui-palette-success-main)" weight="fill" /> },
-				inactive: { label: "Inactivo", icon: <XCircleIcon color="var(--mui-palette-error-main)" weight="fill" /> },
+				true: { label: "Activo", icon: <CheckCircleIcon color="var(--mui-palette-success-main)" weight="fill" /> },
+				false: { label: "Inactivo", icon: <XCircleIcon color="var(--mui-palette-error-main)" weight="fill" /> },
 			};
-			const { label, icon } = mapping[row.status] ?? { label: "Unknown", icon: null };
+			const { label, icon } = mapping[row.state] ?? { label: "Unknown", icon: null };
 
 			return <Chip icon={icon} label={label} size="small" variant="outlined" />;
 		},
 		name: "Estado",
-		width: "150px",
+		width: "100px",
 	},
 	{
 		formatter: () => (
@@ -75,8 +84,8 @@ const columns = [
 				<PencilSimpleIcon />
 			</IconButton>
 		),
-		name: "Actions",
-		hideName: true,
+		name: "Acciones",
+		hideName: false,
 		width: "100px",
 		align: "right",
 	},

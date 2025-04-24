@@ -4,8 +4,6 @@ import * as React from "react";
 
 function noop() {
 	// No operation
-	console.log("NOOP");
-	
 }
 
 export const ChatContext = React.createContext({

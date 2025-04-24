@@ -5,9 +5,11 @@ import "dayjs/locale/es";
 
 import relativeTime from "dayjs/plugin/relativeTime";
 import updateLocale from "dayjs/plugin/updateLocale";
+import utc from "dayjs/plugin/utc";
 
 extend(relativeTime);
 extend(updateLocale);
+extend(utc);
 
 dayjs.updateLocale("es", {
 	relativeTime: {
