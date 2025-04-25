@@ -16,8 +16,6 @@ import { paths } from "@/paths";
 import { dayjs } from "@/lib/dayjs";
 import { DataTable } from "@/components/core/data-table";
 
-import { useCustomersSelection } from "./customers-selection-context";
-
 const columns = [
 	{ field: "documentId", name: "Cedula", width: "100px" },
 	{
@@ -27,7 +25,7 @@ const columns = [
 					<Link
 						color="inherit"
 						component={RouterLink}
-						href={paths.dashboard.customers.details("1")}
+						href={paths.dashboard.customers.details(row.id)}
 						sx={{ whiteSpace: "nowrap" }}
 						variant="subtitle2"
 					>
@@ -79,8 +77,8 @@ const columns = [
 		width: "100px",
 	},
 	{
-		formatter: () => (
-			<IconButton component={RouterLink} href={paths.dashboard.customers.details("1")}>
+		formatter: (row) => (
+			<IconButton component={RouterLink} href={paths.dashboard.customers.details(row.id)}>
 				<PencilSimpleIcon />
 			</IconButton>
 		),
@@ -92,24 +90,9 @@ const columns = [
 ];
 
 export function CustomersTable({ rows }) {
-	const { deselectAll, deselectOne, selectAll, selectOne, selected } = useCustomersSelection();
-
 	return (
 		<React.Fragment>
-			<DataTable
-				columns={columns}
-				onDeselectAll={deselectAll}
-				onDeselectOne={(_, row) => {
-					deselectOne(row.id);
-				}}
-				onSelectAll={selectAll}
-				onSelectOne={(_, row) => {
-					selectOne(row.id);
-				}}
-				rows={rows}
-				selectable
-				selected={selected}
-			/>
+			<DataTable columns={columns} rows={rows} />
 			{rows.length === 0 ? (
 				<Box sx={{ p: 3 }}>
 					<Typography color="text.secondary" sx={{ textAlign: "center" }} variant="body2">

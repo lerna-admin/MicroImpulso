@@ -67,7 +67,7 @@ export function Payments({ ordersValue, payments = [], refundsValue, totalOrders
 			<CardHeader
 				action={
 					<Button color="secondary" startIcon={<PlusIcon />}>
-						Create Payment
+						Crear Pago
 					</Button>
 				}
 				avatar={
@@ -75,7 +75,7 @@ export function Payments({ ordersValue, payments = [], refundsValue, totalOrders
 						<ShoppingCartSimpleIcon fontSize="var(--Icon-fontSize)" />
 					</Avatar>
 				}
-				title="Payments"
+				title="Historial de Pagos"
 			/>
 			<CardContent>
 				<Stack spacing={3}>

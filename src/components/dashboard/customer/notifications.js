@@ -61,7 +61,7 @@ export function Notifications({ notifications }) {
 						<EnvelopeSimpleIcon fontSize="var(--Icon-fontSize)" />
 					</Avatar>
 				}
-				title="Notifications"
+				title="Notificaciones"
 			/>
 			<CardContent>
 				<Stack spacing={3}>
