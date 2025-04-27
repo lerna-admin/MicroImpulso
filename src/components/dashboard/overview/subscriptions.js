@@ -26,7 +26,7 @@ export function Subscriptions({ subscriptions }) {
 						<ContactlessPaymentIcon fontSize="var(--Icon-fontSize)" />
 					</Avatar>
 				}
-				title="Our subscriptions"
+				title="Ultimas solicitudes"
 			/>
 			<CardContent sx={{ pb: "8px" }}>
 				<List disablePadding>
@@ -38,7 +38,7 @@ export function Subscriptions({ subscriptions }) {
 			<Divider />
 			<CardActions>
 				<Button color="secondary" endIcon={<ArrowRightIcon />} size="small">
-					See all subscriptions
+					Ver todas las solicitudes
 				</Button>
 			</CardActions>
 		</Card>
@@ -47,9 +47,9 @@ export function Subscriptions({ subscriptions }) {
 
 function SubscriptionItem({ subscription }) {
 	const { label, color } = {
-		paid: { label: "Paid", color: "success" },
-		canceled: { label: "Canceled", color: "error" },
-		expiring: { label: "Expiring", color: "warning" },
+		aprobado: { label: "Aprobado", color: "success" },
+		cancelado: { label: "Cancelado", color: "error" },
+		pendiente: { label: "Pendiente", color: "warning" },
 	}[subscription.status];
 
 	return (
@@ -75,15 +75,15 @@ function SubscriptionItem({ subscription }) {
 					<Typography sx={{ whiteSpace: "nowrap" }} variant="body2">
 						{subscription.costs}{" "}
 						<Typography color="text.secondary" component="span" variant="inherit">
-							/{subscription.billingCycle}
+							{subscription.billingCycle}
 						</Typography>
 					</Typography>
 				}
 			/>
 			<Chip color={color} label={label} size="small" variant="soft" />
-			<IconButton>
+			{/* <IconButton>
 				<DotsThreeIcon weight="bold" />
-			</IconButton>
+			</IconButton> */}
 		</ListItem>
 	);
 }

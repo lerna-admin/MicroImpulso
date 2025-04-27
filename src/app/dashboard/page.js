@@ -1,29 +1,30 @@
 import * as React from "react";
 import Box from "@mui/material/Box";
-import Button from "@mui/material/Button";
 import Grid from "@mui/material/Grid2";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
-import { ArrowRight as ArrowRightIcon } from "@phosphor-icons/react/dist/ssr/ArrowRight";
-import { Briefcase as BriefcaseIcon } from "@phosphor-icons/react/dist/ssr/Briefcase";
-import { FileCode as FileCodeIcon } from "@phosphor-icons/react/dist/ssr/FileCode";
-import { Info as InfoIcon } from "@phosphor-icons/react/dist/ssr/Info";
 import { ListChecks as ListChecksIcon } from "@phosphor-icons/react/dist/ssr/ListChecks";
-import { Plus as PlusIcon } from "@phosphor-icons/react/dist/ssr/Plus";
 import { Users as UsersIcon } from "@phosphor-icons/react/dist/ssr/Users";
 import { Warning as WarningIcon } from "@phosphor-icons/react/dist/ssr/Warning";
 
 import { appConfig } from "@/config/app";
+// import Button from "@mui/material/Button";
+// import { ArrowRight as ArrowRightIcon } from "@phosphor-icons/react/dist/ssr/ArrowRight";
+// import { Briefcase as BriefcaseIcon } from "@phosphor-icons/react/dist/ssr/Briefcase";
+// import { FileCode as FileCodeIcon } from "@phosphor-icons/react/dist/ssr/FileCode";
+// import { Info as InfoIcon } from "@phosphor-icons/react/dist/ssr/Info";
+// import { Plus as PlusIcon } from "@phosphor-icons/react/dist/ssr/Plus";
+
 import { dayjs } from "@/lib/dayjs";
 import { AppChat } from "@/components/dashboard/overview/app-chat";
 import { AppLimits } from "@/components/dashboard/overview/app-limits";
 import { AppUsage } from "@/components/dashboard/overview/app-usage";
 import { Events } from "@/components/dashboard/overview/events";
-import { HelperWidget } from "@/components/dashboard/overview/helper-widget";
+// import { HelperWidget } from "@/components/dashboard/overview/helper-widget";
 import { Subscriptions } from "@/components/dashboard/overview/subscriptions";
 import { Summary } from "@/components/dashboard/overview/summary";
 
-export const metadata = { title: `Overview | Dashboard | ${appConfig.name}` };
+export const metadata = { title: `Resumen | Dashboard | ${appConfig.name}` };
 
 export default function Page() {
 	return (
@@ -38,13 +39,13 @@ export default function Page() {
 			<Stack spacing={4}>
 				<Stack direction={{ xs: "column", sm: "row" }} spacing={3} sx={{ alignItems: "flex-start" }}>
 					<Box sx={{ flex: "1 1 auto" }}>
-						<Typography variant="h4">Overview</Typography>
+						<Typography variant="h4">Resumen</Typography>
 					</Box>
-					<div>
+					{/* <div>
 						<Button startIcon={<PlusIcon />} variant="contained">
 							Dashboard
 						</Button>
-					</div>
+					</div> */}
 				</Stack>
 				<Grid container spacing={4}>
 					<Grid
@@ -53,7 +54,7 @@ export default function Page() {
 							xs: 12,
 						}}
 					>
-						<Summary amount={31} diff={15} icon={ListChecksIcon} title="Tickets" trend="up" />
+						<Summary amount={67} diff={15} icon={ListChecksIcon} title="No pagados" trend="up" />
 					</Grid>
 					<Grid
 						size={{
@@ -61,7 +62,7 @@ export default function Page() {
 							xs: 12,
 						}}
 					>
-						<Summary amount={240} diff={5} icon={UsersIcon} title="Sign ups" trend="down" />
+						<Summary amount={67} diff={5} icon={UsersIcon} title="Mora > 15" trend="down" />
 					</Grid>
 					<Grid
 						size={{
@@ -69,7 +70,7 @@ export default function Page() {
 							xs: 12,
 						}}
 					>
-						<Summary amount={21} diff={12} icon={WarningIcon} title="Open issues" trend="up" />
+						<Summary amount={0} diff={12} icon={WarningIcon} title="Creditos Rechazados" trend="up" />
 					</Grid>
 					<Grid
 						size={{
@@ -79,14 +80,14 @@ export default function Page() {
 					>
 						<AppUsage
 							data={[
-								{ name: "Jan", v1: 36, v2: 19 },
+								{ name: "Ene", v1: 36, v2: 19 },
 								{ name: "Feb", v1: 45, v2: 23 },
 								{ name: "Mar", v1: 26, v2: 12 },
-								{ name: "Apr", v1: 39, v2: 20 },
+								{ name: "Abr", v1: 39, v2: 20 },
 								{ name: "May", v1: 26, v2: 12 },
 								{ name: "Jun", v1: 42, v2: 31 },
 								{ name: "Jul", v1: 38, v2: 19 },
-								{ name: "Aug", v1: 39, v2: 20 },
+								{ name: "Ago", v1: 39, v2: 20 },
 								{ name: "Sep", v1: 37, v2: 18 },
 								{ name: "Oct", v1: 41, v2: 22 },
 								{ name: "Nov", v1: 45, v2: 24 },
@@ -103,44 +104,44 @@ export default function Page() {
 						<Subscriptions
 							subscriptions={[
 								{
-									id: "supabase",
-									title: "Supabase",
-									icon: "/assets/company-avatar-5.png",
-									costs: "$599",
-									billingCycle: "year",
-									status: "paid",
+									id: "cav",
+									title: "Carlos Alonso Villa",
+									icon: "/assets/avatar-default.png",
+									costs: "$500.000",
+									billingCycle: "",
+									status: "aprobado",
 								},
 								{
-									id: "vercel",
-									title: "Vercel",
-									icon: "/assets/company-avatar-4.png",
-									costs: "$20",
-									billingCycle: "month",
-									status: "expiring",
+									id: "jg",
+									title: "Jose Gomez",
+									icon: "/assets/avatar-default.png",
+									costs: "$1.500.000",
+									billingCycle: "",
+									status: "pendiente",
 								},
 								{
-									id: "auth0",
-									title: "Auth0",
-									icon: "/assets/company-avatar-3.png",
-									costs: "$20-80",
-									billingCycle: "month",
-									status: "canceled",
+									id: "fb",
+									title: "Fabio Belalcazar",
+									icon: "/assets/avatar-default.png",
+									costs: "$200.000",
+									billingCycle: "",
+									status: "cancelado",
 								},
 								{
-									id: "google_cloud",
-									title: "Google Cloud",
-									icon: "/assets/company-avatar-2.png",
-									costs: "$100-200",
-									billingCycle: "month",
-									status: "paid",
+									id: "tm",
+									title: "Thomas Miller",
+									icon: "/assets/avatar-default.png",
+									costs: "$300.000",
+									billingCycle: "",
+									status: "aprobado",
 								},
 								{
-									id: "stripe",
-									title: "Stripe",
-									icon: "/assets/company-avatar-1.png",
-									costs: "$70",
-									billingCycle: "month",
-									status: "paid",
+									id: "jp",
+									title: "Joel Pastrana",
+									icon: "/assets/avatar-default.png",
+									costs: "$700.000",
+									billingCycle: "",
+									status: "aprobado",
 								},
 							]}
 						/>
@@ -155,33 +156,38 @@ export default function Page() {
 							messages={[
 								{
 									id: "MSG-001",
-									content: "Hello, we spoke earlier on the phone",
-									author: { name: "Alcides Antonio", avatar: "/assets/avatar-10.png", status: "online" },
+									content: "",
+									author: { name: "Alcides Antonio", avatar: "/assets/avatar-default.png" },
 									createdAt: dayjs().subtract(2, "minute").toDate(),
+									pendings: 13,
 								},
 								{
 									id: "MSG-002",
-									content: "Is the job still available?",
-									author: { name: "Marcus Finn", avatar: "/assets/avatar-9.png", status: "offline" },
+									content: "",
+									author: { name: "Marcus Finn", avatar: "/assets/avatar-default.png" },
 									createdAt: dayjs().subtract(56, "minute").toDate(),
+									pendings: 3,
 								},
 								{
 									id: "MSG-003",
-									content: "What is a screening task? I'd like to",
-									author: { name: "Carson Darrin", avatar: "/assets/avatar-3.png", status: "online" },
+									content: "",
+									author: { name: "Carson Darrin", avatar: "/assets/avatar-default.png" },
 									createdAt: dayjs().subtract(3, "hour").subtract(23, "minute").toDate(),
+									pendings: 8,
 								},
 								{
 									id: "MSG-004",
-									content: "Still waiting for feedback",
-									author: { name: "Fran Perez", avatar: "/assets/avatar-5.png", status: "online" },
+									content: "",
+									author: { name: "Fran Perez", avatar: "/assets/avatar-default.png" },
 									createdAt: dayjs().subtract(8, "hour").subtract(6, "minute").toDate(),
+									pendings: 1,
 								},
 								{
 									id: "MSG-005",
-									content: "Need more information about campaigns",
-									author: { name: "Jie Yan", avatar: "/assets/avatar-8.png", status: "offline" },
+									content: "",
+									author: { name: "Jie Yan", avatar: "/assets/avatar-default.png" },
 									createdAt: dayjs().subtract(10, "hour").subtract(18, "minute").toDate(),
+									pendings: 5,
 								},
 							]}
 						/>
@@ -196,27 +202,27 @@ export default function Page() {
 							events={[
 								{
 									id: "EV-004",
-									title: "Meeting with partners",
-									description: "17:00 to 18:00",
-									createdAt: dayjs().add(1, "day").toDate(),
+									title: "Carlos Alonso Villa",
+									description: "Bisemanal",
+									createdAt: dayjs(new Date(2025, 3, 21)),
 								},
 								{
 									id: "EV-003",
-									title: "Interview with Jonas",
-									description: "15:30 to 16:45",
-									createdAt: dayjs().add(4, "day").toDate(),
+									title: "Jose Gomez",
+									description: "5 - 20",
+									createdAt: dayjs(new Date(2025, 4, 5)),
 								},
 								{
 									id: "EV-002",
-									title: "Doctor's appointment",
-									description: "12:30 to 15:30",
-									createdAt: dayjs().add(4, "day").toDate(),
+									title: "Fabio Belalcazar",
+									description: "10 - 25",
+									createdAt: dayjs(new Date(2025, 5, 10)),
 								},
 								{
 									id: "EV-001",
-									title: "Weekly meeting",
-									description: "09:00 to 09:30",
-									createdAt: dayjs().add(7, "day").toDate(),
+									title: "Thomas Miller",
+									description: "15 - 30",
+									createdAt: dayjs(new Date(2025, 5, 15)),
 								},
 							]}
 						/>
@@ -227,9 +233,9 @@ export default function Page() {
 							xs: 12,
 						}}
 					>
-						<AppLimits usage={80} />
+						<AppLimits usage={70} />
 					</Grid>
-					<Grid
+					{/* <Grid
 						size={{
 							md: 4,
 							xs: 12,
@@ -246,8 +252,8 @@ export default function Page() {
 							label="Jobs"
 							title="Find your dream job"
 						/>
-					</Grid>
-					<Grid
+					</Grid> */}
+					{/* <Grid
 						size={{
 							md: 4,
 							xs: 12,
@@ -264,8 +270,8 @@ export default function Page() {
 							label="Help center"
 							title="Need help figuring things out?"
 						/>
-					</Grid>
-					<Grid
+					</Grid> */}
+					{/* <Grid
 						size={{
 							md: 4,
 							xs: 12,
@@ -282,7 +288,7 @@ export default function Page() {
 							label="Documentation"
 							title="Explore documentation"
 						/>
-					</Grid>
+					</Grid> */}
 				</Grid>
 			</Stack>
 		</Box>

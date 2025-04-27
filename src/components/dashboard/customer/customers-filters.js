@@ -7,7 +7,7 @@ import Chip from "@mui/material/Chip";
 import Divider from "@mui/material/Divider";
 import FormControl from "@mui/material/FormControl";
 import OutlinedInput from "@mui/material/OutlinedInput";
-import Select from "@mui/material/Select";
+// import Select from "@mui/material/Select";
 import Stack from "@mui/material/Stack";
 import Tab from "@mui/material/Tab";
 import Tabs from "@mui/material/Tabs";
@@ -15,16 +15,16 @@ import Typography from "@mui/material/Typography";
 
 import { paths } from "@/paths";
 import { FilterButton, FilterPopover, useFilterContext } from "@/components/core/filter-button";
-import { Option } from "@/components/core/option";
+
+// import { Option } from "@/components/core/option";
 
 import { useCustomersSelection } from "./customers-selection-context";
 
 // The tabs should be generated using API data.
 const tabs = [
-	{ label: "All", value: "", count: 5 },
-	{ label: "Active", value: "active", count: 3 },
-	{ label: "Pending", value: "pending", count: 1 },
-	{ label: "Blocked", value: "blocked", count: 1 },
+	{ label: "Todos", value: "", count: 5 },
+	{ label: "Activos", value: "active", count: 3 },
+	{ label: "Inactivos", value: "inactive", count: 1 },
 ];
 
 export function CustomersFilters({ filters = {}, sortDir = "desc" }) {
@@ -84,12 +84,12 @@ export function CustomersFilters({ filters = {}, sortDir = "desc" }) {
 		[updateSearchParams, filters, sortDir]
 	);
 
-	const handleSortChange = React.useCallback(
-		(event) => {
-			updateSearchParams(filters, event.target.value);
-		},
-		[updateSearchParams, filters]
-	);
+	// const handleSortChange = React.useCallback(
+	// 	(event) => {
+	// 		updateSearchParams(filters, event.target.value);
+	// 	},
+	// 	[updateSearchParams, filters]
+	// );
 
 	const hasFilters = status || email || phone;
 
@@ -113,7 +113,7 @@ export function CustomersFilters({ filters = {}, sortDir = "desc" }) {
 				<Stack direction="row" spacing={2} sx={{ alignItems: "center", flex: "1 1 auto", flexWrap: "wrap" }}>
 					<FilterButton
 						displayValue={email}
-						label="Email"
+						label="Correo"
 						onFilterApply={(value) => {
 							handleEmailChange(value);
 						}}
@@ -125,7 +125,7 @@ export function CustomersFilters({ filters = {}, sortDir = "desc" }) {
 					/>
 					<FilterButton
 						displayValue={phone}
-						label="Phone number"
+						label="Celular"
 						onFilterApply={(value) => {
 							handlePhoneChange(value);
 						}}
@@ -147,10 +147,10 @@ export function CustomersFilters({ filters = {}, sortDir = "desc" }) {
 						</Button>
 					</Stack>
 				) : null}
-				<Select name="sort" onChange={handleSortChange} sx={{ maxWidth: "100%", width: "120px" }} value={sortDir}>
-					<Option value="desc">Newest</Option>
-					<Option value="asc">Oldest</Option>
-				</Select>
+				{/* <Select name="sort" onChange={handleSortChange} sx={{ maxWidth: "100%", width: "170px" }} value={sortDir}>
+					<Option value="desc">Mas reciente</Option>
+					<Option value="asc">Menos reciente</Option>
+				</Select> */}
 			</Stack>
 		</div>
 	);

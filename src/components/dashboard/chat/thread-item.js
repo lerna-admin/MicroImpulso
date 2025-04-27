@@ -7,6 +7,8 @@ import Typography from "@mui/material/Typography";
 
 import { dayjs } from "@/lib/dayjs";
 
+dayjs.locale('es');
+
 const user = {
 	id: "USR-000",
 	name: "Sofia Rivers",
@@ -15,8 +17,8 @@ const user = {
 };
 
 function getDisplayContent(lastMessage, userId) {
-	const author = lastMessage.author.id === userId ? "Me: " : "";
-	const message = lastMessage.type === "image" ? "Sent a photo" : lastMessage.content;
+	const author = lastMessage.author.id === userId ? "Yo: " : "";
+	const message = lastMessage.type === "image" ? "Envio una foto" : lastMessage.content;
 
 	return `${author}${message}`;
 }

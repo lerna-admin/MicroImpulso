@@ -2,10 +2,10 @@ import { AuthStrategy } from "@/lib/auth-strategy";
 import { LogLevel } from "@/lib/logger";
 
 export const appConfig = {
-	name: "Devias Kit Pro",
+	name: "MicroImpulso",
 	description: "",
 	direction: "ltr",
-	language: "en",
+	language: "es",
 	theme: "light",
 	themeColor: "#090a0b",
 	primaryColor: "neonBlue",

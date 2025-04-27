@@ -16,7 +16,7 @@ import { EmotionCacheProvider } from "@/components/core/emotion-cache";
 import { I18nProvider } from "@/components/core/i18n-provider";
 import { LocalizationProvider } from "@/components/core/localization-provider";
 import { Rtl } from "@/components/core/rtl";
-import { SettingsButton } from "@/components/core/settings/settings-button";
+// import { SettingsButton } from "@/components/core/settings/settings-button";
 import { SettingsProvider } from "@/components/core/settings/settings-context";
 import { ThemeProvider } from "@/components/core/theme-provider";
 import { Toaster } from "@/components/core/toaster";
@@ -61,6 +61,9 @@ export default async function Layout({ children }) {
 
 	return (
 		<html dir={direction} lang={language} suppressHydrationWarning>
+			<head>
+				<link rel="icon" href="/favicon.png"/>
+			</head>
 			<body>
 				<InitColorSchemeScript attribute="class" />
 				<AuthProvider>
@@ -72,7 +75,7 @@ export default async function Layout({ children }) {
 										<Rtl direction={direction}>
 											<ThemeProvider>
 												{children}
-												<SettingsButton />
+												{/* <SettingsButton />  Por ahora no se va a usar */}
 												<Toaster position="bottom-right" />
 											</ThemeProvider>
 										</Rtl>

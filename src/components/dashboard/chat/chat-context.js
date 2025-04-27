@@ -17,6 +17,10 @@ export const ChatContext = React.createContext({
 	setOpenDesktopSidebar: noop,
 	openMobileSidebar: true,
 	setOpenMobileSidebar: noop,
+	openDesktopSidebarRight: true,
+	setOpenDesktopSidebarRight: noop,
+	openMobileSidebarRight: true,
+	setOpenMobileSidebarRight: noop,
 });
 
 export function ChatProvider({
@@ -30,6 +34,8 @@ export function ChatProvider({
 	const [messages, setMessages] = React.useState(new Map());
 	const [openDesktopSidebar, setOpenDesktopSidebar] = React.useState(true);
 	const [openMobileSidebar, setOpenMobileSidebar] = React.useState(false);
+	const [openDesktopSidebarRight, setOpenDesktopSidebarRight] = React.useState(false);
+	const [openMobileSidebarRight, setOpenMobileSidebarRight] = React.useState(false);
 
 	React.useEffect(() => {
 		setContacts(initialContacts);
@@ -186,6 +192,10 @@ export function ChatProvider({
 				setOpenDesktopSidebar,
 				openMobileSidebar,
 				setOpenMobileSidebar,
+				openDesktopSidebarRight,
+				setOpenDesktopSidebarRight,
+				openMobileSidebarRight,
+				setOpenMobileSidebarRight,
 			}}
 		>
 			{children}

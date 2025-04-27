@@ -1,20 +1,20 @@
 import * as React from "react";
 import Box from "@mui/material/Box";
-import Button from "@mui/material/Button";
-import Grid from "@mui/material/Grid2";
+// import Button from "@mui/material/Button";
+// import Grid from "@mui/material/Grid2";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
-import { Plus as PlusIcon } from "@phosphor-icons/react/dist/ssr/Plus";
+// import { Plus as PlusIcon } from "@phosphor-icons/react/dist/ssr/Plus";
 
 import { appConfig } from "@/config/app";
-import { ChannelSessionsVsBounce } from "@/components/dashboard/analytics/channel-sessions-vs-bounce-rate";
-import { CountrySessionsVsBounce } from "@/components/dashboard/analytics/country-sessions-vs-bounce-rate";
-import { Devices } from "@/components/dashboard/analytics/devices";
-import { InboundOutbound } from "@/components/dashboard/analytics/inbound-outbound";
-import { Insight } from "@/components/dashboard/analytics/insight";
-import { Summary } from "@/components/dashboard/analytics/summary";
+// import { ChannelSessionsVsBounce } from "@/components/dashboard/analytics/channel-sessions-vs-bounce-rate";
+// import { CountrySessionsVsBounce } from "@/components/dashboard/analytics/country-sessions-vs-bounce-rate";
+// import { Devices } from "@/components/dashboard/analytics/devices";
+// import { InboundOutbound } from "@/components/dashboard/analytics/inbound-outbound";
+// import { Insight } from "@/components/dashboard/analytics/insight";
+// import { Summary } from "@/components/dashboard/analytics/summary";
 
-export const metadata = { title: `Analytics | Dashboard | ${appConfig.name}` };
+export const metadata = { title: `Analiticas | Dashboard | ${appConfig.name}` };
 
 export default function Page() {
 	return (
@@ -29,15 +29,15 @@ export default function Page() {
 			<Stack spacing={4}>
 				<Stack direction={{ xs: "column", sm: "row" }} spacing={3} sx={{ alignItems: "flex-start" }}>
 					<Box sx={{ flex: "1 1 auto" }}>
-						<Typography variant="h4">Analytics</Typography>
+						<Typography variant="h4">Analiticas</Typography>
 					</Box>
-					<div>
+					{/* <div>
 						<Button startIcon={<PlusIcon />} variant="contained">
 							Add metrics
 						</Button>
-					</div>
+					</div> */}
 				</Stack>
-				<Grid container spacing={4}>
+				{/* <Grid container spacing={4}>
 					<Grid size={12}>
 						<Summary />
 					</Grid>
@@ -142,7 +142,7 @@ export default function Page() {
 							]}
 						/>
 					</Grid>
-				</Grid>
+				</Grid> */}
 			</Stack>
 		</Box>
 	);

@@ -15,8 +15,9 @@ import { isNavItemActive } from "@/lib/is-nav-item-active";
 import { Logo } from "@/components/core/logo";
 
 import { icons } from "../nav-icons";
-import { WorkspacesSwitch } from "../workspaces-switch";
+// import { WorkspacesSwitch } from "../workspaces-switch";
 import { navColorStyles } from "./styles";
+
 
 const logoColors = {
 	dark: { blend_in: "light", discrete: "light", evident: "light" },
@@ -50,11 +51,12 @@ export function SideNav({ color = "evident", items = [] }) {
 		>
 			<Stack spacing={2} sx={{ p: 2 }}>
 				<div>
-					<Box component={RouterLink} href={paths.home} sx={{ display: "inline-flex" }}>
-						<Logo color={logoColor} height={32} width={122} />
+					<Box component={RouterLink} href={paths.home} sx={{ display: "inline-flex", textDecoration: "none" }}>
+						<Logo color={logoColor} height={60} width={60} />
+						<Typography variant="body1" color="white" alignContent={'center'} fontWeight={'bold'}>icroImpulso</Typography>
 					</Box>
 				</div>
-				<WorkspacesSwitch />
+				{/* <WorkspacesSwitch /> No se necesita */}
 			</Stack>
 			<Box
 				component="nav"

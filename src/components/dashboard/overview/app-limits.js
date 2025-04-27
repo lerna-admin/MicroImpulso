@@ -30,17 +30,17 @@ export function AppLimits({ usage }) {
 	return (
 		<Card>
 			<CardHeader
-				action={
-					<IconButton>
-						<DotsThreeIcon weight="bold" />
-					</IconButton>
-				}
+				// action={
+				// 	<IconButton>
+				// 		<DotsThreeIcon weight="bold" />
+				// 	</IconButton>
+				// }
 				avatar={
 					<Avatar>
 						<CpuIcon fontSize="var(--Icon-fontSize)" />
 					</Avatar>
 				}
-				title="App limits"
+				title="Pagos mensuales"
 			/>
 			<CardContent>
 				<Box sx={{ display: "flex", justifyContent: "center" }}>
@@ -96,18 +96,18 @@ export function AppLimits({ usage }) {
 					</NoSsr>
 				</Box>
 				<Stack spacing={2} sx={{ mt: "-80px", textAlign: "center" }}>
-					<Typography variant="h6">You&apos;ve almost reached your limit</Typography>
+					<Typography variant="h6">Ya casi has llegado a tu meta</Typography>
 					<Typography color="text.secondary" variant="body2">
-						You have used{" "}
-						{new Intl.NumberFormat("en-US", { style: "percent", maximumFractionDigits: 2 }).format(usage / 100)} of your
-						available spots. Upgrade plan to create more projects.
+						Has cobrado{" "}
+						{new Intl.NumberFormat("en-US", { style: "percent", maximumFractionDigits: 2 }).format(usage / 100)} de los
+						pagos del mes, recuerda contactar a tus clientes.
 					</Typography>
 				</Stack>
 			</CardContent>
 			<Divider />
 			<CardActions sx={{ justifyContent: "flex-end" }}>
-				<Button color="secondary" startIcon={<LightningIcon />} variant="contained">
-					Upgrade plan
+				<Button color="primary" variant="contained">
+					Ver clientes en mora
 				</Button>
 			</CardActions>
 		</Card>

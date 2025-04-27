@@ -14,13 +14,13 @@ export const metadata = { title: appConfig.name, description: appConfig.descript
 export default function Page() {
 	return (
 		<div>
-			<Hero />
-			<Productivity />
-			<Included />
+			{/* <Hero /> */}
+			{/* <Productivity /> */}
+			{/* <Included />
 			<Features />
 			<Testimonails />
 			<Faqs />
-			<StartBuilding />
+			<StartBuilding /> */}
 		</div>
 	);
 }

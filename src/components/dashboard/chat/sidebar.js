@@ -154,7 +154,7 @@ function SidebarContent({
 					startIcon={<PlusIcon />}
 					variant="contained"
 				>
-					Group
+					Grupo
 				</Button>
 				<IconButton onClick={onClose} sx={{ display: { md: "none" } }}>
 					<XIcon />

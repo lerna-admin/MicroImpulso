@@ -20,6 +20,7 @@ export function OrdersPagination({ count, page }) {
 			page={page}
 			rowsPerPage={5}
 			rowsPerPageOptions={[5, 10, 25]}
+			labelRowsPerPage={"Filas por pagina"}
 		/>
 	);
 }
