@@ -3,7 +3,7 @@
 import * as React from "react";
 import TablePagination from "@mui/material/TablePagination";
 
-export function CustomersPagination({ count }) {
+export function CustomersPagination({ totalItems, onPage, onRowPerPage }) {
 	// You should implement the pagination using a similar logic as the filters.
 	// Note that when page change, you should keep the filter search params.
 
@@ -12,17 +12,20 @@ export function CustomersPagination({ count }) {
 
 	const handleChangePage = (event, newPage) => {
 		setPage(newPage);
+		onPage(page);
 	};
 
 	const handleChangeRowsPerPage = (event) => {
-		setRowsPerPage(Number.parseInt(event.target.value, 10));
+		const rowXPage = Number.parseInt(event.target.value, 10);
+		setRowsPerPage(rowXPage);
 		setPage(0);
+		onRowPerPage(rowsPerPage);
 	};
 
 	return (
 		<TablePagination
 			component="div"
-			count={count}
+			count={totalItems}
 			page={page}
 			onPageChange={handleChangePage}
 			onRowsPerPageChange={handleChangeRowsPerPage}

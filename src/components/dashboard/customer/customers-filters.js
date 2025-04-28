@@ -7,7 +7,6 @@ import Chip from "@mui/material/Chip";
 import Divider from "@mui/material/Divider";
 import FormControl from "@mui/material/FormControl";
 import OutlinedInput from "@mui/material/OutlinedInput";
-// import Select from "@mui/material/Select";
 import Stack from "@mui/material/Stack";
 import Tab from "@mui/material/Tab";
 import Tabs from "@mui/material/Tabs";
@@ -16,18 +15,19 @@ import Typography from "@mui/material/Typography";
 import { paths } from "@/paths";
 import { FilterButton, FilterPopover, useFilterContext } from "@/components/core/filter-button";
 
-// import { Option } from "@/components/core/option";
-
 import { useCustomersSelection } from "./customers-selection-context";
 
-// The tabs should be generated using API data.
-const tabs = [
-	{ label: "Todos", value: "", count: 5 },
-	{ label: "Activos", value: "active", count: 3 },
-	{ label: "Inactivos", value: "inactive", count: 1 },
-];
+export function CustomersFilters({ filters = {}, sortDir = "desc", count }) {
+	const [tabs, setTabs] = React.useState([
+		{ label: "Todos", value: "", count: 0 },
+		{ label: "Activos", value: "active", count: 0 },
+		{ label: "Inactivos", value: "inactive", count: 0 },
+	]);
 
-export function CustomersFilters({ filters = {}, sortDir = "desc" }) {
+	React.useEffect(() => {
+		setTabs((tabs) => tabs.map((tab) => (tab.value === status ? { ...tab, count: count } : tab)));
+	}, [count]);
+
 	const { email, phone, status } = filters;
 
 	const router = useRouter();
@@ -52,6 +52,14 @@ export function CustomersFilters({ filters = {}, sortDir = "desc" }) {
 
 			if (newFilters.phone) {
 				searchParams.set("phone", newFilters.phone);
+			}
+
+			if (newFilters.page) {
+				searchParams.set("page", newFilters.page);
+			}
+
+			if (newFilters.limit) {
+				searchParams.set("limit", newFilters.limit);
 			}
 
 			router.push(`${paths.dashboard.customers.list}?${searchParams.toString()}`);
@@ -84,13 +92,6 @@ export function CustomersFilters({ filters = {}, sortDir = "desc" }) {
 		[updateSearchParams, filters, sortDir]
 	);
 
-	// const handleSortChange = React.useCallback(
-	// 	(event) => {
-	// 		updateSearchParams(filters, event.target.value);
-	// 	},
-	// 	[updateSearchParams, filters]
-	// );
-
 	const hasFilters = status || email || phone;
 
 	return (
@@ -98,7 +99,7 @@ export function CustomersFilters({ filters = {}, sortDir = "desc" }) {
 			<Tabs onChange={handleStatusChange} sx={{ px: 3 }} value={status ?? ""} variant="scrollable">
 				{tabs.map((tab) => (
 					<Tab
-						icon={<Chip label={tab.count} size="small" variant="soft" />}
+						icon={tab.value === status && <Chip label={tab.count} size="small" variant="soft" />}
 						iconPosition="end"
 						key={tab.value}
 						label={tab.label}
@@ -147,10 +148,6 @@ export function CustomersFilters({ filters = {}, sortDir = "desc" }) {
 						</Button>
 					</Stack>
 				) : null}
-				{/* <Select name="sort" onChange={handleSortChange} sx={{ maxWidth: "100%", width: "170px" }} value={sortDir}>
-					<Option value="desc">Mas reciente</Option>
-					<Option value="asc">Menos reciente</Option>
-				</Select> */}
 			</Stack>
 		</div>
 	);
