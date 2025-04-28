@@ -19,10 +19,10 @@ export const metadata = { title: `Clientes | Dashboard | ${appConfig.name}` };
 export default async function Page({ searchParams }) {
 	const customers = await getCustomers();
 
-	const { email, phone, sortDir, status } = await searchParams;
+	const { email, phoneNumber, sortDir, status } = await searchParams;
 
 	const sortedCustomers = applySort(customers, sortDir);
-	const filteredCustomers = applyFilters(sortedCustomers, { email, phone, status });
+	const filteredCustomers = applyFilters(sortedCustomers, { email, phoneNumber, status });
 
 	return (
 		<Box
@@ -41,13 +41,13 @@ export default async function Page({ searchParams }) {
 				</Stack>
 				<CustomersSelectionProvider customers={filteredCustomers}>
 					<Card>
-						<CustomersFilters filters={{ email, phone, status }} sortDir={sortDir} />
+						<CustomersFilters filters={{ email, phoneNumber, status }} sortDir={sortDir} count={filteredCustomers.length} />
 						<Divider />
 						<Box sx={{ overflowX: "auto" }}>
 							<CustomersTable rows={filteredCustomers} />
 						</Box>
 						<Divider />
-						<CustomersPagination count={filteredCustomers.length} />
+						<CustomersPagination totalItems={filteredCustomers.length}  />
 					</Card>
 				</CustomersSelectionProvider>
 			</Stack>
@@ -73,14 +73,19 @@ function applyFilters(row, { email, phone, status }) {
 			return false;
 		}
 
-		if (phone && !item.phone?.toLowerCase().includes(phone.toLowerCase())) {
+		if (phone && !item.phoneNumber?.toLowerCase().includes(phone.toLowerCase())) {
 			return false;
 		}
 
-		if (status && item.status !== status) {
+		if (status && parseStatus(item.status) !== status) {
 			return false;
 		}
 
 		return true;
 	});
 }
+
+function parseStatus(status) {
+	return status == true ? "active" : "inactive";
+}
+

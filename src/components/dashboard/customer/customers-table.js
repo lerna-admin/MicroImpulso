@@ -69,7 +69,7 @@ const columns = [
 				true: { label: "Activo", icon: <CheckCircleIcon color="var(--mui-palette-success-main)" weight="fill" /> },
 				false: { label: "Inactivo", icon: <XCircleIcon color="var(--mui-palette-error-main)" weight="fill" /> },
 			};
-			const { label, icon } = mapping[row.state] ?? { label: "Unknown", icon: null };
+			const { label, icon } = mapping[row.status] ?? { label: "Unknown", icon: null };
 
 			return <Chip icon={icon} label={label} size="small" variant="outlined" />;
 		},
@@ -83,7 +83,7 @@ const columns = [
 			</IconButton>
 		),
 		name: "Acciones",
-		hideName: false,
+		hideName: true,
 		width: "100px",
 		align: "right",
 	},
