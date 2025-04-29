@@ -33,7 +33,7 @@ export default function Page() {
 						variant="subtitle2"
 					>
 						<ArrowLeftIcon fontSize="var(--icon-fontSize-md)" />
-						Dashboard
+						asd
 					</Link>
 				</div>
 				<div>
