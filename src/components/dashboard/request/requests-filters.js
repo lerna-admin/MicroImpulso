@@ -17,22 +17,21 @@ import { paths } from "@/paths";
 import { FilterButton, FilterPopover, useFilterContext } from "@/components/core/filter-button";
 import { Option } from "@/components/core/option";
 
-import { useOrdersSelection } from "./orders-selection-context";
+import { useRequestsSelection } from "./requests-selection-context";
 
 // The tabs should be generated using API data.
 const tabs = [
 	{ label: "Todos", value: "", count: 5 },
-	{ label: "Aprobados", value: "completed", count: 2 },
-	{ label: "Pendientes", value: "pending", count: 1 },
-	{ label: "Rechazados", value: "rejected", count: 1 },
+	{ label: "Nueva", value: "new", count: 2 },
+	{ label: "En estudio", value: "under_review", count: 1 },
+	{ label: "Aprobada", value: "approved", count: 1 },
+	{ label: "Rechazada", value: "rejected", count: 1 },
 ];
 
-export function OrdersFilters({ filters = {}, sortDir = "desc" }) {
+export function RequestsFilters({ filters = {}, sortDir = "desc" }) {
 	const { customer, id, status } = filters;
 
 	const router = useRouter();
-
-	const selection = useOrdersSelection();
 
 	const updateSearchParams = React.useCallback(
 		(newFilters, newSortDir) => {
@@ -54,7 +53,7 @@ export function OrdersFilters({ filters = {}, sortDir = "desc" }) {
 				searchParams.set("customer", newFilters.customer);
 			}
 
-			router.push(`${paths.dashboard.orders.list}?${searchParams.toString()}`);
+			router.push(`${paths.dashboard.requests.list}?${searchParams.toString()}`);
 		},
 		[router]
 	);
@@ -135,18 +134,9 @@ export function OrdersFilters({ filters = {}, sortDir = "desc" }) {
 						popover={<CustomerFilterPopover />}
 						value={customer}
 					/>
-					{hasFilters ? <Button onClick={handleClearFilters}>Clear filters</Button> : null}
+					{hasFilters ? <Button onClick={handleClearFilters}>Borrar filtros</Button> : null}
 				</Stack>
-				{selection.selectedAny ? (
-					<Stack direction="row" spacing={2} sx={{ alignItems: "center" }}>
-						<Typography color="text.secondary" variant="body2">
-							{selection.selected.size} selected
-						</Typography>
-						<Button color="error" variant="contained">
-							Delete
-						</Button>
-					</Stack>
-				) : null}
+
 				<Select name="sort" onChange={handleSortChange} sx={{ maxWidth: "100%", width: "170px" }} value={sortDir}>
 					<Option value="desc">Más reciente</Option>
 					<Option value="asc">Menos reciente</Option>

@@ -25,8 +25,8 @@ import { paths } from "@/paths";
 import { dayjs } from "@/lib/dayjs";
 import { PropertyItem } from "@/components/core/property-item";
 import { PropertyList } from "@/components/core/property-list";
-import { EventsTimeline } from "@/components/dashboard/order/events-timeline";
-import { LineItemsTable } from "@/components/dashboard/order/line-items-table";
+import { EventsTimeline } from "@/components/dashboard/request/events-timeline";
+import { LineItemsTable } from "@/components/dashboard/request/line-items-table";
 
 export const metadata = { title: `Details | Orders | Dashboard | ${appConfig.name}` };
 
@@ -90,7 +90,7 @@ export default function Page() {
 					<Link
 						color="text.primary"
 						component={RouterLink}
-						href={paths.dashboard.orders.list}
+						href={paths.dashboard.requests.list}
 						sx={{ alignItems: "center", display: "inline-flex", gap: 1 }}
 						variant="subtitle2"
 					>

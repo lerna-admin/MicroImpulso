@@ -47,14 +47,14 @@ const lineItems = [
 	},
 ];
 
-export function OrderModal({ open }) {
+export function RequestModal({ open }) {
 	const router = useRouter();
 
 	// This component should load the order from the API based on the orderId prop.
 	// For the sake of simplicity, we are just using a static order object.
 
 	const handleClose = React.useCallback(() => {
-		router.push(paths.dashboard.orders.list);
+		router.push(paths.dashboard.requests.list);
 	}, [router]);
 
 	return (
@@ -81,7 +81,7 @@ export function OrderModal({ open }) {
 							<Button
 								color="secondary"
 								component={RouterLink}
-								href={paths.dashboard.orders.details("1")}
+								href={paths.dashboard.requests.details("1")}
 								startIcon={<PencilSimpleIcon />}
 							>
 								Edit
