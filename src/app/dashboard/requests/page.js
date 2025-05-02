@@ -1,23 +1,21 @@
 import * as React from "react";
 import Box from "@mui/material/Box";
-// import Button from "@mui/material/Button";
 import Card from "@mui/material/Card";
 import Divider from "@mui/material/Divider";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
-// import { Plus as PlusIcon } from "@phosphor-icons/react/dist/ssr/Plus";
 
 import { appConfig } from "@/config/app";
 import { dayjs } from "@/lib/dayjs";
-import { OrderModal } from "@/components/dashboard/order/order-modal";
-import { OrdersFilters } from "@/components/dashboard/order/orders-filters";
-import { OrdersPagination } from "@/components/dashboard/order/orders-pagination";
-import { OrdersSelectionProvider } from "@/components/dashboard/order/orders-selection-context";
-import { OrdersTable } from "@/components/dashboard/order/orders-table";
+import { RequestModal } from "@/components/dashboard/request/request-modal";
+import { RequestsFilters } from "@/components/dashboard/request/requests-filters";
+import { RequestsPagination } from "@/components/dashboard/request/requests-pagination";
+import { RequestsSelectionProvider } from "@/components/dashboard/request/requests-selection-context";
+import { RequestsTable } from "@/components/dashboard/request/requests-table";
 
 export const metadata = { title: `Lista | Solicitudes | Dashboard | ${appConfig.name}` };
 
-const orders = [
+const requests = [
 	{
 		id: "ORD-005",
 		customer: { name: "Penjani Inyene", avatar: "/assets/avatar-4.png", email: "penjani.inyene@domain.com" },
@@ -61,7 +59,7 @@ const orders = [
 		status: "rejected",
 		frequency:"10 - 25",
 		createdAt: dayjs().subtract(1, "hour").subtract(1, "day").toDate(),
-	},
+	}, 
 	{
 		id: "ORD-001",
 		customer: { name: "Miron Vitold", avatar: "/assets/avatar-1.png", email: "miron.vitold@domain.com" },
@@ -78,8 +76,8 @@ const orders = [
 export default async function Page({ searchParams }) {
 	const { customer, id, previewId, sortDir, status } = await searchParams;
 
-	const sortedOrders = applySort(orders, sortDir);
-	const filteredOrders = applyFilters(sortedOrders, { customer, id, status });
+	const sortedRequests = applySort(requests, sortDir);
+	const filteredRequests = applyFilters(sortedRequests, { customer, id, status });
 
 	return (
 		<React.Fragment>
@@ -96,26 +94,21 @@ export default async function Page({ searchParams }) {
 						<Box sx={{ flex: "1 1 auto" }}>
 							<Typography variant="h4">Solicitudes</Typography>
 						</Box>
-						{/* <div>
-							<Button startIcon={<PlusIcon />} variant="contained">
-								Add
-							</Button>
-						</div> */}
 					</Stack>
-					<OrdersSelectionProvider orders={filteredOrders}>
+					<RequestsSelectionProvider requests={filteredRequests}>
 						<Card>
-							<OrdersFilters filters={{ customer, id, status }} sortDir={sortDir} />
+							<RequestsFilters filters={{ customer, id, status }} sortDir={sortDir} />
 							<Divider />
 							<Box sx={{ overflowX: "auto" }}>
-								<OrdersTable rows={filteredOrders} />
+								<RequestsTable rows={filteredRequests} />
 							</Box>
 							<Divider />
-							<OrdersPagination count={filteredOrders.length} page={0} />
+							<RequestsPagination count={filteredRequests.length} page={0} />
 						</Card>
-					</OrdersSelectionProvider>
+					</RequestsSelectionProvider>
 				</Stack>
 			</Box>
-			<OrderModal open={Boolean(previewId)} />
+			<RequestModal open={Boolean(previewId)} />
 		</React.Fragment>
 	);
 }

@@ -19,10 +19,10 @@ export const metadata = { title: `Clientes | Dashboard | ${appConfig.name}` };
 export default async function Page({ searchParams }) {
 	const customers = await getCustomers();
 
-	const { email, phone, sortDir, status } = await searchParams;
+	const { email, phoneNumber, sortDir, status, documentId } = await searchParams;
 
 	const sortedCustomers = applySort(customers, sortDir);
-	const filteredCustomers = applyFilters(sortedCustomers, { email, phone, status });
+	const filteredCustomers = applyFilters(sortedCustomers, { email, phoneNumber, status, documentId });
 
 	return (
 		<Box
@@ -41,13 +41,17 @@ export default async function Page({ searchParams }) {
 				</Stack>
 				<CustomersSelectionProvider customers={filteredCustomers}>
 					<Card>
-						<CustomersFilters filters={{ email, phone, status }} sortDir={sortDir} />
+						<CustomersFilters
+							filters={{ email, phoneNumber, status, documentId }}
+							sortDir={sortDir}
+							count={filteredCustomers.length}
+						/>
 						<Divider />
 						<Box sx={{ overflowX: "auto" }}>
 							<CustomersTable rows={filteredCustomers} />
 						</Box>
 						<Divider />
-						<CustomersPagination count={filteredCustomers.length} />
+						<CustomersPagination totalItems={filteredCustomers.length} />
 					</Card>
 				</CustomersSelectionProvider>
 			</Stack>
@@ -67,20 +71,28 @@ function applySort(row, sortDir) {
 	});
 }
 
-function applyFilters(row, { email, phone, status }) {
+function applyFilters(row, { email, phoneNumber, status, documentId }) {
 	return row.filter((item) => {
+		if (documentId && !item.documentId?.toLowerCase().includes(documentId.toLowerCase())) {
+			return false;
+		}
+
 		if (email && !item.email?.toLowerCase().includes(email.toLowerCase())) {
 			return false;
 		}
 
-		if (phone && !item.phone?.toLowerCase().includes(phone.toLowerCase())) {
+		if (phoneNumber && !item.phoneNumber?.toLowerCase().includes(phoneNumber.toLowerCase())) {
 			return false;
 		}
 
-		if (status && item.status !== status) {
+		if (status && parseStatus(item.status) !== status) {
 			return false;
 		}
 
 		return true;
 	});
+}
+
+function parseStatus(status) {
+	return status == true ? "active" : "inactive";
 }

@@ -11,10 +11,8 @@ import Tooltip from "@mui/material/Tooltip";
 import Typography from "@mui/material/Typography";
 import { Archive as ArchiveIcon } from "@phosphor-icons/react/dist/ssr/Archive";
 import { Bell as BellIcon } from "@phosphor-icons/react/dist/ssr/Bell";
-// import { Camera as CameraIcon } from "@phosphor-icons/react/dist/ssr/Camera";
 import { DotsThree as DotsThreeIcon } from "@phosphor-icons/react/dist/ssr/DotsThree";
 import { PencilSimple as PencilSimpleIcon } from "@phosphor-icons/react/dist/ssr/PencilSimple";
-// import { Phone as PhoneIcon } from "@phosphor-icons/react/dist/ssr/Phone";
 import { Prohibit as ProhibitIcon } from "@phosphor-icons/react/dist/ssr/Prohibit";
 import { Trash as TrashIcon } from "@phosphor-icons/react/dist/ssr/Trash";
 
@@ -79,12 +77,6 @@ export function ThreadToolbar({ thread }) {
 					</Box>
 				</Stack>
 				<Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
-					{/* <IconButton>
-						<PhoneIcon />
-					</IconButton>
-					<IconButton>
-						<CameraIcon />
-					</IconButton> */}
 					<Tooltip title="More options">
 						<IconButton onClick={popover.handleOpen} ref={popover.anchorRef}>
 							<DotsThreeIcon weight="bold" />

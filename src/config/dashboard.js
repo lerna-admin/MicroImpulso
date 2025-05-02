@@ -5,8 +5,8 @@ export const dashboardConfig = {
 	navColor: "evident",
 	navItems: [
 		{
-			key: "admin",
-			title: "Administrador",
+			key: "general",
+			title: "Gerente",
 			items: [
 				{ key: "overview", title: "Resumen", href: paths.dashboard.overview, icon: "house" },
 				{ key: "analytics", title: "Analiticas", href: paths.dashboard.analytics, icon: "chart-pie" },
@@ -16,15 +16,15 @@ export const dashboardConfig = {
 					key: "applications",
 					title: "Solicitudes",
 					icon: "cards-three",
-					href: paths.dashboard.applications,
-					matcher: { type: "startsWith", href: "/dashboard/applications" },
+					href: paths.dashboard.requests.list,
+					matcher: { type: "startsWith", href: "/dashboard/requests" },
 				},
 			],
 		},
 
 		{
-			key: "general",
-			title: "Gerente",
+			key: "admin",
+			title: "Administrador",
 			items: [
 				{
 					key: "clients",
@@ -40,13 +40,13 @@ export const dashboardConfig = {
 					href: paths.dashboard.employees,
 					matcher: { type: "startsWith", href: "/dashboard/employees" },
 				},
-				{
-					key: "applications",
-					title: "Solicitudes",
-					icon: "cards-three",
-					href: paths.dashboard.applications,
-					matcher: { type: "startsWith", href: "/dashboard/applications" },
-				},
+				// {
+				// 	key: "applications",
+				// 	title: "Solicitudes",
+				// 	icon: "cards-three",
+				// 	href: paths.dashboard.applications,
+				// 	matcher: { type: "startsWith", href: "/dashboard/applications" },
+				// },
 			],
 		},
 
@@ -62,11 +62,11 @@ export const dashboardConfig = {
 					matcher: { type: "startsWith", href: "/dashboard/chat" },
 				},
 				{
-					key: "pqr",
-					title: "Pqr",
-					href: paths.dashboard.pqr,
-					icon: "envelope-simple-open",
-					matcher: { type: "startsWith", href: "/dashboard/pqr" },
+					key: "simulator",
+					title: "Simulador de credito",
+					href: paths.dashboard.simulator,
+					icon: "currency-circle-dollar",
+					matcher: { type: "startsWith", href: "/dashboard/simulator" },
 				},
 			],
 		},

@@ -7,32 +7,27 @@ import Chip from "@mui/material/Chip";
 import Divider from "@mui/material/Divider";
 import FormControl from "@mui/material/FormControl";
 import OutlinedInput from "@mui/material/OutlinedInput";
-// import Select from "@mui/material/Select";
 import Stack from "@mui/material/Stack";
 import Tab from "@mui/material/Tab";
 import Tabs from "@mui/material/Tabs";
-import Typography from "@mui/material/Typography";
 
 import { paths } from "@/paths";
 import { FilterButton, FilterPopover, useFilterContext } from "@/components/core/filter-button";
 
-// import { Option } from "@/components/core/option";
+export function CustomersFilters({ filters = {}, sortDir = "desc", count }) {
+	const [tabs, setTabs] = React.useState([
+		{ label: "Todos", value: "", count: 0 },
+		{ label: "Activos", value: "active", count: 0 },
+		{ label: "Inactivos", value: "inactive", count: 0 },
+		{ label: "Suspendidos", value: "suspended", count: 0 },
+	]);
+	const { email, phoneNumber, status, documentId } = filters;
 
-import { useCustomersSelection } from "./customers-selection-context";
-
-// The tabs should be generated using API data.
-const tabs = [
-	{ label: "Todos", value: "", count: 5 },
-	{ label: "Activos", value: "active", count: 3 },
-	{ label: "Inactivos", value: "inactive", count: 1 },
-];
-
-export function CustomersFilters({ filters = {}, sortDir = "desc" }) {
-	const { email, phone, status } = filters;
+	React.useEffect(() => {
+		setTabs((tabs) => tabs.map((tab) => (tab.value === status ? { ...tab, count: count } : tab)));
+	}, [count, status]);
 
 	const router = useRouter();
-
-	const selection = useCustomersSelection();
 
 	const updateSearchParams = React.useCallback(
 		(newFilters, newSortDir) => {
@@ -50,8 +45,20 @@ export function CustomersFilters({ filters = {}, sortDir = "desc" }) {
 				searchParams.set("email", newFilters.email);
 			}
 
-			if (newFilters.phone) {
-				searchParams.set("phone", newFilters.phone);
+			if (newFilters.documentId) {
+				searchParams.set("documentId", newFilters.documentId);
+			}
+
+			if (newFilters.phoneNumber) {
+				searchParams.set("phoneNumber", newFilters.phoneNumber);
+			}
+
+			if (newFilters.page) {
+				searchParams.set("page", newFilters.page);
+			}
+
+			if (newFilters.limit) {
+				searchParams.set("limit", newFilters.limit);
 			}
 
 			router.push(`${paths.dashboard.customers.list}?${searchParams.toString()}`);
@@ -70,6 +77,13 @@ export function CustomersFilters({ filters = {}, sortDir = "desc" }) {
 		[updateSearchParams, filters, sortDir]
 	);
 
+	const handleCedulaChange = React.useCallback(
+		(value) => {
+			updateSearchParams({ ...filters, documentId: value }, sortDir);
+		},
+		[updateSearchParams, filters, sortDir]
+	);
+
 	const handleEmailChange = React.useCallback(
 		(value) => {
 			updateSearchParams({ ...filters, email: value }, sortDir);
@@ -79,26 +93,19 @@ export function CustomersFilters({ filters = {}, sortDir = "desc" }) {
 
 	const handlePhoneChange = React.useCallback(
 		(value) => {
-			updateSearchParams({ ...filters, phone: value }, sortDir);
+			updateSearchParams({ ...filters, phoneNumber: value }, sortDir);
 		},
 		[updateSearchParams, filters, sortDir]
 	);
 
-	// const handleSortChange = React.useCallback(
-	// 	(event) => {
-	// 		updateSearchParams(filters, event.target.value);
-	// 	},
-	// 	[updateSearchParams, filters]
-	// );
-
-	const hasFilters = status || email || phone;
+	const hasFilters = status || email || phoneNumber || documentId;
 
 	return (
 		<div>
 			<Tabs onChange={handleStatusChange} sx={{ px: 3 }} value={status ?? ""} variant="scrollable">
 				{tabs.map((tab) => (
 					<Tab
-						icon={<Chip label={tab.count} size="small" variant="soft" />}
+						icon={tab.value === status && <Chip label={tab.count} size="small" variant="soft" />}
 						iconPosition="end"
 						key={tab.value}
 						label={tab.label}
@@ -112,6 +119,18 @@ export function CustomersFilters({ filters = {}, sortDir = "desc" }) {
 			<Stack direction="row" spacing={2} sx={{ alignItems: "center", flexWrap: "wrap", px: 3, py: 2 }}>
 				<Stack direction="row" spacing={2} sx={{ alignItems: "center", flex: "1 1 auto", flexWrap: "wrap" }}>
 					<FilterButton
+						displayValue={documentId}
+						label="Cedula"
+						onFilterApply={(value) => {
+							handleCedulaChange(value);
+						}}
+						onFilterDelete={() => {
+							handleCedulaChange();
+						}}
+						popover={<CedulaFilterPopover />}
+						value={documentId}
+					/>
+					<FilterButton
 						displayValue={email}
 						label="Correo"
 						onFilterApply={(value) => {
@@ -124,7 +143,7 @@ export function CustomersFilters({ filters = {}, sortDir = "desc" }) {
 						value={email}
 					/>
 					<FilterButton
-						displayValue={phone}
+						displayValue={phoneNumber}
 						label="Celular"
 						onFilterApply={(value) => {
 							handlePhoneChange(value);
@@ -133,30 +152,16 @@ export function CustomersFilters({ filters = {}, sortDir = "desc" }) {
 							handlePhoneChange();
 						}}
 						popover={<PhoneFilterPopover />}
-						value={phone}
+						value={phoneNumber}
 					/>
-					{hasFilters ? <Button onClick={handleClearFilters}>Clear filters</Button> : null}
+					{hasFilters ? <Button onClick={handleClearFilters}>Borrar filtros</Button> : null}
 				</Stack>
-				{selection.selectedAny ? (
-					<Stack direction="row" spacing={2} sx={{ alignItems: "center" }}>
-						<Typography color="text.secondary" variant="body2">
-							{selection.selected.size} selected
-						</Typography>
-						<Button color="error" variant="contained">
-							Delete
-						</Button>
-					</Stack>
-				) : null}
-				{/* <Select name="sort" onChange={handleSortChange} sx={{ maxWidth: "100%", width: "170px" }} value={sortDir}>
-					<Option value="desc">Mas reciente</Option>
-					<Option value="asc">Menos reciente</Option>
-				</Select> */}
 			</Stack>
 		</div>
 	);
 }
 
-function EmailFilterPopover() {
+function CedulaFilterPopover() {
 	const { anchorEl, onApply, onClose, open, value: initialValue } = useFilterContext();
 	const [value, setValue] = React.useState("");
 
@@ -165,7 +170,7 @@ function EmailFilterPopover() {
 	}, [initialValue]);
 
 	return (
-		<FilterPopover anchorEl={anchorEl} onClose={onClose} open={open} title="Filter by email">
+		<FilterPopover anchorEl={anchorEl} onClose={onClose} open={open} title="Filtrar por cedula">
 			<FormControl>
 				<OutlinedInput
 					onChange={(event) => {
@@ -185,7 +190,42 @@ function EmailFilterPopover() {
 				}}
 				variant="contained"
 			>
-				Apply
+				Aplicar
+			</Button>
+		</FilterPopover>
+	);
+}
+
+function EmailFilterPopover() {
+	const { anchorEl, onApply, onClose, open, value: initialValue } = useFilterContext();
+	const [value, setValue] = React.useState("");
+
+	React.useEffect(() => {
+		setValue(initialValue ?? "");
+	}, [initialValue]);
+
+	return (
+		<FilterPopover anchorEl={anchorEl} onClose={onClose} open={open} title="Filtrar por correo">
+			<FormControl>
+				<OutlinedInput
+					onChange={(event) => {
+						setValue(event.target.value);
+					}}
+					onKeyUp={(event) => {
+						if (event.key === "Enter") {
+							onApply(value);
+						}
+					}}
+					value={value}
+				/>
+			</FormControl>
+			<Button
+				onClick={() => {
+					onApply(value);
+				}}
+				variant="contained"
+			>
+				Aplicar
 			</Button>
 		</FilterPopover>
 	);
@@ -200,7 +240,7 @@ function PhoneFilterPopover() {
 	}, [initialValue]);
 
 	return (
-		<FilterPopover anchorEl={anchorEl} onClose={onClose} open={open} title="Filter by phone number">
+		<FilterPopover anchorEl={anchorEl} onClose={onClose} open={open} title="Filtrar por celular">
 			<FormControl>
 				<OutlinedInput
 					onChange={(event) => {
@@ -220,7 +260,7 @@ function PhoneFilterPopover() {
 				}}
 				variant="contained"
 			>
-				Apply
+				Aplicar
 			</Button>
 		</FilterPopover>
 	);

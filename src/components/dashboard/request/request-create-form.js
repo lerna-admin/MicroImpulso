@@ -161,7 +161,7 @@ const defaultValues = {
 	taxRate: 0,
 };
 
-export function OrderCreateForm() {
+export function RequestCreateForm() {
 	const router = useRouter();
 
 	const {
@@ -176,7 +176,7 @@ export function OrderCreateForm() {
 			try {
 				// Make API request
 				toast.success("Order created");
-				router.push(paths.dashboard.orders.list);
+				router.push(paths.dashboard.requests.list);
 			} catch (error) {
 				logger.error(error);
 				toast.error("Something went wrong!");
@@ -577,7 +577,7 @@ export function OrderCreateForm() {
 				<CardActions sx={{ justifyContent: "flex-end" }}>
 					<Button color="secondary">Cancel</Button>
 					<Button type="submit" variant="contained">
-						Create order
+						Create request
 					</Button>
 				</CardActions>
 			</Card>

@@ -62,7 +62,7 @@ export const paths = {
 	},
 	dashboard: {
 		academy: { browse: "/dashboard/academy", details: (courseId) => `/dashboard/academy/courses/${courseId}` },
-		applications: "/dashboard/applications",
+
 		analytics: "/dashboard/analytics",
 		blank: "/dashboard/blank",
 		blog: {
@@ -108,13 +108,6 @@ export const paths = {
 			list: (label) => `/dashboard/mail/${label}`,
 			details: (label, emailId) => `/dashboard/mail/${label}/${emailId}`,
 		},
-		orders: {
-			list: "/dashboard/orders",
-			create: "/dashboard/orders/create",
-			preview: (orderId) => `/dashboard/orders?previewId=${orderId}`,
-			details: (orderId) => `/dashboard/orders/${orderId}`,
-		},
-
 		overview: "/dashboard",
 		products: {
 			list: "/dashboard/products",
@@ -124,6 +117,12 @@ export const paths = {
 		},
 		pqr: "/dashboard/pqr",
 		reports: "/dashboard/reports",
+		requests: {
+			list: "/dashboard/requests",
+			create: "/dashboard/requests/create",
+			preview: (orderId) => `/dashboard/requests?previewId=${orderId}`,
+			details: (orderId) => `/dashboard/requests/${orderId}`,
+		},
 		settings: {
 			account: "/dashboard/settings/account",
 			billing: "/dashboard/settings/billing",
