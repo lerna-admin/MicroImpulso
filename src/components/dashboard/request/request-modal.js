@@ -29,19 +29,19 @@ import { LineItemsTable } from "./line-items-table";
 const lineItems = [
 	{
 		id: "001",
-		creditDate: '2025-02-07T14:37:00',
-		expirationDate: '2025-02-20',
-		paymentDate: '2025-02-19T13:15:00',
+		creditDate: "2025-02-07T14:37:00",
+		expirationDate: "2025-02-20",
+		paymentDate: "2025-02-19T13:15:00",
 		currency: "USD",
-		payment: 24
+		payment: 24,
 	},
 	{
 		id: "002",
-		creditDate: '2025-02-07T14:37:00',
-		expirationDate: '2025-02-20',
-		paymentDate: '2025-02-24T16:15:00',
+		creditDate: "2025-02-07T14:37:00",
+		expirationDate: "2025-02-20",
+		paymentDate: "2025-02-24T16:15:00",
 		currency: "USD",
-		payment: 35
+		payment: 35,
 	},
 ];
 
@@ -57,12 +57,15 @@ export function RequestModal({ open }) {
 
 	return (
 		<Dialog
-			maxWidth="sm"
+			maxWidth={"none"}
 			onClose={handleClose}
 			open={open}
-			sx={{
-				"& .MuiDialog-container": { justifyContent: "flex-end" },
-				"& .MuiDialog-paper": { height: "100%", width: "100%" },
+			slotProps={{
+				paper: {
+					sx: {
+						width: "200px",
+					},
+				},
 			}}
 		>
 			<DialogContent sx={{ display: "flex", flexDirection: "column", gap: 2, minHeight: 0 }}>
