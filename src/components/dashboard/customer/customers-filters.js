@@ -120,7 +120,7 @@ export function CustomersFilters({ filters = {}, sortDir = "desc", count }) {
 				<Stack direction="row" spacing={2} sx={{ alignItems: "center", flex: "1 1 auto", flexWrap: "wrap" }}>
 					<FilterButton
 						displayValue={documentId}
-						label="Cedula"
+						label="Identificación"
 						onFilterApply={(value) => {
 							handleCedulaChange(value);
 						}}
@@ -170,7 +170,7 @@ function CedulaFilterPopover() {
 	}, [initialValue]);
 
 	return (
-		<FilterPopover anchorEl={anchorEl} onClose={onClose} open={open} title="Filtrar por cedula">
+		<FilterPopover anchorEl={anchorEl} onClose={onClose} open={open} title="Filtrar por identificación">
 			<FormControl>
 				<OutlinedInput
 					onChange={(event) => {

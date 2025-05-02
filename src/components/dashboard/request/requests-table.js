@@ -1,82 +1,62 @@
 "use client";
 
 import * as React from "react";
-import RouterLink from "next/link";
-import Avatar from "@mui/material/Avatar";
+import { useRouter } from "next/navigation";
+import { ListItemIcon, Menu, MenuItem, Tooltip } from "@mui/material";
 import Box from "@mui/material/Box";
 import Chip from "@mui/material/Chip";
 import IconButton from "@mui/material/IconButton";
-import Link from "@mui/material/Link";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
+import {
+	CalendarCheck as CalendarCheckIcon,
+	DotsThree as DotsThreeIcon,
+	ExclamationMark as ExclamationMarkIcon,
+	XCircle as XCircleIcon,
+} from "@phosphor-icons/react/dist/ssr";
 import { CheckCircle as CheckCircleIcon } from "@phosphor-icons/react/dist/ssr/CheckCircle";
 import { Clock as ClockIcon } from "@phosphor-icons/react/dist/ssr/Clock";
-import { Eye as EyeIcon } from "@phosphor-icons/react/dist/ssr/Eye";
-import { XCircle as XCircleIcon } from "@phosphor-icons/react/dist/ssr/XCircle";
 
 import { paths } from "@/paths";
 import { dayjs } from "@/lib/dayjs";
+import { usePopover } from "@/hooks/use-popover";
 import { DataTable } from "@/components/core/data-table";
-
 
 const columns = [
 	{
 		formatter: (row) => (
 			<Stack direction="row" spacing={2} sx={{ alignItems: "center" }}>
-				<Box
-					sx={{
-						bgcolor: "var(--mui-palette-background-level1)",
-						borderRadius: 1.5,
-						flex: "0 0 auto",
-						p: "4px 8px",
-						textAlign: "center",
-					}}
-				>
-					<Typography variant="caption">{dayjs(row.createdAt).format("MMM").toUpperCase()}</Typography>
-					<Typography variant="h6">{dayjs(row.createdAt).format("D")}</Typography>
-				</Box>
-				<div>
-					<Link
-						color="text.primary"
-						component={RouterLink}
-						href={paths.dashboard.requests.preview("1")}
-						sx={{ cursor: "pointer" }}
-						variant="subtitle2"
-					>
-						{row.id}
-					</Link>
-				</div>
+				<Typography variant="subtitle2">{row.fullName}</Typography>
 			</Stack>
 		),
-		name: "Solicitud",
-		width: "250px",
+		name: "Nombre completo",
+		width: "150px",
+	},
+	{ field: "documentId", name: "Identificación", width: "100px" },
+	{
+		formatter(row) {
+			return dayjs(row.createdAt).format("MMM D, YYYY");
+		},
+		name: "Fecha",
+		width: "100px",
 	},
 
-	{ field: "frequency", name: "Frecuencia de pago", width: "150px" },
-	{
-		formatter: (row) => (
-			<Stack direction="row" spacing={2} sx={{ alignItems: "center" }}>
-				<Avatar src={row.customer.avatar} />
-				<div>
-					<Typography variant="subtitle2">{row.customer.name}</Typography>
-					<Typography color="text.secondary" variant="body2">
-						{row.customer.email}
-					</Typography>
-				</div>
-			</Stack>
-		),
-		name: "Cliente",
-		width: "250px",
-	},
 	{
 		formatter: (row) => {
 			const mapping = {
-				pending: { label: "Pendiente", icon: <ClockIcon color="var(--mui-palette-warning-main)" weight="fill" /> },
-				approved: {
-					label: "Aprobado",
+				new: {
+					label: "Nueva",
+					icon: <ExclamationMarkIcon color="var(--mui-palette-info-main)" weight="fill" />,
+				},
+				under_review: {
+					label: "En estudio",
+					icon: <ClockIcon color="var(--mui-palette-warning-main)" weight="fill" />,
+				},
+				true: {
+					label: "Aprobada",
 					icon: <CheckCircleIcon color="var(--mui-palette-success-main)" weight="fill" />,
 				},
-				rejected: { label: "Rechazado", icon: <XCircleIcon color="var(--mui-palette-error-main)" weight="fill" /> },
+				false: { label: "Rechazada", icon: <XCircleIcon color="var(--mui-palette-error-main)" weight="fill" /> },
 			};
 			const { label, icon } = mapping[row.status] ?? { label: "Unknown", icon: null };
 
@@ -86,14 +66,17 @@ const columns = [
 		width: "100px",
 	},
 	{
-		formatter: () => (
-			<IconButton component={RouterLink} href={paths.dashboard.requests.preview("1")}>
-				<EyeIcon />
-			</IconButton>
-		),
-		name: "Actions",
-		hideName: true,
-		width: "100px",
+		formatter(row) {
+			return `$ ${row.amount}`;
+		},
+		name: "Cupo",
+		width: "70px",
+	},
+	{
+		formatter: (row) => <ActionsCell row={row} />,
+		name: "Acciones",
+		hideName: false,
+		width: "70px",
 		align: "right",
 	},
 ];
@@ -110,5 +93,77 @@ export function RequestsTable({ rows }) {
 				</Box>
 			) : null}
 		</React.Fragment>
+	);
+}
+
+export function ActionsCell({ row }) {
+	const router = useRouter();
+	const popover = usePopover();
+	const [anchorEl, setAnchorEl] = React.useState(null);
+
+	const handleOptions = (event) => {
+		setAnchorEl(event.currentTarget);
+		popover.handleOpen();
+	};
+
+	const handlePaymentHistory = () => {
+		popover.handleClose();
+		router.push(paths.dashboard.requests.preview(row.id));
+	};
+
+	return (
+		<>
+			<Tooltip title="Más opciones">
+				<IconButton onClick={handleOptions}>
+					<DotsThreeIcon weight="bold" />
+				</IconButton>
+			</Tooltip>
+			<Menu
+				anchorEl={anchorEl}
+				open={popover.open}
+				onClose={popover.handleClose}
+				slotProps={{ paper: { elevation: 0 } }}
+			>
+				<MenuItem>
+					<Typography>Abono Interes</Typography>
+				</MenuItem>
+				<MenuItem>
+					<Typography>Aumento</Typography>
+				</MenuItem>
+				<MenuItem>
+					<Typography>Fallida</Typography>
+				</MenuItem>
+				<MenuItem>
+					<Typography>Abonar</Typography>
+				</MenuItem>
+				<MenuItem>
+					<Typography>Renovar</Typography>
+				</MenuItem>
+				<MenuItem>
+					<Typography>Historico</Typography>
+				</MenuItem>
+				<MenuItem>
+					<Typography>Mensajeria</Typography>
+				</MenuItem>
+				<MenuItem>
+					<Typography>Comunicación</Typography>
+				</MenuItem>
+				<MenuItem>
+					<Typography>Sacar</Typography>
+				</MenuItem>
+				<MenuItem>
+					<Typography>Novedad</Typography>
+				</MenuItem>
+				<MenuItem>
+					<Typography>Ver Perfil</Typography>
+				</MenuItem>
+				<MenuItem onClick={handlePaymentHistory}>
+					<ListItemIcon>
+						<CalendarCheckIcon />
+					</ListItemIcon>
+					<Typography>Historico pagos</Typography>
+				</MenuItem>
+			</Menu>
+		</>
 	);
 }
