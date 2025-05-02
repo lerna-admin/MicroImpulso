@@ -10,29 +10,24 @@ import OutlinedInput from "@mui/material/OutlinedInput";
 import Stack from "@mui/material/Stack";
 import Tab from "@mui/material/Tab";
 import Tabs from "@mui/material/Tabs";
-import Typography from "@mui/material/Typography";
 
 import { paths } from "@/paths";
 import { FilterButton, FilterPopover, useFilterContext } from "@/components/core/filter-button";
-
-import { useCustomersSelection } from "./customers-selection-context";
 
 export function CustomersFilters({ filters = {}, sortDir = "desc", count }) {
 	const [tabs, setTabs] = React.useState([
 		{ label: "Todos", value: "", count: 0 },
 		{ label: "Activos", value: "active", count: 0 },
 		{ label: "Inactivos", value: "inactive", count: 0 },
+		{ label: "Suspendidos", value: "suspended", count: 0 },
 	]);
+	const { email, phoneNumber, status, documentId } = filters;
 
 	React.useEffect(() => {
 		setTabs((tabs) => tabs.map((tab) => (tab.value === status ? { ...tab, count: count } : tab)));
-	}, [count]);
-
-	const { email, phone, status } = filters;
+	}, [count, status]);
 
 	const router = useRouter();
-
-	const selection = useCustomersSelection();
 
 	const updateSearchParams = React.useCallback(
 		(newFilters, newSortDir) => {
@@ -50,8 +45,12 @@ export function CustomersFilters({ filters = {}, sortDir = "desc", count }) {
 				searchParams.set("email", newFilters.email);
 			}
 
-			if (newFilters.phone) {
-				searchParams.set("phone", newFilters.phone);
+			if (newFilters.documentId) {
+				searchParams.set("documentId", newFilters.documentId);
+			}
+
+			if (newFilters.phoneNumber) {
+				searchParams.set("phoneNumber", newFilters.phoneNumber);
 			}
 
 			if (newFilters.page) {
@@ -78,6 +77,13 @@ export function CustomersFilters({ filters = {}, sortDir = "desc", count }) {
 		[updateSearchParams, filters, sortDir]
 	);
 
+	const handleCedulaChange = React.useCallback(
+		(value) => {
+			updateSearchParams({ ...filters, documentId: value }, sortDir);
+		},
+		[updateSearchParams, filters, sortDir]
+	);
+
 	const handleEmailChange = React.useCallback(
 		(value) => {
 			updateSearchParams({ ...filters, email: value }, sortDir);
@@ -87,12 +93,12 @@ export function CustomersFilters({ filters = {}, sortDir = "desc", count }) {
 
 	const handlePhoneChange = React.useCallback(
 		(value) => {
-			updateSearchParams({ ...filters, phone: value }, sortDir);
+			updateSearchParams({ ...filters, phoneNumber: value }, sortDir);
 		},
 		[updateSearchParams, filters, sortDir]
 	);
 
-	const hasFilters = status || email || phone;
+	const hasFilters = status || email || phoneNumber || documentId;
 
 	return (
 		<div>
@@ -113,6 +119,18 @@ export function CustomersFilters({ filters = {}, sortDir = "desc", count }) {
 			<Stack direction="row" spacing={2} sx={{ alignItems: "center", flexWrap: "wrap", px: 3, py: 2 }}>
 				<Stack direction="row" spacing={2} sx={{ alignItems: "center", flex: "1 1 auto", flexWrap: "wrap" }}>
 					<FilterButton
+						displayValue={documentId}
+						label="Cedula"
+						onFilterApply={(value) => {
+							handleCedulaChange(value);
+						}}
+						onFilterDelete={() => {
+							handleCedulaChange();
+						}}
+						popover={<CedulaFilterPopover />}
+						value={documentId}
+					/>
+					<FilterButton
 						displayValue={email}
 						label="Correo"
 						onFilterApply={(value) => {
@@ -125,7 +143,7 @@ export function CustomersFilters({ filters = {}, sortDir = "desc", count }) {
 						value={email}
 					/>
 					<FilterButton
-						displayValue={phone}
+						displayValue={phoneNumber}
 						label="Celular"
 						onFilterApply={(value) => {
 							handlePhoneChange(value);
@@ -134,26 +152,16 @@ export function CustomersFilters({ filters = {}, sortDir = "desc", count }) {
 							handlePhoneChange();
 						}}
 						popover={<PhoneFilterPopover />}
-						value={phone}
+						value={phoneNumber}
 					/>
-					{hasFilters ? <Button onClick={handleClearFilters}>Clear filters</Button> : null}
+					{hasFilters ? <Button onClick={handleClearFilters}>Borrar filtros</Button> : null}
 				</Stack>
-				{selection.selectedAny ? (
-					<Stack direction="row" spacing={2} sx={{ alignItems: "center" }}>
-						<Typography color="text.secondary" variant="body2">
-							{selection.selected.size} selected
-						</Typography>
-						<Button color="error" variant="contained">
-							Delete
-						</Button>
-					</Stack>
-				) : null}
 			</Stack>
 		</div>
 	);
 }
 
-function EmailFilterPopover() {
+function CedulaFilterPopover() {
 	const { anchorEl, onApply, onClose, open, value: initialValue } = useFilterContext();
 	const [value, setValue] = React.useState("");
 
@@ -162,7 +170,7 @@ function EmailFilterPopover() {
 	}, [initialValue]);
 
 	return (
-		<FilterPopover anchorEl={anchorEl} onClose={onClose} open={open} title="Filter by email">
+		<FilterPopover anchorEl={anchorEl} onClose={onClose} open={open} title="Filtrar por cedula">
 			<FormControl>
 				<OutlinedInput
 					onChange={(event) => {
@@ -182,7 +190,42 @@ function EmailFilterPopover() {
 				}}
 				variant="contained"
 			>
-				Apply
+				Aplicar
+			</Button>
+		</FilterPopover>
+	);
+}
+
+function EmailFilterPopover() {
+	const { anchorEl, onApply, onClose, open, value: initialValue } = useFilterContext();
+	const [value, setValue] = React.useState("");
+
+	React.useEffect(() => {
+		setValue(initialValue ?? "");
+	}, [initialValue]);
+
+	return (
+		<FilterPopover anchorEl={anchorEl} onClose={onClose} open={open} title="Filtrar por correo">
+			<FormControl>
+				<OutlinedInput
+					onChange={(event) => {
+						setValue(event.target.value);
+					}}
+					onKeyUp={(event) => {
+						if (event.key === "Enter") {
+							onApply(value);
+						}
+					}}
+					value={value}
+				/>
+			</FormControl>
+			<Button
+				onClick={() => {
+					onApply(value);
+				}}
+				variant="contained"
+			>
+				Aplicar
 			</Button>
 		</FilterPopover>
 	);
@@ -197,7 +240,7 @@ function PhoneFilterPopover() {
 	}, [initialValue]);
 
 	return (
-		<FilterPopover anchorEl={anchorEl} onClose={onClose} open={open} title="Filter by phone number">
+		<FilterPopover anchorEl={anchorEl} onClose={onClose} open={open} title="Filtrar por celular">
 			<FormControl>
 				<OutlinedInput
 					onChange={(event) => {
@@ -217,7 +260,7 @@ function PhoneFilterPopover() {
 				}}
 				variant="contained"
 			>
-				Apply
+				Aplicar
 			</Button>
 		</FilterPopover>
 	);
