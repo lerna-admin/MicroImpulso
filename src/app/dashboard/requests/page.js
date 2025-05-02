@@ -13,71 +13,17 @@ import { RequestsPagination } from "@/components/dashboard/request/requests-pagi
 import { RequestsSelectionProvider } from "@/components/dashboard/request/requests-selection-context";
 import { RequestsTable } from "@/components/dashboard/request/requests-table";
 
-export const metadata = { title: `Lista | Solicitudes | Dashboard | ${appConfig.name}` };
+import { getRequests } from "./hooks/use-requests";
 
-const requests = [
-	{
-		id: "ORD-005",
-		customer: { name: "Penjani Inyene", avatar: "/assets/avatar-4.png", email: "penjani.inyene@domain.com" },
-		lineItems: 1,
-		paymentMethod: { type: "visa", last4: "4011" },
-		currency: "USD",
-		totalAmount: 56.7,
-		status: "pending",
-		frequency:"Bimensual",
-		createdAt: dayjs().subtract(3, "hour").toDate(),
-	},
-	{
-		id: "ORD-004",
-		customer: { name: "Jie Yan", avatar: "/assets/avatar-8.png", email: "jie.yan@domain.com" },
-		lineItems: 1,
-		paymentMethod: { type: "amex", last4: "5678" },
-		currency: "USD",
-		totalAmount: 49.12,
-		status: "approved",
-		frequency:"15 - 30",
-		createdAt: dayjs().subtract(6, "hour").toDate(),
-	},
-	{
-		id: "ORD-003",
-		customer: { name: "Fran Perez", avatar: "/assets/avatar-5.png", email: "fran.perez@domain.com" },
-		lineItems: 2,
-		paymentMethod: { type: "applepay" },
-		currency: "USD",
-		totalAmount: 18.75,
-		status: "rejected",
-		frequency:"5 - 20",
-		createdAt: dayjs().subtract(7, "hour").toDate(),
-	},
-	{
-		id: "ORD-002",
-		customer: { name: "Carson Darrin", avatar: "/assets/avatar-3.png", email: "carson.darrin@domain.com" },
-		lineItems: 1,
-		paymentMethod: { type: "googlepay" },
-		currency: "USD",
-		totalAmount: 49.99,
-		status: "rejected",
-		frequency:"10 - 25",
-		createdAt: dayjs().subtract(1, "hour").subtract(1, "day").toDate(),
-	}, 
-	{
-		id: "ORD-001",
-		customer: { name: "Miron Vitold", avatar: "/assets/avatar-1.png", email: "miron.vitold@domain.com" },
-		lineItems: 2,
-		paymentMethod: { type: "mastercard", last4: "4242" },
-		currency: "USD",
-		totalAmount: 94.01,
-		status: "approved",
-		frequency:"Bimensual",
-		createdAt: dayjs().subtract(3, "hour").subtract(1, "day").toDate(),
-	},
-];
+export const metadata = { title: `Solicitudes | Dashboard | ${appConfig.name}` };
 
 export default async function Page({ searchParams }) {
-	const { customer, id, previewId, sortDir, status } = await searchParams;
+	const requests = await getRequests();
+
+	const { fullName, documentId, previewId, sortDir, status } = await searchParams;
 
 	const sortedRequests = applySort(requests, sortDir);
-	const filteredRequests = applyFilters(sortedRequests, { customer, id, status });
+	const filteredRequests = applyFilters(sortedRequests, { fullName, documentId, status });
 
 	return (
 		<React.Fragment>
@@ -97,7 +43,7 @@ export default async function Page({ searchParams }) {
 					</Stack>
 					<RequestsSelectionProvider requests={filteredRequests}>
 						<Card>
-							<RequestsFilters filters={{ customer, id, status }} sortDir={sortDir} />
+							<RequestsFilters filters={{ fullName, documentId, status }} sortDir={sortDir} count={filteredRequests.length} />
 							<Divider />
 							<Box sx={{ overflowX: "auto" }}>
 								<RequestsTable rows={filteredRequests} />
@@ -118,27 +64,31 @@ export default async function Page({ searchParams }) {
 function applySort(row, sortDir) {
 	return row.sort((a, b) => {
 		if (sortDir === "asc") {
-			return a.createdAt.getTime() - b.createdAt.getTime();
+			return dayjs.utc(a.createdAt) - dayjs.utc(b.createdAt);
 		}
 
-		return b.createdAt.getTime() - a.createdAt.getTime();
+		return dayjs.utc(b.createdAt) - dayjs.utc(a.createdAt);
 	});
 }
 
-function applyFilters(row, { customer, id, status }) {
+function applyFilters(row, { fullName, documentId, status }) {
 	return row.filter((item) => {
-		if (customer && !item.customer?.name?.toLowerCase().includes(customer.toLowerCase())) {
+		if (fullName && !item.fullName?.toLowerCase().includes(fullName.toLowerCase())) {
 			return false;
 		}
 
-		if (id && !item.id?.toLowerCase().includes(id.toLowerCase())) {
+		if (documentId && !item.documentId?.toLowerCase().includes(documentId.toLowerCase())) {
 			return false;
 		}
 
-		if (status && item.status !== status) {
+		if (status && parseStatus(item.status) !== status) {
 			return false;
 		}
 
 		return true;
 	});
+}
+
+function parseStatus(status) {
+	return status == true ? "approved" : "rejected";
 }

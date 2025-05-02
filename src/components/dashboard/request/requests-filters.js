@@ -11,25 +11,25 @@ import Select from "@mui/material/Select";
 import Stack from "@mui/material/Stack";
 import Tab from "@mui/material/Tab";
 import Tabs from "@mui/material/Tabs";
-import Typography from "@mui/material/Typography";
 
 import { paths } from "@/paths";
 import { FilterButton, FilterPopover, useFilterContext } from "@/components/core/filter-button";
 import { Option } from "@/components/core/option";
 
-import { useRequestsSelection } from "./requests-selection-context";
+export function RequestsFilters({ filters = {}, sortDir = "desc", count }) {
+	const [tabs, setTabs] = React.useState([
+		{ label: "Todos", value: "", count: 0 },
+		{ label: "Nueva", value: "new", count: 0 },
+		{ label: "En estudio", value: "under_review", count: 0 },
+		{ label: "Aprobada", value: "approved", count: 0 },
+		{ label: "Rechazada", value: "rejected", count: 0 },
+	]);
 
-// The tabs should be generated using API data.
-const tabs = [
-	{ label: "Todos", value: "", count: 5 },
-	{ label: "Nueva", value: "new", count: 2 },
-	{ label: "En estudio", value: "under_review", count: 1 },
-	{ label: "Aprobada", value: "approved", count: 1 },
-	{ label: "Rechazada", value: "rejected", count: 1 },
-];
+	const { fullName, documentId, status } = filters;
 
-export function RequestsFilters({ filters = {}, sortDir = "desc" }) {
-	const { customer, id, status } = filters;
+	React.useEffect(() => {
+		setTabs((tabs) => tabs.map((tab) => (tab.value === status ? { ...tab, count: count } : tab)));
+	}, [count, status]);
 
 	const router = useRouter();
 
@@ -45,12 +45,12 @@ export function RequestsFilters({ filters = {}, sortDir = "desc" }) {
 				searchParams.set("status", newFilters.status);
 			}
 
-			if (newFilters.id) {
-				searchParams.set("id", newFilters.id);
+			if (newFilters.documentId) {
+				searchParams.set("documentId", newFilters.documentId);
 			}
 
-			if (newFilters.customer) {
-				searchParams.set("customer", newFilters.customer);
+			if (newFilters.fullName) {
+				searchParams.set("fullName", newFilters.fullName);
 			}
 
 			router.push(`${paths.dashboard.requests.list}?${searchParams.toString()}`);
@@ -71,14 +71,14 @@ export function RequestsFilters({ filters = {}, sortDir = "desc" }) {
 
 	const handleCustomerChange = React.useCallback(
 		(value) => {
-			updateSearchParams({ ...filters, customer: value }, sortDir);
+			updateSearchParams({ ...filters, fullName: value }, sortDir);
 		},
 		[updateSearchParams, filters, sortDir]
 	);
 
 	const handleIdChange = React.useCallback(
 		(value) => {
-			updateSearchParams({ ...filters, id: value }, sortDir);
+			updateSearchParams({ ...filters, documentId: value }, sortDir);
 		},
 		[updateSearchParams, filters, sortDir]
 	);
@@ -90,14 +90,14 @@ export function RequestsFilters({ filters = {}, sortDir = "desc" }) {
 		[updateSearchParams, filters]
 	);
 
-	const hasFilters = status || id || customer;
+	const hasFilters = status || documentId || fullName;
 
 	return (
 		<div>
 			<Tabs onChange={handleStatusChange} sx={{ px: 3 }} value={status ?? ""} variant="scrollable">
 				{tabs.map((tab) => (
 					<Tab
-						icon={<Chip label={tab.count} size="small" variant="soft" />}
+						icon={tab.value === status && <Chip label={tab.count} size="small" variant="soft" />}
 						iconPosition="end"
 						key={tab.value}
 						label={tab.label}
@@ -111,8 +111,8 @@ export function RequestsFilters({ filters = {}, sortDir = "desc" }) {
 			<Stack direction="row" spacing={2} sx={{ alignItems: "center", flexWrap: "wrap", p: 2 }}>
 				<Stack direction="row" spacing={2} sx={{ alignItems: "center", flex: "1 1 auto", flexWrap: "wrap" }}>
 					<FilterButton
-						displayValue={id}
-						label="Solicitud Id"
+						displayValue={documentId}
+						label="Identificación"
 						onFilterApply={(value) => {
 							handleIdChange(value);
 						}}
@@ -120,11 +120,11 @@ export function RequestsFilters({ filters = {}, sortDir = "desc" }) {
 							handleIdChange();
 						}}
 						popover={<IdFilterPopover />}
-						value={id}
+						value={documentId}
 					/>
 					<FilterButton
-						displayValue={customer}
-						label="Cliente"
+						displayValue={fullName}
+						label="Nombres"
 						onFilterApply={(value) => {
 							handleCustomerChange(value);
 						}}
@@ -132,7 +132,7 @@ export function RequestsFilters({ filters = {}, sortDir = "desc" }) {
 							handleCustomerChange();
 						}}
 						popover={<CustomerFilterPopover />}
-						value={customer}
+						value={fullName}
 					/>
 					{hasFilters ? <Button onClick={handleClearFilters}>Borrar filtros</Button> : null}
 				</Stack>
@@ -155,7 +155,7 @@ function CustomerFilterPopover() {
 	}, [initialValue]);
 
 	return (
-		<FilterPopover anchorEl={anchorEl} onClose={onClose} open={open} title="Filter by customer">
+		<FilterPopover anchorEl={anchorEl} onClose={onClose} open={open} title="Filtrar por nombres">
 			<FormControl>
 				<OutlinedInput
 					onChange={(event) => {
@@ -175,7 +175,7 @@ function CustomerFilterPopover() {
 				}}
 				variant="contained"
 			>
-				Apply
+				Aplicar
 			</Button>
 		</FilterPopover>
 	);
@@ -190,7 +190,7 @@ function IdFilterPopover() {
 	}, [initialValue]);
 
 	return (
-		<FilterPopover anchorEl={anchorEl} onClose={onClose} open={open} title="Filter by ID">
+		<FilterPopover anchorEl={anchorEl} onClose={onClose} open={open} title="Filtrar por identificación">
 			<FormControl>
 				<OutlinedInput
 					onChange={(event) => {
@@ -210,7 +210,7 @@ function IdFilterPopover() {
 				}}
 				variant="contained"
 			>
-				Apply
+				Aplicar
 			</Button>
 		</FilterPopover>
 	);

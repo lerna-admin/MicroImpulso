@@ -1,53 +1,38 @@
 "use client";
 
 import * as React from "react";
-import Box from "@mui/material/Box";
-import Link from "@mui/material/Link";
-import Stack from "@mui/material/Stack";
 
+import { dayjs } from "@/lib/dayjs";
 import { DataTable } from "@/components/core/data-table";
 
 const columns = [
 	{
 		formatter: (row) => {
-			return (
-				<Stack direction="row" spacing={2} sx={{ alignItems: "center" }}>
-					<Box
-						sx={{
-							backgroundImage: `url(${row.image})`,
-							backgroundPosition: "center",
-							backgroundSize: "cover",
-							bgcolor: "var(--mui-palette-background-level2)",
-							borderRadius: 1,
-							flex: "0 0 auto",
-							height: "40px",
-							width: "40px",
-						}}
-					/>
-					<Link color="text.primary" variant="subtitle2">
-						{row.product}
-					</Link>
-				</Stack>
-			);
+			return dayjs(row.creditDate).format("MMM D, YYYY h:mm A");
 		},
-		name: "Product",
-		width: "220px",
+		name: "Fecha credito",
+		width: "160px",
 	},
-	{ field: "quantity", name: "Qty", width: "100px" },
 	{
 		formatter: (row) => {
-			return new Intl.NumberFormat("en-US", { style: "currency", currency: row.currency }).format(row.unitAmount);
+			return dayjs(row.expirationDate).format("MMM D, YYYY h:mm A");
 		},
-		name: "Unit Price",
+		name: "Fecha vencimiento",
+		width: "160px",
+	},
+	{
+		formatter: (row) => {
+			return dayjs(row.paymentDate).format("MMM D, YYYY h:mm A");
+		},
+		name: "Fecha pago",
+		width: "160px",
+	},
+	{
+		formatter: (row) => {
+			return new Intl.NumberFormat("en-US", { style: "currency", currency: row.currency }).format(row.payment);
+		},
+		name: "Abono",
 		width: "120px",
-	},
-	{
-		formatter: (row) => {
-			return new Intl.NumberFormat("en-US", { style: "currency", currency: row.currency }).format(row.totalAmount);
-		},
-		name: "Amount",
-		width: "100px",
-		align: "right",
 	},
 ];
 
