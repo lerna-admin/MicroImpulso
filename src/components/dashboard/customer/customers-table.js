@@ -1,13 +1,11 @@
 "use client";
 
 import * as React from "react";
-import RouterLink from "next/link";
 import { useRouter } from "next/navigation";
 import { ListItemIcon, Menu, MenuItem, Tooltip } from "@mui/material";
 import Box from "@mui/material/Box";
 import Chip from "@mui/material/Chip";
 import IconButton from "@mui/material/IconButton";
-import Link from "@mui/material/Link";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 import {
@@ -25,20 +23,11 @@ import { DataTable } from "@/components/core/data-table";
 
 export function CustomersTable({ rows }) {
 	const columns = [
-		{ field: "documentId", name: "Cedula", width: "100px" },
 		{
 			formatter: (row) => (
 				<Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
 					<div>
-						<Link
-							color="inherit"
-							component={RouterLink}
-							href={paths.dashboard.customers.details(row.id)}
-							sx={{ whiteSpace: "nowrap" }}
-							variant="subtitle2"
-						>
-							{row.fullName}
-						</Link>
+						<Typography variant="subtitle2">{row.fullName}</Typography>
 						<Typography color="text.secondary" variant="body2">
 							{row.email}
 						</Typography>
@@ -46,13 +35,14 @@ export function CustomersTable({ rows }) {
 				</Stack>
 			),
 			name: "Nombre Completo",
-			width: "200px",
+			width: "150px",
 		},
+		{ field: "documentId", name: "Identificación", width: "150px" },
 		{ field: "phoneNumber", name: "Celular", width: "130px" },
 		{ field: "address", name: "Dirección", width: "150px" },
 		{
 			formatter(row) {
-				return `$${row.amountTaken}`;
+				return `$ ${row.amountTaken}`;
 			},
 			name: "Monto Prestado",
 			width: "100px",
