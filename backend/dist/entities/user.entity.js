@@ -12,8 +12,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.User = exports.UserRole = void 0;
 const typeorm_1 = require("typeorm");
 const client_entity_1 = require("./client.entity");
-const cash_flow_entity_1 = require("./cash-flow.entity");
 const chat_message_entity_1 = require("./chat-message.entity");
+const cash_flow_entity_1 = require("./cash-flow.entity");
 var UserRole;
 (function (UserRole) {
     UserRole["AGENT"] = "AGENT";
@@ -24,18 +24,19 @@ let User = class User {
     id;
     name;
     email;
+    document;
     password;
     role;
     createdAt;
     updatedAt;
     clients;
-    cashFlows;
     chatMessages;
+    cashFlows;
 };
 exports.User = User;
 __decorate([
-    (0, typeorm_1.PrimaryGeneratedColumn)('uuid'),
-    __metadata("design:type", String)
+    (0, typeorm_1.PrimaryGeneratedColumn)(),
+    __metadata("design:type", Number)
 ], User.prototype, "id", void 0);
 __decorate([
     (0, typeorm_1.Column)(),
@@ -45,6 +46,10 @@ __decorate([
     (0, typeorm_1.Column)({ unique: true }),
     __metadata("design:type", String)
 ], User.prototype, "email", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ unique: true, nullable: true }),
+    __metadata("design:type", String)
+], User.prototype, "document", void 0);
 __decorate([
     (0, typeorm_1.Column)(),
     __metadata("design:type", String)
@@ -68,13 +73,13 @@ __decorate([
     __metadata("design:type", Array)
 ], User.prototype, "clients", void 0);
 __decorate([
-    (0, typeorm_1.OneToMany)(() => cash_flow_entity_1.CashFlow, (cashFlow) => cashFlow.user),
-    __metadata("design:type", Array)
-], User.prototype, "cashFlows", void 0);
-__decorate([
     (0, typeorm_1.OneToMany)(() => chat_message_entity_1.ChatMessage, (chatMessage) => chatMessage.agent),
     __metadata("design:type", Array)
 ], User.prototype, "chatMessages", void 0);
+__decorate([
+    (0, typeorm_1.OneToMany)(() => cash_flow_entity_1.CashFlow, (cashFlow) => cashFlow.user),
+    __metadata("design:type", Array)
+], User.prototype, "cashFlows", void 0);
 exports.User = User = __decorate([
     (0, typeorm_1.Entity)()
 ], User);

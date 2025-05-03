@@ -1,20 +1,21 @@
 import { Client } from './client.entity';
-import { CashFlow } from './cash-flow.entity';
 import { ChatMessage } from './chat-message.entity';
+import { CashFlow } from './cash-flow.entity';
 export declare enum UserRole {
     AGENT = "AGENT",
     ADMINISTRATOR = "ADMINISTRATOR",
     MANAGER = "MANAGER"
 }
 export declare class User {
-    id: string;
+    id: number;
     name: string;
     email: string;
+    document: string;
     password: string;
     role: UserRole;
     createdAt: Date;
     updatedAt: Date;
     clients: Client[];
-    cashFlows: CashFlow[];
     chatMessages: ChatMessage[];
+    cashFlows: CashFlow[];
 }

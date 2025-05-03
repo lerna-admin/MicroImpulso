@@ -17,14 +17,18 @@ export enum UserRole {
  */
 @Entity()
 export class User {
-  @PrimaryGeneratedColumn('uuid')
-  id: string;
+  @PrimaryGeneratedColumn()
+  id: number;
 
   @Column()
   name: string;
 
   @Column({ unique: true })
   email: string;
+
+  @Column({ unique: true, nullable: true })
+  document: string;
+  
 
   @Column()
   password: string;

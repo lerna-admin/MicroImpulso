@@ -31,20 +31,8 @@ function SignOutButton() {
 		signOutUrl = paths.auth.auth0.signOut;
 	}
 
-	if (appConfig.authStrategy === AuthStrategy.CLERK) {
-		signOutUrl = paths.auth.clerk.signOut;
-	}
-
-	if (appConfig.authStrategy === AuthStrategy.COGNITO) {
-		signOutUrl = paths.auth.cognito.signOut;
-	}
-
 	if (appConfig.authStrategy === AuthStrategy.CUSTOM) {
-		signOutUrl = paths.auth.custom.signOut;
-	}
-
-	if (appConfig.authStrategy === AuthStrategy.SUPABASE) {
-		signOutUrl = paths.auth.supabase.signOut;
+		signOutUrl = paths.auth.signOut;
 	}
 
 	return (

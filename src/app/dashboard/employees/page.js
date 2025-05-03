@@ -14,7 +14,7 @@ import { CustomersPagination } from "@/components/dashboard/customer/customers-p
 import { CustomersSelectionProvider } from "@/components/dashboard/customer/customers-selection-context";
 import { CustomersTable } from "@/components/dashboard/customer/customers-table";
 
-export const metadata = { title: `Lista | Clientes | Dashboard | ${appConfig.name}` };
+export const metadata = { title: `Agentes | Dashboard | ${appConfig.name}` };
 
 const customers = [
 	{
@@ -92,7 +92,7 @@ export default async function Page({ searchParams }) {
 			<Stack spacing={4}>
 				<Stack direction={{ xs: "column", sm: "row" }} spacing={3} sx={{ alignItems: "flex-start" }}>
 					<Box sx={{ flex: "1 1 auto" }}>
-						<Typography variant="h4">Empleados</Typography>
+						<Typography variant="h4">Agentes</Typography>
 					</Box>
 					{/* <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
 						<Button startIcon={<PlusIcon />} variant="contained">

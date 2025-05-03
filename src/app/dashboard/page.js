@@ -8,19 +8,11 @@ import { Users as UsersIcon } from "@phosphor-icons/react/dist/ssr/Users";
 import { Warning as WarningIcon } from "@phosphor-icons/react/dist/ssr/Warning";
 
 import { appConfig } from "@/config/app";
-// import Button from "@mui/material/Button";
-// import { ArrowRight as ArrowRightIcon } from "@phosphor-icons/react/dist/ssr/ArrowRight";
-// import { Briefcase as BriefcaseIcon } from "@phosphor-icons/react/dist/ssr/Briefcase";
-// import { FileCode as FileCodeIcon } from "@phosphor-icons/react/dist/ssr/FileCode";
-// import { Info as InfoIcon } from "@phosphor-icons/react/dist/ssr/Info";
-// import { Plus as PlusIcon } from "@phosphor-icons/react/dist/ssr/Plus";
-
 import { dayjs } from "@/lib/dayjs";
 import { AppChat } from "@/components/dashboard/overview/app-chat";
 import { AppLimits } from "@/components/dashboard/overview/app-limits";
 import { AppUsage } from "@/components/dashboard/overview/app-usage";
 import { Events } from "@/components/dashboard/overview/events";
-// import { HelperWidget } from "@/components/dashboard/overview/helper-widget";
 import { Subscriptions } from "@/components/dashboard/overview/subscriptions";
 import { Summary } from "@/components/dashboard/overview/summary";
 
@@ -41,11 +33,6 @@ export default function Page() {
 					<Box sx={{ flex: "1 1 auto" }}>
 						<Typography variant="h4">Resumen</Typography>
 					</Box>
-					{/* <div>
-						<Button startIcon={<PlusIcon />} variant="contained">
-							Dashboard
-						</Button>
-					</div> */}
 				</Stack>
 				<Grid container spacing={4}>
 					<Grid
@@ -235,60 +222,6 @@ export default function Page() {
 					>
 						<AppLimits usage={70} />
 					</Grid>
-					{/* <Grid
-						size={{
-							md: 4,
-							xs: 12,
-						}}
-					>
-						<HelperWidget
-							action={
-								<Button color="secondary" endIcon={<ArrowRightIcon />} size="small">
-									Search jobs
-								</Button>
-							}
-							description="Search for jobs that match your skills and apply to them directly."
-							icon={BriefcaseIcon}
-							label="Jobs"
-							title="Find your dream job"
-						/>
-					</Grid> */}
-					{/* <Grid
-						size={{
-							md: 4,
-							xs: 12,
-						}}
-					>
-						<HelperWidget
-							action={
-								<Button color="secondary" endIcon={<ArrowRightIcon />} size="small">
-									Help center
-								</Button>
-							}
-							description="Find answers to your questions and get in touch with our team."
-							icon={InfoIcon}
-							label="Help center"
-							title="Need help figuring things out?"
-						/>
-					</Grid> */}
-					{/* <Grid
-						size={{
-							md: 4,
-							xs: 12,
-						}}
-					>
-						<HelperWidget
-							action={
-								<Button color="secondary" endIcon={<ArrowRightIcon />} size="small">
-									Documentation
-								</Button>
-							}
-							description="Learn how to get started with our product and make the most of it."
-							icon={FileCodeIcon}
-							label="Documentation"
-							title="Explore documentation"
-						/>
-					</Grid> */}
 				</Grid>
 			</Stack>
 		</Box>

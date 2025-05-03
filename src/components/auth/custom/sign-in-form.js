@@ -1,17 +1,15 @@
 "use client";
 
 import * as React from "react";
-import RouterLink from "next/link";
 import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Card, CardContent, CardHeader, Link } from "@mui/material";
 import Alert from "@mui/material/Alert";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
-import Divider from "@mui/material/Divider";
 import FormControl from "@mui/material/FormControl";
 import FormHelperText from "@mui/material/FormHelperText";
 import InputLabel from "@mui/material/InputLabel";
-import Link from "@mui/material/Link";
 import OutlinedInput from "@mui/material/OutlinedInput";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
@@ -20,20 +18,13 @@ import { EyeSlash as EyeSlashIcon } from "@phosphor-icons/react/dist/ssr/EyeSlas
 import { Controller, useForm } from "react-hook-form";
 import { z as zod } from "zod";
 
-import { paths } from "@/paths";
-import { signInWithOAuth, signInWithPassword } from "@/lib/custom-auth/actions";
+import { signInWithPassword } from "@/lib/custom-auth/actions";
 import { useAuth } from "@/components/auth/custom/auth-context";
 import { DynamicLogo } from "@/components/core/logo";
-import { toast } from "@/components/core/toaster";
-
-const oAuthProviders = [
-	{ id: "google", name: "Google", logo: "/assets/logo-google.svg" },
-	{ id: "discord", name: "Discord", logo: "/assets/logo-discord.svg" },
-];
 
 const schema = zod.object({
-	email: zod.string().min(1, { message: "Email is required" }).email(),
-	password: zod.string().min(1, { message: "Password is required" }),
+	email: zod.string().min(1, { message: "Usuario es obligatorio." }).email(),
+	password: zod.string().min(1, { message: "Contraseña es obligatoria." }),
 });
 
 const defaultValues = { email: "", password: "" };
@@ -50,22 +41,6 @@ export function SignInForm() {
 		setError,
 		formState: { errors },
 	} = useForm({ defaultValues, resolver: zodResolver(schema) });
-
-	const onAuth = React.useCallback(async (providerId) => {
-		setIsPending(true);
-
-		const { error } = await signInWithOAuth({ provider: providerId });
-
-		if (error) {
-			setIsPending(false);
-			toast.error(error);
-			return;
-		}
-
-		setIsPending(false);
-
-		// Redirect to OAuth provider
-	}, []);
 
 	const onSubmit = React.useCallback(
 		async (values) => {
@@ -90,110 +65,81 @@ export function SignInForm() {
 
 	return (
 		<Stack spacing={4}>
-			<div>
-				<Box component={RouterLink} href={paths.home} sx={{ display: "inline-block", fontSize: 0 }}>
-					<DynamicLogo colorDark="light" colorLight="dark" height={32} width={122} />
-				</Box>
-			</div>
-			<Stack spacing={1}>
-				<Typography variant="h5">Sign in</Typography>
-				<Typography color="text.secondary" variant="body2">
-					Don&apos;t have an account?{" "}
-					<Link component={RouterLink} href={paths.auth.custom.signUp} variant="subtitle2">
-						Sign up
-					</Link>
-				</Typography>
-			</Stack>
-			<Stack spacing={3}>
-				<Stack spacing={2}>
-					{oAuthProviders.map((provider) => (
-						<Button
-							color="secondary"
-							disabled={isPending}
-							endIcon={<Box alt="" component="img" height={24} src={provider.logo} width={24} />}
-							key={provider.id}
-							onClick={() => {
-								onAuth(provider.id).catch(() => {
-									// noop
-								});
-							}}
-							variant="outlined"
-						>
-							Continue with {provider.name}
-						</Button>
-					))}
-				</Stack>
-				<Divider>or</Divider>
-				<Stack spacing={2}>
-					<form onSubmit={handleSubmit(onSubmit)}>
+			<Card>
+				<CardHeader
+					subheader={
+						<div style={{ display: "flex", justifyContent: "center" }}>
+							<Box sx={{ display: "inline-flex", textDecoration: "none" }}>
+								<DynamicLogo colorDark="light" colorLight="dark" height={73} width={73} />
+								<Typography variant="body2" color="initial" alignContent={"center"} fontWeight={"bold"} fontSize={23}>
+									icroimpulso
+								</Typography>
+							</Box>
+						</div>
+					}
+				></CardHeader>
+				<CardContent>
+					<Stack spacing={2}>
 						<Stack spacing={2}>
-							<Controller
-								control={control}
-								name="email"
-								render={({ field }) => (
-									<FormControl error={Boolean(errors.email)}>
-										<InputLabel>Email address</InputLabel>
-										<OutlinedInput {...field} type="email" />
-										{errors.email ? <FormHelperText>{errors.email.message}</FormHelperText> : null}
-									</FormControl>
-								)}
-							/>
-							<Controller
-								control={control}
-								name="password"
-								render={({ field }) => (
-									<FormControl error={Boolean(errors.password)}>
-										<InputLabel>Password</InputLabel>
-										<OutlinedInput
-											{...field}
-											endAdornment={
-												showPassword ? (
-													<EyeIcon
-														cursor="pointer"
-														fontSize="var(--icon-fontSize-md)"
-														onClick={() => {
-															setShowPassword(false);
-														}}
-													/>
-												) : (
-													<EyeSlashIcon
-														cursor="pointer"
-														fontSize="var(--icon-fontSize-md)"
-														onClick={() => {
-															setShowPassword(true);
-														}}
-													/>
-												)
-											}
-											type={showPassword ? "text" : "password"}
-										/>
-										{errors.password ? <FormHelperText>{errors.password.message}</FormHelperText> : null}
-									</FormControl>
-								)}
-							/>
-							{errors.root ? <Alert color="error">{errors.root.message}</Alert> : null}
-							<Button disabled={isPending} type="submit" variant="contained">
-								Sign in
-							</Button>
+							<form onSubmit={handleSubmit(onSubmit)}>
+								<Stack spacing={2}>
+									<Controller
+										control={control}
+										name="email"
+										render={({ field }) => (
+											<FormControl error={Boolean(errors.email)}>
+												<InputLabel>Usuario</InputLabel>
+												<OutlinedInput {...field} type="email" />
+												{errors.email ? <FormHelperText>{errors.email.message}</FormHelperText> : null}
+											</FormControl>
+										)}
+									/>
+									<Controller
+										control={control}
+										name="password"
+										render={({ field }) => (
+											<FormControl error={Boolean(errors.password)}>
+												<InputLabel>Contraseña</InputLabel>
+												<OutlinedInput
+													{...field}
+													endAdornment={
+														showPassword ? (
+															<EyeIcon
+																cursor="pointer"
+																fontSize="var(--icon-fontSize-md)"
+																onClick={() => {
+																	setShowPassword(false);
+																}}
+															/>
+														) : (
+															<EyeSlashIcon
+																cursor="pointer"
+																fontSize="var(--icon-fontSize-md)"
+																onClick={() => {
+																	setShowPassword(true);
+																}}
+															/>
+														)
+													}
+													type={showPassword ? "text" : "password"}
+												/>
+												{errors.password ? <FormHelperText>{errors.password.message}</FormHelperText> : null}
+											</FormControl>
+										)}
+									/>
+									{errors.root ? <Alert color="error">{errors.root.message}</Alert> : null}
+									<Button disabled={isPending} type="submit" variant="contained">
+										Iniciar sesión
+									</Button>
+								</Stack>
+							</form>
 						</Stack>
-					</form>
-					<div>
-						<Link component={RouterLink} href={paths.auth.custom.resetPassword} variant="subtitle2">
-							Forgot password?
-						</Link>
-					</div>
-				</Stack>
-			</Stack>
-			<Alert color="warning">
-				Use{" "}
-				<Typography component="span" sx={{ fontWeight: 700 }} variant="inherit">
-					sofia@devias.io
-				</Typography>{" "}
-				with password{" "}
-				<Typography component="span" sx={{ fontWeight: 700 }} variant="inherit">
-					Secret1
-				</Typography>
-			</Alert>
+						<div>
+							<Link variant="subtitle2">¿Olvidaste la contraseña?</Link>
+						</div>
+					</Stack>
+				</CardContent>
+			</Card>
 		</Stack>
 	);
 }

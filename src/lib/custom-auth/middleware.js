@@ -16,7 +16,7 @@ export async function middleware(req) {
 
 		if (!data?.user) {
 			logger.debug("[Middleware] User is not logged in, redirecting to sign in");
-			const redirectTo = new URL(paths.auth.custom.signIn, getAppUrl());
+			const redirectTo = new URL(paths.auth.signIn, getAppUrl());
 			return NextResponse.redirect(redirectTo);
 		}
 	}

@@ -9,7 +9,7 @@ export declare enum ClientStatus {
     PROSPECT = "PROSPECT"
 }
 export declare class Client {
-    id: string;
+    id: number;
     name: string;
     phone: string;
     email: string;

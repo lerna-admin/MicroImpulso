@@ -14,7 +14,7 @@ export enum ClientStatus {
 @Entity()
 export class Client {
   @PrimaryGeneratedColumn('uuid')
-  id: string;
+  id: number;
 
   @Column()
   name: string;
