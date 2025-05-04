@@ -6,7 +6,7 @@ import { Footer } from "@/components/marketing/layout/footer";
 import { MainNav } from "@/components/marketing/layout/main-nav";
 
 export default function Layout({ children }) {
-	redirect("/dashboard");
+	// redirect("/dashboard");
 
 	return (
 		<React.Fragment>
@@ -23,9 +23,9 @@ export default function Layout({ children }) {
 				}}
 			/>
 			<div>
-				{/* <MainNav /> */}
+				<MainNav />
 				<main>{children}</main>
-				{/* <Footer /> */}
+				<Footer />
 			</div>
 		</React.Fragment>
 	);

@@ -35,9 +35,23 @@ const columns = [
 	{ field: "documentId", name: "Identificación", width: "100px" },
 	{
 		formatter(row) {
+			return `$ ${row.amount}`;
+		},
+		name: "Monto",
+		width: "70px",
+	},
+	{
+		formatter(row) {
 			return dayjs(row.createdAt).format("MMM D, YYYY");
 		},
-		name: "Fecha",
+		name: "Fecha Inicia",
+		width: "100px",
+	},
+	{
+		formatter(row) {
+			return dayjs(row.createdAt).format("MMM D, YYYY");
+		},
+		name: "Fecha Termina",
 		width: "100px",
 	},
 
@@ -65,13 +79,7 @@ const columns = [
 		name: "Estado",
 		width: "100px",
 	},
-	{
-		formatter(row) {
-			return `$ ${row.amount}`;
-		},
-		name: "Cupo",
-		width: "70px",
-	},
+	
 	{
 		formatter: (row) => <ActionsCell row={row} />,
 		name: "Acciones",
