@@ -1,7 +1,6 @@
 "use client";
 
-import dynamic from "next/dynamic";
+import { PDFViewer as PDFViewerRenderer } from "@react-pdf/renderer";
 
-export const PDFViewer = dynamic(() => import("@react-pdf/renderer").then((module) => module.PDFViewer), {
-	ssr: false,
-});
+// Exporta explícitamente el componente
+export const PDFViewer = PDFViewerRenderer;
