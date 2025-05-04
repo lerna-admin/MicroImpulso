@@ -1,36 +1,32 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service'; // Adjust if path differs
-import { PrismaClient } from '@prisma/client';
-// then use: Promise<ReturnType<typeof prisma.client.findUnique>>
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { Client } from '../entities/client.entity';
 
 @Injectable()
 export class ClientsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    @InjectRepository(Client)
+    private readonly clientRepository: Repository<Client>,
+  ) {}
 
   // Return all clients from the database
-  async findAll(): Promise<PrismaClient[]> {
-    return this.prisma.client.findMany();
+  async findAll(): Promise<Client[]> {
+    return this.clientRepository.find();
   }
 
   // Return a single client by ID
-  async findOne(id: string): Promise<PrismaClient | null> {
-    return this.prisma.client.findUnique({
-      where: { id: parseInt(id) }, // Ensure id is numeric
-    });
+  async findOne(id: number): Promise<Client | null> {
+    return this.clientRepository.findOneBy({ id });
   }
 
   // Create a new client record
-  async create(data: any): Promise<PrismaClient> {
-    return this.prisma.client.create({
-      data: {
-        name: data.name,
-        phone: data.phone,
-        email: data.email,
-        status: data.status || 'active',
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        agentId: parseInt(data.agentId),
-      },
+  async create(data: Partial<Client>): Promise<Client> {
+    const client = this.clientRepository.create({
+      ...data,
+      createdAt: new Date(),
+      updatedAt: new Date(),
     });
+    return this.clientRepository.save(client);
   }
 }

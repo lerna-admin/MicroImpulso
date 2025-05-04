@@ -13,7 +13,7 @@ export class ClientsController {
 
   // GET /clients/:id → return a specific client by ID
   @Get(':id')
-  findOne(@Param('id') id: string) {
+  findOne(@Param('id') id: number) {
     return this.clientsService.findOne(id);
   }
 
