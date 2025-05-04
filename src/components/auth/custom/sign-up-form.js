@@ -101,7 +101,7 @@ export function SignUpForm() {
 				<Typography variant="h5">Sign up</Typography>
 				<Typography color="text.secondary" variant="body2">
 					Already have an account?{" "}
-					<Link component={RouterLink} href={paths.auth.custom.signIn} variant="subtitle2">
+					<Link component={RouterLink} href={paths.auth.signIn} variant="subtitle2">
 						Sign in
 					</Link>
 				</Typography>

@@ -32,7 +32,7 @@ function SignOutButton() {
 	}
 
 	if (appConfig.authStrategy === AuthStrategy.CUSTOM) {
-		signOutUrl = paths.auth.custom.signOut;
+		signOutUrl = paths.auth.signOut;
 	}
 
 	return (
