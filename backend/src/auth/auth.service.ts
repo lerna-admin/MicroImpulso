@@ -20,9 +20,9 @@ export class AuthService {
     if (!user || user.password !== password) {
       return null;
     }
-
+    user.password = ""
     const token = await this.jwtService.signAsync(
-      { sub: user.id, role: user.role },
+      { user: user },
       { expiresIn: '15m' }
     );
 

@@ -87,15 +87,9 @@ export async function signInWithApi({ document, password }) {
 	  });
   
 	  // 🔓 Rol (puedes decidir si quieres que sea accesible desde el cliente)
-	  cookieStore.set('role', role, {
-		path: '/',
-		httpOnly: false, // visible para JS si lo necesitas en el cliente
-		secure: true,
-		sameSite: 'lax',
-		maxAge: 60 * 60 * 24,
-	  });
-  
-	  return { data: { role } };
+	
+	  console.log(token )
+	  return { data: { token } };
 	} catch (err) {
 	  console.error('[signInWithApi] Error:', err);
 	  return { error: 'Unexpected error occurred' };

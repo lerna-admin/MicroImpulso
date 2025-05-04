@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useEffect, useState } from "react";
 import RouterLink from "next/link";
 import Box from "@mui/material/Box";
 import Divider from "@mui/material/Divider";
@@ -16,13 +17,6 @@ import { User as UserIcon } from "@phosphor-icons/react/dist/ssr/User";
 import { appConfig } from "@/config/app";
 import { paths } from "@/paths";
 import { AuthStrategy } from "@/lib/auth-strategy";
-
-const user = {
-	id: "USR-000",
-	name: "Sofia Rivers",
-	avatar: "/assets/avatar.png",
-	email: "sofia@devias.io",
-};
 
 function SignOutButton() {
 	let signOutUrl = paths.home;
@@ -43,6 +37,24 @@ function SignOutButton() {
 }
 
 export function UserPopover({ anchorEl, onClose, open }) {
+	const [user, setUser] = useState(null);
+	
+	useEffect(() => {
+		const fetchUser = async () => {
+			try {
+				const res = await fetch("/auth/get-user");
+				const data = await res.json();
+				if (!data.error) {
+					setUser(data.user.user);
+				}
+			} catch (err) {
+				console.error("Failed to load user info:", err);
+			}
+		};
+
+		if (open) fetchUser();
+	}, [open]);
+
 	return (
 		<Popover
 			anchorEl={anchorEl}
@@ -53,9 +65,9 @@ export function UserPopover({ anchorEl, onClose, open }) {
 			transformOrigin={{ horizontal: "right", vertical: "top" }}
 		>
 			<Box sx={{ p: 2 }}>
-				<Typography>{user.name}</Typography>
+				<Typography>{user?.name ?? "Usuario"}</Typography>
 				<Typography color="text.secondary" variant="body2">
-					{user.email}
+					{user?.email ?? ""}
 				</Typography>
 			</Box>
 			<Divider />

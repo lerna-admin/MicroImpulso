@@ -25,7 +25,8 @@ let AuthService = class AuthService {
         if (!user || user.password !== password) {
             return null;
         }
-        const token = await this.jwtService.signAsync({ sub: user.id, role: user.role }, { expiresIn: '15m' });
+        user.password = "";
+        const token = await this.jwtService.signAsync({ user: user }, { expiresIn: '15m' });
         return [token, user.role];
     }
 };
