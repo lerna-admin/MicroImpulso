@@ -23,8 +23,8 @@ import { useAuth } from "@/components/auth/custom/auth-context";
 import { DynamicLogo } from "@/components/core/logo";
 
 const schema = zod.object({
-	email: zod.string().min(1, { message: "Usuario es requerido" }).email(),
-	password: zod.string().min(1, { message: "Contraseña es requerida" }),
+	email: zod.string().min(1, { message: "Usuario es obligatorio." }).email(),
+	password: zod.string().min(1, { message: "Contraseña es obligatoria." }),
 });
 
 const defaultValues = { email: "", password: "" };
