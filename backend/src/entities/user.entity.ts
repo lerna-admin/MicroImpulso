@@ -61,4 +61,5 @@ export class User {
    */
   @OneToMany(() => CashFlow, (cashFlow) => cashFlow.user)
   cashFlows: CashFlow[];
+  loanRequests: any;
 }

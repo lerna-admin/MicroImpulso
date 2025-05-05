@@ -40,13 +40,13 @@ export const dashboardConfig = {
 					href: paths.dashboard.employees,
 					matcher: { type: "startsWith", href: "/dashboard/employees" },
 				},
-				// {
-				// 	key: "applications",
-				// 	title: "Solicitudes",
-				// 	icon: "cards-three",
-				// 	href: paths.dashboard.applications,
-				// 	matcher: { type: "startsWith", href: "/dashboard/applications" },
-				// },
+				{
+					key: "applications",
+					title: "Solicitudes",
+					icon: "cards-three",
+					href: paths.dashboard.applications,
+					matcher: { type: "startsWith", href: "/dashboard/applications" },
+				},
 			],
 		},
 

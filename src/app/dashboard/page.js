@@ -57,7 +57,7 @@ export default function Page() {
 							xs: 12,
 						}}
 					>
-						<Summary amount={0} diff={12} icon={WarningIcon} title="Creditos Rechazados" trend="up" />
+						<Summary amount={0} diff={12} icon={WarningIcon} title="Criticos" trend="down" />
 					</Grid>
 					<Grid
 						size={{

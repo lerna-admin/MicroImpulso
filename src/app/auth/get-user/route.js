@@ -11,7 +11,7 @@ export async function GET() {
 	try {
 		const decoded = jwtDecode(token);
 		return NextResponse.json({ user: decoded });
-	} catch (err) {
-		return NextResponse.json({ error: "Invalid token" }, { status: 400 });
+	} catch (error) {
+		return NextResponse.json({ error: "Invalid token", details: error }, { status: 400 });
 	}
 }
