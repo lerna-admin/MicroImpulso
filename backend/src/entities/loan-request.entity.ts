@@ -1,5 +1,6 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn } from 'typeorm';
 import { Client } from './client.entity';
+import { User } from './user.entity';
 
 export enum LoanRequestStatus {
   NEW = 'NEW',
@@ -25,6 +26,11 @@ export class LoanRequest {
   @ManyToOne(() => Client, (client) => client.loanRequests)
   @JoinColumn({ name: 'clientId' })
   client: Client;
+
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+  @ManyToOne(() => User, (user) => user.loanRequests)
+  @JoinColumn({ name: 'agentId' })
+  user: User;
 
   @CreateDateColumn()
   createdAt: Date;
