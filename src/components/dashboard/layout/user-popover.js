@@ -31,24 +31,24 @@ function SignOutButton() {
 
 	return (
 		<MenuItem component="a" href={signOutUrl} sx={{ justifyContent: "center" }}>
-			Sign out
+			Cerrar sesión
 		</MenuItem>
 	);
 }
 
 export function UserPopover({ anchorEl, onClose, open }) {
 	const [user, setUser] = useState(null);
-	
+
 	useEffect(() => {
 		const fetchUser = async () => {
 			try {
 				const res = await fetch("/auth/get-user");
 				const data = await res.json();
 				if (!data.error) {
-					setUser(data.user.user);
+					setUser(data.data.user);
 				}
-			} catch (err) {
-				console.error("Failed to load user info:", err);
+			} catch (error) {
+				console.error("Failed to load user info:", error);
 			}
 		};
 
@@ -65,7 +65,7 @@ export function UserPopover({ anchorEl, onClose, open }) {
 			transformOrigin={{ horizontal: "right", vertical: "top" }}
 		>
 			<Box sx={{ p: 2 }}>
-				<Typography>{user?.name ?? "Usuario"}</Typography>
+				<Typography>{user?.name ? `${user?.name} - ${user.role}` : "Usuario"}</Typography>
 				<Typography color="text.secondary" variant="body2">
 					{user?.email ?? ""}
 				</Typography>
@@ -76,20 +76,20 @@ export function UserPopover({ anchorEl, onClose, open }) {
 					<ListItemIcon>
 						<UserIcon />
 					</ListItemIcon>
-					Account
+					Cuenta
 				</MenuItem>
 				<MenuItem component={RouterLink} href={paths.dashboard.settings.security} onClick={onClose}>
 					<ListItemIcon>
 						<LockKeyIcon />
 					</ListItemIcon>
-					Security
+					Seguridad
 				</MenuItem>
-				<MenuItem component={RouterLink} href={paths.dashboard.settings.billing} onClick={onClose}>
+				{/* <MenuItem component={RouterLink} href={paths.dashboard.settings.billing} onClick={onClose}>
 					<ListItemIcon>
 						<CreditCardIcon />
 					</ListItemIcon>
 					Billing
-				</MenuItem>
+				</MenuItem> */}
 			</List>
 			<Divider />
 			<Box sx={{ p: 1 }}>

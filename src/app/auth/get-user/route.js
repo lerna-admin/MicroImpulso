@@ -1,4 +1,3 @@
-// src/app/api/auth/get-user/route.js
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { jwtDecode } from "jwt-decode";
@@ -10,7 +9,7 @@ export async function GET() {
 
 	try {
 		const decoded = jwtDecode(token);
-		return NextResponse.json({ user: decoded });
+		return NextResponse.json({ data: decoded });
 	} catch (error) {
 		return NextResponse.json({ error: "Invalid token", details: error }, { status: 400 });
 	}

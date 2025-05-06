@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useEffect } from "react";
 import Box from "@mui/material/Box";
 import GlobalStyles from "@mui/material/GlobalStyles";
 
@@ -12,6 +13,31 @@ import { SideNav } from "./side-nav";
 
 export function VerticalLayout({ children }) {
 	const { settings } = useSettings();
+
+	const [userRole, setUserRole] = React.useState(null);
+
+	useEffect(() => {
+		const fetchUser = async () => {
+			try {
+				const res = await fetch("/auth/get-user");
+				const data = await res.json();
+				const {
+					data: {
+						user: { role },
+					},
+				} = data;
+				if (!data.error) {
+					setUserRole(role);
+				}
+			} catch (error) {
+				console.error("Failed to load user info:", error);
+			}
+		};
+
+		fetchUser();
+	}, []);
+
+	const filteredItems = dashboardConfig.navItems.filter((route) => route.key.includes(userRole));
 
 	const navColor = settings.dashboardNavColor ?? dashboardConfig.navColor;
 
@@ -38,9 +64,9 @@ export function VerticalLayout({ children }) {
 					minHeight: "100%",
 				}}
 			>
-				<SideNav color={navColor} items={dashboardConfig.navItems} />
+				<SideNav color={navColor} items={filteredItems} />
 				<Box sx={{ display: "flex", flex: "1 1 auto", flexDirection: "column", pl: { lg: "var(--SideNav-width)" } }}>
-					<MainNav items={dashboardConfig.navItems} />
+					<MainNav items={filteredItems} />
 					<Box
 						component="main"
 						sx={{
