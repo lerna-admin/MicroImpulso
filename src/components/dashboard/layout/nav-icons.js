@@ -1,5 +1,6 @@
 import { CardsThree as CardsThreeIcon } from "@phosphor-icons/react";
 import {
+	CashRegister as CashRegisterIcon,
 	CurrencyCircleDollar as CurrencyCircleDollarIcon,
 	EnvelopeSimpleOpen as EnvelopeSimpleOpenIcon,
 	IdentificationBadge as IdentificationBadgeIcon,
@@ -72,4 +73,5 @@ export const icons = {
 	"identification-badge": IdentificationBadgeIcon,
 	"envelope-simple-open": EnvelopeSimpleOpenIcon,
 	"currency-circle-dollar": CurrencyCircleDollarIcon,
+	"cash-register": CashRegisterIcon
 };
