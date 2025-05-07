@@ -3,7 +3,8 @@ import { NextResponse } from "next/server";
 import { jwtDecode } from "jwt-decode";
 
 export async function GET() {
-	const token = cookies().get("access_token")?.value;
+	const cookieStore = await cookies();
+	const token = cookieStore.get("access_token")?.value;
 
 	if (!token) return NextResponse.json({ error: "No token" }, { status: 401 });
 

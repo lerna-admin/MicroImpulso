@@ -102,6 +102,7 @@ export const paths = {
 			security: "/dashboard/settings/security",
 			team: "/dashboard/settings/team",
 		},
+		simulator: "/dashboard/simulator-credit",
 		social: {
 			profile: { timeline: "/dashboard/social/profile", connections: "/dashboard/social/profile/connections" },
 			feed: "/dashboard/social/feed",

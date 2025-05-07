@@ -1,7 +1,6 @@
 "use client";
 
 import * as React from "react";
-import { useEffect, useState } from "react";
 import RouterLink from "next/link";
 import Box from "@mui/material/Box";
 import Divider from "@mui/material/Divider";
@@ -10,13 +9,13 @@ import ListItemIcon from "@mui/material/ListItemIcon";
 import MenuItem from "@mui/material/MenuItem";
 import Popover from "@mui/material/Popover";
 import Typography from "@mui/material/Typography";
-import { CreditCard as CreditCardIcon } from "@phosphor-icons/react/dist/ssr/CreditCard";
 import { LockKey as LockKeyIcon } from "@phosphor-icons/react/dist/ssr/LockKey";
 import { User as UserIcon } from "@phosphor-icons/react/dist/ssr/User";
 
 import { appConfig } from "@/config/app";
 import { paths } from "@/paths";
 import { AuthStrategy } from "@/lib/auth-strategy";
+import { useAuth } from "@/components/auth/custom/auth-context";
 
 function SignOutButton() {
 	let signOutUrl = paths.home;
@@ -37,23 +36,7 @@ function SignOutButton() {
 }
 
 export function UserPopover({ anchorEl, onClose, open }) {
-	const [user, setUser] = useState(null);
-
-	useEffect(() => {
-		const fetchUser = async () => {
-			try {
-				const res = await fetch("/auth/get-user");
-				const data = await res.json();
-				if (!data.error) {
-					setUser(data.data.user);
-				}
-			} catch (error) {
-				console.error("Failed to load user info:", error);
-			}
-		};
-
-		if (open) fetchUser();
-	}, [open]);
+	const { user } = useAuth();
 
 	return (
 		<Popover

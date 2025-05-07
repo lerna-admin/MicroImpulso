@@ -1,7 +1,6 @@
 "use client";
 
 import * as React from "react";
-import { useEffect } from "react";
 import Box from "@mui/material/Box";
 import GlobalStyles from "@mui/material/GlobalStyles";
 
@@ -10,34 +9,19 @@ import { useSettings } from "@/components/core/settings/settings-context";
 
 import { MainNav } from "./main-nav";
 import { SideNav } from "./side-nav";
+import { useAuth } from "@/components/auth/custom/auth-context";
 
 export function VerticalLayout({ children }) {
 	const { settings } = useSettings();
 
-	const [userRole, setUserRole] = React.useState(null);
+	const { user } = useAuth(); // ya tienes el usuario completo desde el contexto
 
-	useEffect(() => {
-		const fetchUser = async () => {
-			try {
-				const res = await fetch("/auth/get-user");
-				const data = await res.json();
-				const {
-					data: {
-						user: { role },
-					},
-				} = data;
-				if (!data.error) {
-					setUserRole(role);
-				}
-			} catch (error) {
-				console.error("Failed to load user info:", error);
-			}
-		};
+	const userRole = user?.role;
 
-		fetchUser();
-	}, []);
-
-	const filteredItems = dashboardConfig.navItems.filter((route) => route.key.includes(userRole));
+	const filteredItems = React.useMemo(() => {
+		if (!userRole) return [];
+		return dashboardConfig.navItems.filter((route) => route.key.includes(userRole));
+	}, [userRole]);
 
 	const navColor = settings.dashboardNavColor ?? dashboardConfig.navColor;
 
