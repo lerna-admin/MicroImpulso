@@ -17,14 +17,14 @@ import { NotificationAlert } from "@/components/widgets/notifications/notificati
 
 export function CustomerEditForm({ customerToEdit }) {
 	const [formData, setFormData] = React.useState({
-		documentId: "",
-		fullName: "",
-		phoneNumber: "",
+		document: "",
+		name: "",
+		phone: "",
 		email: "",
 		address: "",
-		amountTaken: "",
-		startDate: "",
-		endDate: "",
+		totalLoanAmount: "",
+		createdAt: "",
+		updatedAt: "",
 	});
 
 	const [openAlert, setOpenAlert] = React.useState(false);
@@ -68,9 +68,9 @@ export function CustomerEditForm({ customerToEdit }) {
 							<FormControl fullWidth>
 								<InputLabel>Cedula</InputLabel>
 								<OutlinedInput
-									defaultValue={customerToEdit.documentId}
-									id="documentId"
-									name="documentId"
+									defaultValue={customerToEdit.document}
+									id="document"
+									name="document"
 									onChange={handleChange}
 								/>
 							</FormControl>
@@ -84,9 +84,9 @@ export function CustomerEditForm({ customerToEdit }) {
 							<FormControl fullWidth>
 								<InputLabel>Nombre Completo</InputLabel>
 								<OutlinedInput
-									defaultValue={customerToEdit.fullName}
-									id="fullName"
-									name="fullName"
+									defaultValue={customerToEdit.name}
+									id="name"
+									name="name"
 									onChange={handleChange}
 								/>
 							</FormControl>
@@ -100,9 +100,9 @@ export function CustomerEditForm({ customerToEdit }) {
 							<FormControl fullWidth>
 								<InputLabel>Celular</InputLabel>
 								<OutlinedInput
-									defaultValue={customerToEdit.phoneNumber}
-									id="phoneNumber"
-									name="phoneNumber"
+									defaultValue={customerToEdit.phone}
+									id="phone"
+									name="phone"
 									onChange={handleChange}
 								/>
 							</FormControl>
@@ -151,9 +151,9 @@ export function CustomerEditForm({ customerToEdit }) {
 								<InputLabel>Monto Prestado</InputLabel>
 								<OutlinedInput
 									disabled
-									id="amountTaken"
-									name="amountTaken"
-									defaultValue={`$ ${customerToEdit.amountTaken}`}
+									id="totalLoanAmount"
+									name="totalLoanAmount"
+									defaultValue={`$ ${customerToEdit.totalLoanAmount}`}
 									onChange={handleChange}
 								/>
 							</FormControl>
@@ -171,7 +171,7 @@ export function CustomerEditForm({ customerToEdit }) {
 									name="startDate"
 									format="MMM D, YYYY hh:mm A"
 									label="Fecha Inicio"
-									value={dayjs(customerToEdit.startDate)}
+									value={dayjs(customerToEdit.createdAt)}
 									onChange={handleChange}
 								/>
 							</FormControl>
@@ -189,7 +189,7 @@ export function CustomerEditForm({ customerToEdit }) {
 									name="endDate"
 									format="MMM D, YYYY hh:mm A"
 									label="Fecha Fin"
-									value={dayjs(customerToEdit.endDate)}
+									value={dayjs(customerToEdit.updatedAt)}
 									onChange={handleChange}
 								/>
 							</FormControl>

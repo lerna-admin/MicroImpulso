@@ -14,7 +14,7 @@ const BASE_URL = process.env.BASE_URL;
  *
  * @returns {Client[]}
  */
-export async function getCustomers(page = 1, limit = 10) {
+export async function getCustomers() {
 	const res = await fetch(`${BASE_URL}/clients`);
 	if (!res.ok) throw new Error("Error al obtener clientes");
 	return res.json();

@@ -38,12 +38,12 @@ export function CustomersTable({ rows }) {
 			name: "Nombre Completo",
 			width: "150px",
 		},
-		{ field: "documentId", name: "Identificación", width: "150px" },
+		{ field: "document", name: "Identificación", width: "150px" },
 		{ field: "phone", name: "Celular", width: "130px" },
 		{ field: "address", name: "Dirección", width: "150px" },
 		{
 			formatter(row) {
-				return row.amountTaken ? `$ ${row.amountTaken}` : `$ 0`;
+				return row.totalLoanAmount ? `$ ${row.totalLoanAmount}` : `$ 0`;
 			},
 			name: "Monto Prestado",
 			width: "100px",

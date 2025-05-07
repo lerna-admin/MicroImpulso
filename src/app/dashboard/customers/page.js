@@ -19,10 +19,10 @@ export const metadata = { title: `Clientes | Dashboard | ${appConfig.name}` };
 export default async function Page({ searchParams }) {
 	const customers = await getCustomers();
 
-	const { email, phoneNumber, sortDir, status, documentId } = await searchParams;
+	const { email, phone, sortDir, status, document } = await searchParams;
 
 	const sortedCustomers = applySort(customers, sortDir);
-	const filteredCustomers = applyFilters(sortedCustomers, { email, phoneNumber, status, documentId });
+	const filteredCustomers = applyFilters(sortedCustomers, { email, phone, status, document });
 
 	return (
 		<Box
@@ -42,7 +42,7 @@ export default async function Page({ searchParams }) {
 				<CustomersSelectionProvider customers={filteredCustomers}>
 					<Card>
 						<CustomersFilters
-							filters={{ email, phoneNumber, status, documentId }}
+							filters={{ email, phone, status, document }}
 							sortDir={sortDir}
 							count={filteredCustomers.length}
 						/>
@@ -71,9 +71,9 @@ function applySort(row, sortDir) {
 	});
 }
 
-function applyFilters(row, { email, phoneNumber, status, documentId }) {
+function applyFilters(row, { email, phone, status, document }) {
 	return row.filter((item) => {
-		if (documentId && !item.documentId?.toLowerCase().includes(documentId.toLowerCase())) {
+		if (document && !item.document?.toLowerCase().includes(document.toLowerCase())) {
 			return false;
 		}
 
@@ -81,18 +81,14 @@ function applyFilters(row, { email, phoneNumber, status, documentId }) {
 			return false;
 		}
 
-		if (phoneNumber && !item.phoneNumber?.toLowerCase().includes(phoneNumber.toLowerCase())) {
+		if (phone && !item.phone?.toLowerCase().includes(phone.toLowerCase())) {
 			return false;
 		}
 
-		if (status && parseStatus(item.status) !== status) {
+		if (status && item.status !== status) {
 			return false;
 		}
 
 		return true;
 	});
-}
-
-function parseStatus(status) {
-	return status == true ? "active" : "inactive";
 }
