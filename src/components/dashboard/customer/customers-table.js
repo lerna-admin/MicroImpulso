@@ -12,6 +12,7 @@ import {
 	CardsThree as CardsThreeIcon,
 	DotsThree as DotsThreeIcon,
 	XCircle as XCircleIcon,
+	Timer as TimerIcon,
 } from "@phosphor-icons/react/dist/ssr";
 import { CheckCircle as CheckCircleIcon } from "@phosphor-icons/react/dist/ssr/CheckCircle";
 import { PencilSimple as PencilSimpleIcon } from "@phosphor-icons/react/dist/ssr/PencilSimple";
@@ -27,7 +28,7 @@ export function CustomersTable({ rows }) {
 			formatter: (row) => (
 				<Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
 					<div>
-						<Typography variant="subtitle2">{row.fullName}</Typography>
+						<Typography variant="subtitle2">{row.name}</Typography>
 						<Typography color="text.secondary" variant="body2">
 							{row.email}
 						</Typography>
@@ -38,34 +39,35 @@ export function CustomersTable({ rows }) {
 			width: "150px",
 		},
 		{ field: "documentId", name: "Identificación", width: "150px" },
-		{ field: "phoneNumber", name: "Celular", width: "130px" },
+		{ field: "phone", name: "Celular", width: "130px" },
 		{ field: "address", name: "Dirección", width: "150px" },
 		{
 			formatter(row) {
-				return `$ ${row.amountTaken}`;
+				return row.amountTaken ? `$ ${row.amountTaken}` : `$ 0`;
 			},
 			name: "Monto Prestado",
 			width: "100px",
 		},
 		{
 			formatter(row) {
-				return dayjs(row.startDate).format("MMM D, YYYY");
+				return dayjs(row.createdAt).format("MMM D, YYYY");
 			},
-			name: "Fecha Inicio",
+			name: "Fecha creación",
 			width: "150px",
 		},
 		{
 			formatter(row) {
-				return dayjs(row.endDate).format("MMM D, YYYY");
+				return dayjs(row.updatedAt).format("MMM D, YYYY");
 			},
-			name: "Fecha Fin",
+			name: "Fecha actualizada",
 			width: "150px",
 		},
 		{
 			formatter: (row) => {
 				const mapping = {
-					true: { label: "Activo", icon: <CheckCircleIcon color="var(--mui-palette-success-main)" weight="fill" /> },
-					false: { label: "Inactivo", icon: <XCircleIcon color="var(--mui-palette-error-main)" weight="fill" /> },
+					active: { label: "Activo", icon: <CheckCircleIcon color="var(--mui-palette-success-main)" weight="fill" /> },
+					inactive: { label: "Inactivo", icon: <XCircleIcon color="var(--mui-palette-error-main)" weight="fill" /> },
+					pending: { label: "Pendiente", icon: <TimerIcon color="var(--mui-palette-warning-main)" weight="fill"/> },
 				};
 				const { label, icon } = mapping[row.status] ?? { label: "Unknown", icon: null };
 

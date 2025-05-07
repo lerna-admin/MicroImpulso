@@ -13,7 +13,7 @@ export enum LoanRequestStatus {
 @Entity()
 export class LoanRequest {
   @PrimaryGeneratedColumn('uuid')
-  id: string;
+  id: number;
 
   @Column('decimal', { precision: 10, scale: 2 })
   amount: number;
