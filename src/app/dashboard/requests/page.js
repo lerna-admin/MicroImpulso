@@ -26,10 +26,10 @@ export default async function Page({ searchParams }) {
 
 	const requests = user.role === ROLES.AGENTE ? await getRequestsByAgent(user.id) : await getAllRequests();
 
-	const { fullName, documentId, previewId, sortDir, status } = await searchParams;
+	const { name, document, previewId, sortDir, status } = await searchParams;
 
 	const sortedRequests = applySort(requests, sortDir);
-	const filteredRequests = applyFilters(sortedRequests, { fullName, documentId, status });
+	const filteredRequests = applyFilters(sortedRequests, { name, document, status });
 
 	return (
 		<React.Fragment>
@@ -50,7 +50,7 @@ export default async function Page({ searchParams }) {
 					<RequestsSelectionProvider requests={filteredRequests}>
 						<Card>
 							<RequestsFilters
-								filters={{ fullName, documentId, status }}
+								filters={{ name, document, status }}
 								sortDir={sortDir}
 								count={filteredRequests.length}
 							/>
@@ -81,13 +81,13 @@ function applySort(row, sortDir) {
 	});
 }
 
-function applyFilters(row, { fullName, documentId, status }) {
+function applyFilters(row, { name, document, status }) {
 	return row.filter((item) => {
-		if (fullName && !item.fullName?.toLowerCase().includes(fullName.toLowerCase())) {
+		if (name && !item.name?.toLowerCase().includes(name.toLowerCase())) {
 			return false;
 		}
 
-		if (documentId && !item.documentId?.toLowerCase().includes(documentId.toLowerCase())) {
+		if (document && !item.document?.toLowerCase().includes(document.toLowerCase())) {
 			return false;
 		}
 

@@ -37,7 +37,7 @@ export default function Page() {
 					<Stack spacing={1} sx={{ textAlign: "center" }}>
 						<Typography variant="h4">401: Se requiere autorización</Typography>
 						<Typography color="text.secondary">
-						Probaste una ruta sospechosa o llegaste aquí por error. Sea como sea, intenta usar la navegación.
+							Probaste una ruta sospechosa o llegaste aquí por error. Sea como sea, intenta usar la navegación.
 						</Typography>
 					</Stack>
 					<Box sx={{ display: "flex", justifyContent: "center" }}>

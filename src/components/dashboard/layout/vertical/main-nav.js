@@ -10,6 +10,7 @@ import Tooltip from "@mui/material/Tooltip";
 import { Bell as BellIcon } from "@phosphor-icons/react/dist/ssr/Bell";
 
 import { usePopover } from "@/hooks/use-popover";
+import { useAuth } from "@/components/auth/custom/auth-context";
 
 import { MobileNav } from "../mobile-nav";
 import { NotificationsPopover } from "../notifications-popover";
@@ -17,6 +18,12 @@ import { UserPopover } from "../user-popover";
 
 export function MainNav({ items }) {
 	const [openNav, setOpenNav] = React.useState(false);
+
+	const { user } = useAuth();
+	
+	const userName = React.useMemo(() => {
+		return user?.name || "";
+	}, [user?.name]);
 
 	return (
 		<React.Fragment>
@@ -50,8 +57,7 @@ export function MainNav({ items }) {
 						sx={{ alignItems: "center", flex: "1 1 auto", justifyContent: "flex-end" }}
 					>
 						<NotificationsButton />
-
-						<UserButton />
+						<UserButton userName={userName} />
 					</Stack>
 				</Box>
 			</Box>
@@ -87,7 +93,7 @@ function NotificationsButton() {
 	);
 }
 
-function UserButton() {
+function UserButton({ userName }) {
 	const popover = usePopover();
 
 	return (
@@ -119,4 +125,32 @@ function UserButton() {
 			<UserPopover anchorEl={popover.anchorRef.current} onClose={popover.handleClose} open={popover.open} />
 		</React.Fragment>
 	);
+}
+
+function stringAvatar(name) {
+	return {
+		sx: {
+			bgcolor: stringToColor(name),
+		},
+		children: `${name.split(" ")[0][0]}${name.split(" ")[1][0]}`,
+	};
+}
+
+function stringToColor(string) {
+	let hash = 0;
+	let i;
+
+	for (i = 0; i < string.length; i += 1) {
+		hash = string.codePointAt(i) + ((hash << 5) - hash);
+	}
+
+	let color = "#";
+
+	for (i = 0; i < 3; i += 1) {
+		// eslint-disable-next-line unicorn/number-literal-case
+		const value = (hash >> (i * 8)) & 0xff;
+		color += `00${value.toString(16)}`.slice(-2);
+	}
+
+	return color;
 }

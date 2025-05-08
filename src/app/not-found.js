@@ -9,7 +9,7 @@ import Typography from "@mui/material/Typography";
 import { appConfig } from "@/config/app";
 import { paths } from "@/paths";
 
-export const metadata = { title: `Not found | ${appConfig.name}` };
+export const metadata = { title: `No encontrada | ${appConfig.name}` };
 
 export default function NotFound() {
 	return (
@@ -35,14 +35,14 @@ export default function NotFound() {
 						/>
 					</Box>
 					<Stack spacing={1} sx={{ textAlign: "center" }}>
-						<Typography variant="h4">404: The page you are looking for isn&apos;t here</Typography>
+						<Typography variant="h4">404: La pagina que estas buscando no esta aqui</Typography>
 						<Typography color="text.secondary">
-							You either tried some shady route or you came here by mistake. Whichever it is, try using the navigation.
+							Probaste una ruta sospechosa o llegaste aquí por error. Sea como sea, intenta usar la navegación.
 						</Typography>
 					</Stack>
 					<Box sx={{ display: "flex", justifyContent: "center" }}>
 						<Button component={RouterLink} href={paths.home} variant="contained">
-							Back to home
+							Volver al inicio
 						</Button>
 					</Box>
 				</Stack>

@@ -2,14 +2,13 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
-import { ListItemIcon, Menu, MenuItem, Tooltip } from "@mui/material";
+import { Menu, MenuItem, Tooltip } from "@mui/material";
 import Box from "@mui/material/Box";
 import Chip from "@mui/material/Chip";
 import IconButton from "@mui/material/IconButton";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 import {
-	CalendarCheck as CalendarCheckIcon,
 	DotsThree as DotsThreeIcon,
 	ExclamationMark as ExclamationMarkIcon,
 	XCircle as XCircleIcon,
@@ -115,9 +114,10 @@ export function ActionsCell({ row }) {
 		popover.handleOpen();
 	};
 
-	const handlePaymentHistory = () => {
+	const handleViewLoanRequest = () => {
 		popover.handleClose();
-		router.push(paths.dashboard.requests.preview(row.id));
+		// router.push(paths.dashboard.requests.preview(row.id));
+		router.push(paths.dashboard.requests.details(row.id));
 	};
 
 	return (
@@ -163,14 +163,8 @@ export function ActionsCell({ row }) {
 				<MenuItem>
 					<Typography>Novedad</Typography>
 				</MenuItem>
-				<MenuItem>
-					<Typography>Ver Perfil</Typography>
-				</MenuItem>
-				<MenuItem onClick={handlePaymentHistory}>
-					<ListItemIcon>
-						<CalendarCheckIcon />
-					</ListItemIcon>
-					<Typography>Historico pagos</Typography>
+				<MenuItem onClick={handleViewLoanRequest}>
+					<Typography>Ver solicitud</Typography>
 				</MenuItem>
 			</Menu>
 		</>
