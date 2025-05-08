@@ -54,27 +54,6 @@ export function UserPopover({ anchorEl, onClose, open }) {
 				</Typography>
 			</Box>
 			<Divider />
-			<List sx={{ p: 1 }}>
-				<MenuItem component={RouterLink} href={paths.dashboard.settings.account} onClick={onClose}>
-					<ListItemIcon>
-						<UserIcon />
-					</ListItemIcon>
-					Cuenta
-				</MenuItem>
-				<MenuItem component={RouterLink} href={paths.dashboard.settings.security} onClick={onClose}>
-					<ListItemIcon>
-						<LockKeyIcon />
-					</ListItemIcon>
-					Seguridad
-				</MenuItem>
-				{/* <MenuItem component={RouterLink} href={paths.dashboard.settings.billing} onClick={onClose}>
-					<ListItemIcon>
-						<CreditCardIcon />
-					</ListItemIcon>
-					Billing
-				</MenuItem> */}
-			</List>
-			<Divider />
 			<Box sx={{ p: 1 }}>
 				<SignOutButton />
 			</Box>
