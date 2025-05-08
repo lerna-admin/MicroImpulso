@@ -15,6 +15,10 @@ export class ClientsService {
     return this.clientRepository.find();
   }
 
+  async findAllByAgent(agentId: number): Promise<Client[]> {
+    return this.clientRepository.find({ where: { agent: { id: agentId } } });
+  }
+
   // Return a single client by ID
   async findOne(id: number): Promise<Client | null> {
     return this.clientRepository.findOneBy({ id });

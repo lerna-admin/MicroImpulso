@@ -19,7 +19,8 @@ export function CustomersFilters({ filters = {}, sortDir = "desc", count }) {
 		{ label: "Todos", value: "", count: 0 },
 		{ label: "Activos", value: "active", count: 0 },
 		{ label: "Inactivos", value: "inactive", count: 0 },
-		{ label: "Pendientes", value: "pending", count: 0 },
+		{ label: "Suspendidos", value: "suspended", count: 0 },
+		{ label: "Prospectos", value: "prospect", count: 0 },
 	]);
 	const { email, phone, status, document } = filters;
 

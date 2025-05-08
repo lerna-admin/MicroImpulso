@@ -83,11 +83,11 @@ function applySort(row, sortDir) {
 
 function applyFilters(row, { name, document, status }) {
 	return row.filter((item) => {
-		if (name && !item.name?.toLowerCase().includes(name.toLowerCase())) {
+		if (name && !item.client.name?.toLowerCase().includes(name.toLowerCase())) {
 			return false;
 		}
 
-		if (document && !item.document?.toLowerCase().includes(document.toLowerCase())) {
+		if (document && !item.client.document?.toLowerCase().includes(document.toLowerCase())) {
 			return false;
 		}
 

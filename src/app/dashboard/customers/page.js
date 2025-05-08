@@ -1,4 +1,5 @@
 import * as React from "react";
+import { ROLES } from "@/constants/roles";
 import Box from "@mui/material/Box";
 import Card from "@mui/material/Card";
 import Divider from "@mui/material/Divider";
@@ -6,18 +7,23 @@ import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 
 import { appConfig } from "@/config/app";
+import { getUser } from "@/lib/custom-auth/server";
 import { dayjs } from "@/lib/dayjs";
 import { CustomersFilters } from "@/components/dashboard/customer/customers-filters";
 import { CustomersPagination } from "@/components/dashboard/customer/customers-pagination";
 import { CustomersSelectionProvider } from "@/components/dashboard/customer/customers-selection-context";
 import { CustomersTable } from "@/components/dashboard/customer/customers-table";
 
-import { getCustomers } from "./hooks/use-customers";
+import { getAllCustomers, getCustomersByAgent } from "./hooks/use-customers";
 
 export const metadata = { title: `Clientes | Dashboard | ${appConfig.name}` };
 
 export default async function Page({ searchParams }) {
-	const customers = await getCustomers();
+	const {
+		data: { user },
+	} = await getUser();
+
+	const customers = user.role === ROLES.AGENTE ? await getCustomersByAgent(user.id) : await getAllCustomers();
 
 	const { email, phone, sortDir, status, document } = await searchParams;
 

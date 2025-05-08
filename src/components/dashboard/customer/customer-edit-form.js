@@ -83,12 +83,7 @@ export function CustomerEditForm({ customerToEdit }) {
 						>
 							<FormControl fullWidth>
 								<InputLabel>Nombre Completo</InputLabel>
-								<OutlinedInput
-									defaultValue={customerToEdit.name}
-									id="name"
-									name="name"
-									onChange={handleChange}
-								/>
+								<OutlinedInput defaultValue={customerToEdit.name} id="name" name="name" onChange={handleChange} />
 							</FormControl>
 						</Grid>
 						<Grid
@@ -99,12 +94,7 @@ export function CustomerEditForm({ customerToEdit }) {
 						>
 							<FormControl fullWidth>
 								<InputLabel>Celular</InputLabel>
-								<OutlinedInput
-									defaultValue={customerToEdit.phone}
-									id="phone"
-									name="phone"
-									onChange={handleChange}
-								/>
+								<OutlinedInput defaultValue={customerToEdit.phone} id="phone" name="phone" onChange={handleChange} />
 							</FormControl>
 						</Grid>
 						<Grid
@@ -153,7 +143,9 @@ export function CustomerEditForm({ customerToEdit }) {
 									disabled
 									id="totalLoanAmount"
 									name="totalLoanAmount"
-									defaultValue={`$ ${customerToEdit.totalLoanAmount}`}
+									defaultValue={new Intl.NumberFormat("en-US", { style: "currency", currency: "COP" }).format(
+										customerToEdit.totalLoanAmount
+									)}
 									onChange={handleChange}
 								/>
 							</FormControl>

@@ -14,8 +14,18 @@ const BASE_URL = process.env.BASE_URL;
  *
  * @returns {Client[]}
  */
-export async function getCustomers() {
+export async function getAllCustomers() {
 	const res = await fetch(`${BASE_URL}/clients`);
+	if (!res.ok) throw new Error("Error al obtener clientes");
+	return res.json();
+}
+
+/**
+ *
+ * @returns {Client[]}
+ */
+export async function getCustomersByAgent(id) {
+	const res = await fetch(`${BASE_URL}/clients/agent/${id}`);
 	if (!res.ok) throw new Error("Error al obtener clientes");
 	return res.json();
 }

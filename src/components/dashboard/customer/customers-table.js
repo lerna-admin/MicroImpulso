@@ -11,8 +11,9 @@ import Typography from "@mui/material/Typography";
 import {
 	CardsThree as CardsThreeIcon,
 	DotsThree as DotsThreeIcon,
-	XCircle as XCircleIcon,
 	Timer as TimerIcon,
+	WarningDiamond as WarningDiamondIcon,
+	XCircle as XCircleIcon,
 } from "@phosphor-icons/react/dist/ssr";
 import { CheckCircle as CheckCircleIcon } from "@phosphor-icons/react/dist/ssr/CheckCircle";
 import { PencilSimple as PencilSimpleIcon } from "@phosphor-icons/react/dist/ssr/PencilSimple";
@@ -43,7 +44,7 @@ export function CustomersTable({ rows }) {
 		{ field: "address", name: "Dirección", width: "150px" },
 		{
 			formatter(row) {
-				return row.totalLoanAmount ? `$ ${row.totalLoanAmount}` : `$ 0`;
+				return new Intl.NumberFormat("en-US", { style: "currency", currency: "COP" }).format(row.totalLoanAmount);
 			},
 			name: "Monto Prestado",
 			width: "100px",
@@ -67,7 +68,11 @@ export function CustomersTable({ rows }) {
 				const mapping = {
 					active: { label: "Activo", icon: <CheckCircleIcon color="var(--mui-palette-success-main)" weight="fill" /> },
 					inactive: { label: "Inactivo", icon: <XCircleIcon color="var(--mui-palette-error-main)" weight="fill" /> },
-					pending: { label: "Pendiente", icon: <TimerIcon color="var(--mui-palette-warning-main)" weight="fill"/> },
+					suspended: { label: "Suspendido", icon: <TimerIcon color="var(--mui-palette-warning-main)" weight="fill" /> },
+					prospect: {
+						label: "Prospecto",
+						icon: <WarningDiamondIcon color="var(--mui-palette-info-main)" weight="fill" />,
+					},
 				};
 				const { label, icon } = mapping[row.status] ?? { label: "Unknown", icon: null };
 
@@ -114,9 +119,9 @@ export function ActionsCell({ row }) {
 		router.push(paths.dashboard.customers.details(row.id));
 	};
 
-	const handleApplications = () => {
+	const handleLoanRequests = () => {
 		popover.handleClose();
-		router.push(paths.dashboard.applications);
+		router.push(`${paths.dashboard.requests.list}?document=${row.document}`);
 	};
 
 	return (
@@ -138,7 +143,7 @@ export function ActionsCell({ row }) {
 					</ListItemIcon>
 					<Typography>Editar perfil</Typography>
 				</MenuItem>
-				<MenuItem onClick={handleApplications}>
+				<MenuItem onClick={handleLoanRequests}>
 					<ListItemIcon>
 						<CardsThreeIcon />
 					</ListItemIcon>

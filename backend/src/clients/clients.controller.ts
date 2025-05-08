@@ -1,5 +1,6 @@
 import { Controller, Get, Post, Param, Body } from '@nestjs/common';
 import { ClientsService } from './clients.service';
+import { Client } from 'src/entities/client.entity';
 
 @Controller('clients')
 export class ClientsController {
@@ -7,8 +8,13 @@ export class ClientsController {
 
   // GET /clients → return all clients
   @Get()
-  findAll() {
+  findAll(): Promise<Client[]> {
     return this.clientsService.findAll();
+  }
+
+  @Get('agent/:id')
+  findByAgent(@Param('id') agentId: number): Promise<Client[]> {
+    return this.clientsService.findAllByAgent(agentId);
   }
 
   // GET /clients/:id → return a specific client by ID

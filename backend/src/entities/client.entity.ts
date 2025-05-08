@@ -6,7 +6,7 @@ import {
   UpdateDateColumn,
   ManyToOne,
   OneToMany,
-  JoinColumn
+  JoinColumn,
 } from 'typeorm';
 import { User } from './user.entity';
 import { LoanRequest } from './loan-request.entity';
@@ -14,10 +14,10 @@ import { Document } from './document.entity';
 import { ChatMessage } from './chat-message.entity';
 
 export enum ClientStatus {
-  ACTIVE    = 'ACTIVE',
-  INACTIVE  = 'INACTIVE',
+  ACTIVE = 'ACTIVE',
+  INACTIVE = 'INACTIVE',
   SUSPENDED = 'SUSPENDED',
-  PROSPECT  = 'PROSPECT',
+  PROSPECT = 'PROSPECT',
 }
 
 @Entity()
@@ -37,7 +37,7 @@ export class Client {
 
   // ▶ New fields
   @Column({ nullable: true })
-  document: string;          // e.g. national ID number
+  document: string; // e.g. national ID number
 
   @Column({ nullable: true })
   address: string;
@@ -74,9 +74,9 @@ export class Client {
   @OneToMany(() => LoanRequest, (loanRequest) => loanRequest.client)
   loanRequests: LoanRequest[];
 
-  @OneToMany(() => Document,   (document)   => document.client)
+  @OneToMany(() => Document, (document) => document.client)
   documents: Document[];
 
-  @OneToMany(() => ChatMessage,(chatMessage)=> chatMessage.client)
+  @OneToMany(() => ChatMessage, (chatMessage) => chatMessage.client)
   chatMessages: ChatMessage[];
 }

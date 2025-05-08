@@ -14,20 +14,26 @@ const BASE_URL = process.env.BASE_URL;
  *
  * @returns {Request[]}
  */
-
-
-export async function getRequestsByAgent(id) {
-	const res = await fetch(`${BASE_URL}/loan-request/agent/${id}`);
-	if (!res.ok) throw new Error("Error al obtener solicitudes");
-	return res.json();
-}
-
 export async function getAllRequests() {
 	const res = await fetch(`${BASE_URL}/loan-request`);
 	if (!res.ok) throw new Error("Error al obtener solicitudes");
 	return res.json();
 }
 
+/**
+ *
+ * @returns {Request[]}
+ */
+export async function getRequestsByAgent(id) {
+	const res = await fetch(`${BASE_URL}/loan-request/agent/${id}`);
+	if (!res.ok) throw new Error("Error al obtener solicitudes");
+	return res.json();
+}
+
+/**
+ *
+ * @returns {Request}
+ */
 export async function getRequestById(id) {
 	const res = await fetch(`${BASE_URL}/loan-request/${id}`);
 	if (!res.ok) throw new Error("Solicitud no encontrada");

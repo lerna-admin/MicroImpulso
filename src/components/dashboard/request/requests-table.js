@@ -34,7 +34,7 @@ const columns = [
 	{ formatter: (row) => <p>{row.client.document}</p>, name: "Identificación", width: "100px" },
 	{
 		formatter(row) {
-			return `$ ${row.amount}`;
+			return new Intl.NumberFormat("en-US", { style: "currency", currency: "COP" }).format(row.amount);
 		},
 		name: "Monto",
 		width: "70px",
@@ -116,7 +116,6 @@ export function ActionsCell({ row }) {
 
 	const handleViewLoanRequest = () => {
 		popover.handleClose();
-		// router.push(paths.dashboard.requests.preview(row.id));
 		router.push(paths.dashboard.requests.details(row.id));
 	};
 
