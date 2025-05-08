@@ -5,17 +5,16 @@ import Box from "@mui/material/Box";
 import GlobalStyles from "@mui/material/GlobalStyles";
 
 import { dashboardConfig } from "@/config/dashboard";
+import { useAuth } from "@/components/auth/custom/auth-context";
 import { useSettings } from "@/components/core/settings/settings-context";
 
 import { MainNav } from "./main-nav";
 import { SideNav } from "./side-nav";
-import { useAuth } from "@/components/auth/custom/auth-context";
 
 export function VerticalLayout({ children }) {
 	const { settings } = useSettings();
 
-	const { user } = useAuth(); // ya tienes el usuario completo desde el contexto
-
+	const { user } = useAuth();
 	const userRole = user?.role;
 
 	const filteredItems = React.useMemo(() => {

@@ -1,9 +1,9 @@
 import { paths } from "@/paths";
 
 export const ROLES = {
-	GERENTE: "gerente",
-	ADMIN: "admin",
-	AGENTE: "agente",
+	GERENTE: "MANAGER",
+	ADMIN: "ADMIN",
+	AGENTE: "AGENT",
 };
 
 export const rolePages = {
@@ -21,7 +21,7 @@ export const rolePages = {
 		paths.dashboard,
 		paths.dashboard.customers.list,
 		paths.dashboard.employees,
-		paths.dashboard.applications,
+		paths.dashboard.requests.list,
 	],
 	[ROLES.AGENTE]: [paths.dashboard, paths.dashboard.chat.base],
 };

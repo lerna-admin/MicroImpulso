@@ -18,11 +18,32 @@ export class LoanRequestService {
   }
 
   async findAll(): Promise<LoanRequest[]> {
-    return this.loanRequestRepository.find();
+    return this.loanRequestRepository
+      .createQueryBuilder('loan')
+      .leftJoinAndSelect('loan.client', 'client')
+      .leftJoinAndSelect('loan.agent', 'agent')
+      .select(['loan', 'client', 'agent.id', 'agent.name', 'agent.email', 'agent.role'])
+      .getMany();
+  }
+
+  async findAllByAgent(agentId: number): Promise<LoanRequest[]> {
+    return this.loanRequestRepository
+      .createQueryBuilder('loan')
+      .leftJoinAndSelect('loan.client', 'client')
+      .leftJoinAndSelect('loan.agent', 'agent')
+      .select(['loan', 'client', 'agent.id', 'agent.name', 'agent.email', 'agent.role'])
+      .where('loan.agentId = :agentId', { agentId })
+      .getMany();
   }
 
   async findById(id: number): Promise<LoanRequest | null> {
-    return this.loanRequestRepository.findOne({ where: { id } });
+    return this.loanRequestRepository
+      .createQueryBuilder('loan')
+      .leftJoinAndSelect('loan.client', 'client')
+      .leftJoinAndSelect('loan.agent', 'agent')
+      .select(['loan', 'client', 'agent.id', 'agent.name', 'agent.email', 'agent.role'])
+      .where('loan.id = :id', { id })
+      .getOne();
   }
 
   async update(id: number, updateLoanRequestDto: UpdateLoanRequestDto): Promise<LoanRequest> {

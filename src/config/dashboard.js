@@ -1,3 +1,5 @@
+import { ROLES } from "@/constants/roles";
+
 import { paths } from "@/paths";
 
 export const dashboardConfig = {
@@ -5,9 +7,9 @@ export const dashboardConfig = {
 	navColor: "evident",
 	navItems: [
 		{
-			key: "MANAGER",
+			key: ROLES.GERENTE,
 			title: "Gerente",
-			items: [
+			items: [  // Si quitas un item de cualquiera de los roles, desaparece tanto del sidebar como tampoco deja acceder por el middleware
 				{ key: "overview", title: "Resumen", href: paths.dashboard.overview, icon: "house" },
 				{ key: "analytics", title: "Analiticas", href: paths.dashboard.analytics, icon: "chart-pie" },
 				{ key: "reports", title: "Reportes", href: paths.dashboard.reports, icon: "article" },
@@ -44,7 +46,7 @@ export const dashboardConfig = {
 		},
 
 		{
-			key: "ADMIN",
+			key: ROLES.ADMIN,
 			title: "Administrador",
 			items: [
 				{
@@ -79,7 +81,7 @@ export const dashboardConfig = {
 		},
 
 		{
-			key: "AGENT",
+			key: ROLES.AGENTE,
 			title: "Agentes",
 			items: [
 				{

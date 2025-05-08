@@ -30,7 +30,7 @@ export class LoanRequest {
   // eslint-disable-next-line @typescript-eslint/no-unsafe-return
   @ManyToOne(() => User, (user) => user.loanRequests)
   @JoinColumn({ name: 'agentId' })
-  user: User;
+  agent: User;
 
   @CreateDateColumn()
   createdAt: Date;
