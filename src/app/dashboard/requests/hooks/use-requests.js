@@ -8,26 +8,40 @@
  * @property {number} id
  */
 
-const BASE_URL = process.env.API_URL || "https://680349a90a99cb7408eb8c47.mockapi.io";
+const BASE_URL = process.env.BASE_URL;
 
 /**
  *
  * @returns {Request[]}
  */
-export async function getRequests(page = 1, limit = 10) {
-	const res = await fetch(`${BASE_URL}/requests?page=${page}&limit=${limit}`);
+export async function getAllRequests() {
+	const res = await fetch(`${BASE_URL}/loan-request`);
 	if (!res.ok) throw new Error("Error al obtener solicitudes");
 	return res.json();
 }
 
+/**
+ *
+ * @returns {Request[]}
+ */
+export async function getRequestsByAgent(id) {
+	const res = await fetch(`${BASE_URL}/loan-request/agent/${id}`);
+	if (!res.ok) throw new Error("Error al obtener solicitudes");
+	return res.json();
+}
+
+/**
+ *
+ * @returns {Request}
+ */
 export async function getRequestById(id) {
-	const res = await fetch(`${BASE_URL}/requests/${id}`);
+	const res = await fetch(`${BASE_URL}/loan-request/${id}`);
 	if (!res.ok) throw new Error("Solicitud no encontrada");
 	return res.json();
 }
 
 export async function createRequest(data) {
-	const res = await fetch(`${BASE_URL}/requests`, {
+	const res = await fetch(`${BASE_URL}/loan-request`, {
 		method: "POST",
 		headers: { "Content-Type": "application/json" },
 		body: JSON.stringify(data),
@@ -37,7 +51,7 @@ export async function createRequest(data) {
 }
 
 export async function updateRequest(data) {
-	const res = await fetch(`${BASE_URL}/requests/${data.id}`, {
+	const res = await fetch(`${BASE_URL}/loan-request/${data.id}`, {
 		method: "PUT",
 		headers: { "Content-Type": "application/json" },
 		body: JSON.stringify(data),

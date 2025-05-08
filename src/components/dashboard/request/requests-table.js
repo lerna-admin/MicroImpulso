@@ -2,14 +2,13 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
-import { ListItemIcon, Menu, MenuItem, Tooltip } from "@mui/material";
+import { Menu, MenuItem, Tooltip } from "@mui/material";
 import Box from "@mui/material/Box";
 import Chip from "@mui/material/Chip";
 import IconButton from "@mui/material/IconButton";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 import {
-	CalendarCheck as CalendarCheckIcon,
 	DotsThree as DotsThreeIcon,
 	ExclamationMark as ExclamationMarkIcon,
 	XCircle as XCircleIcon,
@@ -26,16 +25,16 @@ const columns = [
 	{
 		formatter: (row) => (
 			<Stack direction="row" spacing={2} sx={{ alignItems: "center" }}>
-				<Typography variant="subtitle2">{row.fullName}</Typography>
+				<Typography variant="subtitle2">{row.client.name}</Typography>
 			</Stack>
 		),
 		name: "Nombre completo",
 		width: "150px",
 	},
-	{ field: "documentId", name: "Identificación", width: "100px" },
+	{ formatter: (row) => <p>{row.client.document}</p>, name: "Identificación", width: "100px" },
 	{
 		formatter(row) {
-			return `$ ${row.amount}`;
+			return new Intl.NumberFormat("en-US", { style: "currency", currency: "COP" }).format(row.amount);
 		},
 		name: "Monto",
 		width: "70px",
@@ -44,14 +43,14 @@ const columns = [
 		formatter(row) {
 			return dayjs(row.createdAt).format("MMM D, YYYY");
 		},
-		name: "Fecha Inicia",
+		name: "Fecha de inicio",
 		width: "100px",
 	},
 	{
 		formatter(row) {
-			return dayjs(row.createdAt).format("MMM D, YYYY");
+			return dayjs(row.updatedAt).format("MMM D, YYYY");
 		},
-		name: "Fecha Termina",
+		name: "Fecha de actualización",
 		width: "100px",
 	},
 
@@ -66,11 +65,12 @@ const columns = [
 					label: "En estudio",
 					icon: <ClockIcon color="var(--mui-palette-warning-main)" weight="fill" />,
 				},
-				true: {
+				approved: {
 					label: "Aprobada",
 					icon: <CheckCircleIcon color="var(--mui-palette-success-main)" weight="fill" />,
 				},
-				false: { label: "Rechazada", icon: <XCircleIcon color="var(--mui-palette-error-main)" weight="fill" /> },
+				rejected: { label: "Rechazada", icon: <XCircleIcon color="var(--mui-palette-error-main)" weight="fill" /> },
+				canceled: { label: "Cancelada", icon: <XCircleIcon color="var(--mui-palette-error-main)" weight="fill" /> },
 			};
 			const { label, icon } = mapping[row.status] ?? { label: "Unknown", icon: null };
 
@@ -79,7 +79,7 @@ const columns = [
 		name: "Estado",
 		width: "100px",
 	},
-	
+
 	{
 		formatter: (row) => <ActionsCell row={row} />,
 		name: "Acciones",
@@ -114,9 +114,9 @@ export function ActionsCell({ row }) {
 		popover.handleOpen();
 	};
 
-	const handlePaymentHistory = () => {
+	const handleViewLoanRequest = () => {
 		popover.handleClose();
-		router.push(paths.dashboard.requests.preview(row.id));
+		router.push(paths.dashboard.requests.details(row.id));
 	};
 
 	return (
@@ -162,14 +162,8 @@ export function ActionsCell({ row }) {
 				<MenuItem>
 					<Typography>Novedad</Typography>
 				</MenuItem>
-				<MenuItem>
-					<Typography>Ver Perfil</Typography>
-				</MenuItem>
-				<MenuItem onClick={handlePaymentHistory}>
-					<ListItemIcon>
-						<CalendarCheckIcon />
-					</ListItemIcon>
-					<Typography>Historico pagos</Typography>
+				<MenuItem onClick={handleViewLoanRequest}>
+					<Typography>Ver solicitud</Typography>
 				</MenuItem>
 			</Menu>
 		</>

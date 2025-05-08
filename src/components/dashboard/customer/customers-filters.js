@@ -20,8 +20,9 @@ export function CustomersFilters({ filters = {}, sortDir = "desc", count }) {
 		{ label: "Activos", value: "active", count: 0 },
 		{ label: "Inactivos", value: "inactive", count: 0 },
 		{ label: "Suspendidos", value: "suspended", count: 0 },
+		{ label: "Prospectos", value: "prospect", count: 0 },
 	]);
-	const { email, phoneNumber, status, documentId } = filters;
+	const { email, phone, status, document } = filters;
 
 	React.useEffect(() => {
 		setTabs((tabs) => tabs.map((tab) => (tab.value === status ? { ...tab, count: count } : tab)));
@@ -45,12 +46,12 @@ export function CustomersFilters({ filters = {}, sortDir = "desc", count }) {
 				searchParams.set("email", newFilters.email);
 			}
 
-			if (newFilters.documentId) {
-				searchParams.set("documentId", newFilters.documentId);
+			if (newFilters.document) {
+				searchParams.set("document", newFilters.document);
 			}
 
-			if (newFilters.phoneNumber) {
-				searchParams.set("phoneNumber", newFilters.phoneNumber);
+			if (newFilters.phone) {
+				searchParams.set("phone", newFilters.phone);
 			}
 
 			if (newFilters.page) {
@@ -79,7 +80,7 @@ export function CustomersFilters({ filters = {}, sortDir = "desc", count }) {
 
 	const handleCedulaChange = React.useCallback(
 		(value) => {
-			updateSearchParams({ ...filters, documentId: value }, sortDir);
+			updateSearchParams({ ...filters, document: value }, sortDir);
 		},
 		[updateSearchParams, filters, sortDir]
 	);
@@ -93,12 +94,12 @@ export function CustomersFilters({ filters = {}, sortDir = "desc", count }) {
 
 	const handlePhoneChange = React.useCallback(
 		(value) => {
-			updateSearchParams({ ...filters, phoneNumber: value }, sortDir);
+			updateSearchParams({ ...filters, phone: value }, sortDir);
 		},
 		[updateSearchParams, filters, sortDir]
 	);
 
-	const hasFilters = status || email || phoneNumber || documentId;
+	const hasFilters = status || email || phone || document;
 
 	return (
 		<div>
@@ -119,7 +120,7 @@ export function CustomersFilters({ filters = {}, sortDir = "desc", count }) {
 			<Stack direction="row" spacing={2} sx={{ alignItems: "center", flexWrap: "wrap", px: 3, py: 2 }}>
 				<Stack direction="row" spacing={2} sx={{ alignItems: "center", flex: "1 1 auto", flexWrap: "wrap" }}>
 					<FilterButton
-						displayValue={documentId}
+						displayValue={document}
 						label="Identificación"
 						onFilterApply={(value) => {
 							handleCedulaChange(value);
@@ -128,7 +129,7 @@ export function CustomersFilters({ filters = {}, sortDir = "desc", count }) {
 							handleCedulaChange();
 						}}
 						popover={<CedulaFilterPopover />}
-						value={documentId}
+						value={document}
 					/>
 					<FilterButton
 						displayValue={email}
@@ -143,7 +144,7 @@ export function CustomersFilters({ filters = {}, sortDir = "desc", count }) {
 						value={email}
 					/>
 					<FilterButton
-						displayValue={phoneNumber}
+						displayValue={phone}
 						label="Celular"
 						onFilterApply={(value) => {
 							handlePhoneChange(value);
@@ -152,7 +153,7 @@ export function CustomersFilters({ filters = {}, sortDir = "desc", count }) {
 							handlePhoneChange();
 						}}
 						popover={<PhoneFilterPopover />}
-						value={phoneNumber}
+						value={phone}
 					/>
 					{hasFilters ? <Button onClick={handleClearFilters}>Borrar filtros</Button> : null}
 				</Stack>

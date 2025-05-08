@@ -13,7 +13,7 @@ export enum LoanRequestStatus {
 @Entity()
 export class LoanRequest {
   @PrimaryGeneratedColumn('uuid')
-  id: string;
+  id: number;
 
   @Column('decimal', { precision: 10, scale: 2 })
   amount: number;
@@ -30,7 +30,7 @@ export class LoanRequest {
   // eslint-disable-next-line @typescript-eslint/no-unsafe-return
   @ManyToOne(() => User, (user) => user.loanRequests)
   @JoinColumn({ name: 'agentId' })
-  user: User;
+  agent: User;
 
   @CreateDateColumn()
   createdAt: Date;

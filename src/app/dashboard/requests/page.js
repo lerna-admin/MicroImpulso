@@ -1,4 +1,5 @@
 import * as React from "react";
+import { ROLES } from "@/constants/roles";
 import Box from "@mui/material/Box";
 import Card from "@mui/material/Card";
 import Divider from "@mui/material/Divider";
@@ -6,6 +7,7 @@ import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 
 import { appConfig } from "@/config/app";
+import { getUser } from "@/lib/custom-auth/server";
 import { dayjs } from "@/lib/dayjs";
 import { RequestModal } from "@/components/dashboard/request/request-modal";
 import { RequestsFilters } from "@/components/dashboard/request/requests-filters";
@@ -13,17 +15,21 @@ import { RequestsPagination } from "@/components/dashboard/request/requests-pagi
 import { RequestsSelectionProvider } from "@/components/dashboard/request/requests-selection-context";
 import { RequestsTable } from "@/components/dashboard/request/requests-table";
 
-import { getRequests } from "./hooks/use-requests";
+import { getAllRequests, getRequestsByAgent } from "./hooks/use-requests";
 
 export const metadata = { title: `Solicitudes | Dashboard | ${appConfig.name}` };
 
 export default async function Page({ searchParams }) {
-	const requests = await getRequests();
+	const {
+		data: { user },
+	} = await getUser();
 
-	const { fullName, documentId, previewId, sortDir, status } = await searchParams;
+	const requests = user.role === ROLES.AGENTE ? await getRequestsByAgent(user.id) : await getAllRequests();
+
+	const { name, document, previewId, sortDir, status } = await searchParams;
 
 	const sortedRequests = applySort(requests, sortDir);
-	const filteredRequests = applyFilters(sortedRequests, { fullName, documentId, status });
+	const filteredRequests = applyFilters(sortedRequests, { name, document, status });
 
 	return (
 		<React.Fragment>
@@ -43,7 +49,11 @@ export default async function Page({ searchParams }) {
 					</Stack>
 					<RequestsSelectionProvider requests={filteredRequests}>
 						<Card>
-							<RequestsFilters filters={{ fullName, documentId, status }} sortDir={sortDir} count={filteredRequests.length} />
+							<RequestsFilters
+								filters={{ name, document, status }}
+								sortDir={sortDir}
+								count={filteredRequests.length}
+							/>
 							<Divider />
 							<Box sx={{ overflowX: "auto" }}>
 								<RequestsTable rows={filteredRequests} />
@@ -71,24 +81,20 @@ function applySort(row, sortDir) {
 	});
 }
 
-function applyFilters(row, { fullName, documentId, status }) {
+function applyFilters(row, { name, document, status }) {
 	return row.filter((item) => {
-		if (fullName && !item.fullName?.toLowerCase().includes(fullName.toLowerCase())) {
+		if (name && !item.client.name?.toLowerCase().includes(name.toLowerCase())) {
 			return false;
 		}
 
-		if (documentId && !item.documentId?.toLowerCase().includes(documentId.toLowerCase())) {
+		if (document && !item.client.document?.toLowerCase().includes(document.toLowerCase())) {
 			return false;
 		}
 
-		if (status && parseStatus(item.status) !== status) {
+		if (status && item.status !== status) {
 			return false;
 		}
 
 		return true;
 	});
-}
-
-function parseStatus(status) {
-	return status == true ? "approved" : "rejected";
 }

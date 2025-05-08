@@ -89,10 +89,10 @@ export const paths = {
 		pqr: "/dashboard/pqr",
 		reports: "/dashboard/reports",
 		requests: {
-			list: "/dashboard/requests",
 			create: "/dashboard/requests/create",
-			preview: (orderId) => `/dashboard/requests?previewId=${orderId}`,
 			details: (orderId) => `/dashboard/requests/${orderId}`,
+			list: "/dashboard/requests",
+			preview: (orderId) => `/dashboard/requests?previewId=${orderId}`,
 		},
 		settings: {
 			account: "/dashboard/settings/account",
@@ -102,6 +102,7 @@ export const paths = {
 			security: "/dashboard/settings/security",
 			team: "/dashboard/settings/team",
 		},
+		simulator: "/dashboard/simulator-credit",
 		social: {
 			profile: { timeline: "/dashboard/social/profile", connections: "/dashboard/social/profile/connections" },
 			feed: "/dashboard/social/feed",

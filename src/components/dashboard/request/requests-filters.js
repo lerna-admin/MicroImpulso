@@ -25,7 +25,7 @@ export function RequestsFilters({ filters = {}, sortDir = "desc", count }) {
 		{ label: "Rechazada", value: "rejected", count: 0 },
 	]);
 
-	const { fullName, documentId, status } = filters;
+	const { name, document, status } = filters;
 
 	React.useEffect(() => {
 		setTabs((tabs) => tabs.map((tab) => (tab.value === status ? { ...tab, count: count } : tab)));
@@ -45,12 +45,12 @@ export function RequestsFilters({ filters = {}, sortDir = "desc", count }) {
 				searchParams.set("status", newFilters.status);
 			}
 
-			if (newFilters.documentId) {
-				searchParams.set("documentId", newFilters.documentId);
+			if (newFilters.document) {
+				searchParams.set("document", newFilters.document);
 			}
 
-			if (newFilters.fullName) {
-				searchParams.set("fullName", newFilters.fullName);
+			if (newFilters.name) {
+				searchParams.set("name", newFilters.name);
 			}
 
 			router.push(`${paths.dashboard.requests.list}?${searchParams.toString()}`);
@@ -71,14 +71,14 @@ export function RequestsFilters({ filters = {}, sortDir = "desc", count }) {
 
 	const handleCustomerChange = React.useCallback(
 		(value) => {
-			updateSearchParams({ ...filters, fullName: value }, sortDir);
+			updateSearchParams({ ...filters, name: value }, sortDir);
 		},
 		[updateSearchParams, filters, sortDir]
 	);
 
 	const handleIdChange = React.useCallback(
 		(value) => {
-			updateSearchParams({ ...filters, documentId: value }, sortDir);
+			updateSearchParams({ ...filters, document: value }, sortDir);
 		},
 		[updateSearchParams, filters, sortDir]
 	);
@@ -90,7 +90,7 @@ export function RequestsFilters({ filters = {}, sortDir = "desc", count }) {
 		[updateSearchParams, filters]
 	);
 
-	const hasFilters = status || documentId || fullName;
+	const hasFilters = status || document || name;
 
 	return (
 		<div>
@@ -111,7 +111,7 @@ export function RequestsFilters({ filters = {}, sortDir = "desc", count }) {
 			<Stack direction="row" spacing={2} sx={{ alignItems: "center", flexWrap: "wrap", p: 2 }}>
 				<Stack direction="row" spacing={2} sx={{ alignItems: "center", flex: "1 1 auto", flexWrap: "wrap" }}>
 					<FilterButton
-						displayValue={documentId}
+						displayValue={document}
 						label="Identificación"
 						onFilterApply={(value) => {
 							handleIdChange(value);
@@ -120,10 +120,10 @@ export function RequestsFilters({ filters = {}, sortDir = "desc", count }) {
 							handleIdChange();
 						}}
 						popover={<IdFilterPopover />}
-						value={documentId}
+						value={document}
 					/>
 					<FilterButton
-						displayValue={fullName}
+						displayValue={name}
 						label="Nombres"
 						onFilterApply={(value) => {
 							handleCustomerChange(value);
@@ -132,7 +132,7 @@ export function RequestsFilters({ filters = {}, sortDir = "desc", count }) {
 							handleCustomerChange();
 						}}
 						popover={<CustomerFilterPopover />}
-						value={fullName}
+						value={name}
 					/>
 					{hasFilters ? <Button onClick={handleClearFilters}>Borrar filtros</Button> : null}
 				</Stack>

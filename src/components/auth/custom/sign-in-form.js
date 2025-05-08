@@ -59,7 +59,8 @@ export function SignInForm() {
 				return;
 			}
 
-			auth.setUser(data?.user || null); // Puedes ajustar esto si devuelves un usuario
+			auth.setUser(data || null); // Puedes ajustar esto si devuelves un usuario
+
 			router.push("/dashboard"); // Redirige al dashboard
 		},
 		[auth, router, setError]

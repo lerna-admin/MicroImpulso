@@ -10,6 +10,7 @@ import Tooltip from "@mui/material/Tooltip";
 import { Bell as BellIcon } from "@phosphor-icons/react/dist/ssr/Bell";
 
 import { usePopover } from "@/hooks/use-popover";
+import { useAuth } from "@/components/auth/custom/auth-context";
 
 import { MobileNav } from "../mobile-nav";
 import { NotificationsPopover } from "../notifications-popover";
@@ -50,7 +51,6 @@ export function MainNav({ items }) {
 						sx={{ alignItems: "center", flex: "1 1 auto", justifyContent: "flex-end" }}
 					>
 						<NotificationsButton />
-
 						<UserButton />
 					</Stack>
 				</Box>
@@ -71,16 +71,10 @@ function NotificationsButton() {
 
 	return (
 		<React.Fragment>
-			<Tooltip title="Notifications">
-				<Badge
-					color="error"
-					sx={{ "& .MuiBadge-dot": { borderRadius: "50%", height: "10px", right: "6px", top: "6px", width: "10px" } }}
-					variant="dot"
-				>
-					<IconButton onClick={popover.handleOpen} ref={popover.anchorRef}>
-						<BellIcon />
-					</IconButton>
-				</Badge>
+			<Tooltip title="Notificaciones">
+				<IconButton onClick={popover.handleOpen} ref={popover.anchorRef}>
+					<BellIcon />
+				</IconButton>
 			</Tooltip>
 			<NotificationsPopover anchorEl={popover.anchorRef.current} onClose={popover.handleClose} open={popover.open} />
 		</React.Fragment>
@@ -89,34 +83,62 @@ function NotificationsButton() {
 
 function UserButton() {
 	const popover = usePopover();
+	const { user } = useAuth();
+
+	const userName = user?.name || "Usuario";
 
 	return (
 		<React.Fragment>
-			<Box
-				component="button"
-				onClick={popover.handleOpen}
-				ref={popover.anchorRef}
-				sx={{ border: "none", background: "transparent", cursor: "pointer", p: 0 }}
-			>
-				<Badge
-					anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
-					color="success"
-					sx={{
-						"& .MuiBadge-dot": {
-							border: "2px solid var(--MainNav-background)",
-							borderRadius: "50%",
-							bottom: "6px",
-							height: "12px",
-							right: "6px",
-							width: "12px",
-						},
-					}}
-					variant="dot"
+			<Tooltip title="Usuario">
+				<Box
+					component="button"
+					onClick={popover.handleOpen}
+					ref={popover.anchorRef}
+					sx={{ border: "none", background: "transparent", cursor: "pointer", p: 0 }}
 				>
-					<Avatar />
-				</Badge>
-			</Box>
-			<UserPopover anchorEl={popover.anchorRef.current} onClose={popover.handleClose} open={popover.open} />
+					<Avatar {...stringAvatar(userName)} />
+				</Box>
+				<UserPopover anchorEl={popover.anchorRef.current} onClose={popover.handleClose} open={popover.open} />
+			</Tooltip>
 		</React.Fragment>
 	);
+}
+
+function stringAvatar(name = "") {
+	const initials = name
+		.split(" ")
+		.filter(Boolean)
+		.map((n) => n[0])
+		.slice(0, 2)
+		.join("");
+
+	return {
+		sx: {
+			bgcolor: stringToColor(name),
+		},
+		children: initials || "U",
+	};
+}
+
+function stringToColor(string) {
+	let hash = 0;
+	let i;
+
+	for (i = 0; i < string.length; i += 1) {
+		hash = string.codePointAt(i) + ((hash << 5) - hash);
+	}
+
+	let color = "#";
+
+	for (i = 0; i < 3; i += 1) {
+		// eslint-disable-next-line unicorn/number-literal-case
+		const value = (hash >> (i * 8)) & 0xff;
+		color += `00${value.toString(16)}`.slice(-2);
+	}
+
+	if (string === "Usuario") {
+		color = "#999999";
+	}
+
+	return color;
 }

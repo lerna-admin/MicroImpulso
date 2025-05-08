@@ -28,7 +28,6 @@ export class User {
 
   @Column({ unique: true, nullable: true })
   document: string;
-  
 
   @Column()
   password: string;

@@ -11,6 +11,8 @@ import Typography from "@mui/material/Typography";
 import {
 	CardsThree as CardsThreeIcon,
 	DotsThree as DotsThreeIcon,
+	Timer as TimerIcon,
+	WarningDiamond as WarningDiamondIcon,
 	XCircle as XCircleIcon,
 } from "@phosphor-icons/react/dist/ssr";
 import { CheckCircle as CheckCircleIcon } from "@phosphor-icons/react/dist/ssr/CheckCircle";
@@ -27,7 +29,7 @@ export function CustomersTable({ rows }) {
 			formatter: (row) => (
 				<Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
 					<div>
-						<Typography variant="subtitle2">{row.fullName}</Typography>
+						<Typography variant="subtitle2">{row.name}</Typography>
 						<Typography color="text.secondary" variant="body2">
 							{row.email}
 						</Typography>
@@ -37,35 +39,40 @@ export function CustomersTable({ rows }) {
 			name: "Nombre Completo",
 			width: "150px",
 		},
-		{ field: "documentId", name: "Identificación", width: "150px" },
-		{ field: "phoneNumber", name: "Celular", width: "130px" },
+		{ field: "document", name: "Identificación", width: "150px" },
+		{ field: "phone", name: "Celular", width: "130px" },
 		{ field: "address", name: "Dirección", width: "150px" },
 		{
 			formatter(row) {
-				return `$ ${row.amountTaken}`;
+				return new Intl.NumberFormat("en-US", { style: "currency", currency: "COP" }).format(row.totalLoanAmount);
 			},
 			name: "Monto Prestado",
 			width: "100px",
 		},
 		{
 			formatter(row) {
-				return dayjs(row.startDate).format("MMM D, YYYY");
+				return dayjs(row.createdAt).format("MMM D, YYYY");
 			},
-			name: "Fecha Inicio",
+			name: "Fecha creación",
 			width: "150px",
 		},
 		{
 			formatter(row) {
-				return dayjs(row.endDate).format("MMM D, YYYY");
+				return dayjs(row.updatedAt).format("MMM D, YYYY");
 			},
-			name: "Fecha Fin",
+			name: "Fecha actualizada",
 			width: "150px",
 		},
 		{
 			formatter: (row) => {
 				const mapping = {
-					true: { label: "Activo", icon: <CheckCircleIcon color="var(--mui-palette-success-main)" weight="fill" /> },
-					false: { label: "Inactivo", icon: <XCircleIcon color="var(--mui-palette-error-main)" weight="fill" /> },
+					active: { label: "Activo", icon: <CheckCircleIcon color="var(--mui-palette-success-main)" weight="fill" /> },
+					inactive: { label: "Inactivo", icon: <XCircleIcon color="var(--mui-palette-error-main)" weight="fill" /> },
+					suspended: { label: "Suspendido", icon: <TimerIcon color="var(--mui-palette-warning-main)" weight="fill" /> },
+					prospect: {
+						label: "Prospecto",
+						icon: <WarningDiamondIcon color="var(--mui-palette-info-main)" weight="fill" />,
+					},
 				};
 				const { label, icon } = mapping[row.status] ?? { label: "Unknown", icon: null };
 
@@ -112,9 +119,9 @@ export function ActionsCell({ row }) {
 		router.push(paths.dashboard.customers.details(row.id));
 	};
 
-	const handleApplications = () => {
+	const handleLoanRequests = () => {
 		popover.handleClose();
-		router.push(paths.dashboard.applications);
+		router.push(`${paths.dashboard.requests.list}?document=${row.document}`);
 	};
 
 	return (
@@ -136,7 +143,7 @@ export function ActionsCell({ row }) {
 					</ListItemIcon>
 					<Typography>Editar perfil</Typography>
 				</MenuItem>
-				<MenuItem onClick={handleApplications}>
+				<MenuItem onClick={handleLoanRequests}>
 					<ListItemIcon>
 						<CardsThreeIcon />
 					</ListItemIcon>

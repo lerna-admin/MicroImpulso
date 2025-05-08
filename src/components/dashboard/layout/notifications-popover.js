@@ -18,39 +18,7 @@ import { X as XIcon } from "@phosphor-icons/react/dist/ssr/X";
 
 import { dayjs } from "@/lib/dayjs";
 
-const notifications = [
-	{
-		id: "EV-004",
-		createdAt: dayjs().subtract(7, "minute").subtract(5, "hour").subtract(1, "day").toDate(),
-		read: false,
-		type: "new_job",
-		author: { name: "Jie Yan", avatar: "/assets/avatar-8.png" },
-		job: { title: "Remote React / React Native Developer" },
-	},
-	{
-		id: "EV-003",
-		createdAt: dayjs().subtract(18, "minute").subtract(3, "hour").subtract(5, "day").toDate(),
-		read: true,
-		type: "new_job",
-		author: { name: "Fran Perez", avatar: "/assets/avatar-5.png" },
-		job: { title: "Senior Golang Backend Engineer" },
-	},
-	{
-		id: "EV-002",
-		createdAt: dayjs().subtract(4, "minute").subtract(5, "hour").subtract(7, "day").toDate(),
-		read: true,
-		type: "new_feature",
-		description: "Logistics management is now available",
-	},
-	{
-		id: "EV-001",
-		createdAt: dayjs().subtract(7, "minute").subtract(8, "hour").subtract(7, "day").toDate(),
-		read: true,
-		type: "new_company",
-		author: { name: "Jie Yan", avatar: "/assets/avatar-8.png" },
-		company: { name: "Stripe" },
-	},
-];
+const notifications = [];
 
 export function NotificationsPopover({ anchorEl, onClose, onMarkAllAsRead, onRemoveOne, open = false }) {
 	return (
@@ -63,7 +31,7 @@ export function NotificationsPopover({ anchorEl, onClose, onMarkAllAsRead, onRem
 			transformOrigin={{ horizontal: "right", vertical: "top" }}
 		>
 			<Stack direction="row" spacing={2} sx={{ alignItems: "center", justifyContent: "space-between", px: 3, py: 2 }}>
-				<Typography variant="h6">Notifications</Typography>
+				<Typography variant="h6">Notificaciones</Typography>
 				<Tooltip title="Mark all as read">
 					<IconButton edge="end" onClick={onMarkAllAsRead}>
 						<EnvelopeSimpleIcon />
@@ -72,7 +40,7 @@ export function NotificationsPopover({ anchorEl, onClose, onMarkAllAsRead, onRem
 			</Stack>
 			{notifications.length === 0 ? (
 				<Box sx={{ p: 2 }}>
-					<Typography variant="subtitle2">There are no notifications</Typography>
+					<Typography variant="subtitle2">No hay notificaciones</Typography>
 				</Box>
 			) : (
 				<Box sx={{ maxHeight: "270px", overflowY: "auto" }}>

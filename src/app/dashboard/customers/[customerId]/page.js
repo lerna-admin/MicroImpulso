@@ -10,6 +10,11 @@ import Grid from "@mui/material/Grid2";
 import Link from "@mui/material/Link";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
+import {
+	Timer as TimerIcon,
+	WarningDiamond as WarningDiamondIcon,
+	XCircle as XCircleIcon,
+} from "@phosphor-icons/react/dist/ssr";
 import { ArrowLeft as ArrowLeftIcon } from "@phosphor-icons/react/dist/ssr/ArrowLeft";
 import { CheckCircle as CheckCircleIcon } from "@phosphor-icons/react/dist/ssr/CheckCircle";
 import { User as UserIcon } from "@phosphor-icons/react/dist/ssr/User";
@@ -26,6 +31,14 @@ export const metadata = { title: `Detalle | Clientes | Dashboard | ${appConfig.n
 export default async function Page({ params }) {
 	const { customerId } = params;
 	const customer = await getCustomerById(customerId);
+
+	const mappingIcons = {
+		active: { label: "Activo", icon: <CheckCircleIcon color="var(--mui-palette-success-main)" weight="fill" /> },
+		inactive: { label: "Inactivo", icon: <XCircleIcon color="var(--mui-palette-error-main)" weight="fill" /> },
+		suspended: { label: "Suspendido", icon: <TimerIcon color="var(--mui-palette-warning-main)" weight="fill" /> },
+		prospect: { label: "Prospecto", icon: <WarningDiamondIcon color="var(--mui-palette-info-main)" weight="fill" /> },
+	};
+	const { label, icon } = mappingIcons[customer.status] ?? { label: "Unknown", icon: null };
 
 	return (
 		<Box
@@ -50,21 +63,6 @@ export default async function Page({ params }) {
 							Clientes
 						</Link>
 					</div>
-					<Stack direction={{ xs: "column", sm: "row" }} spacing={3} sx={{ alignItems: "flex-start" }}>
-						<Stack direction="row" spacing={2} sx={{ alignItems: "center", flex: "1 1 auto" }}>
-							<div>
-								<Stack direction="row" spacing={2} sx={{ alignItems: "center", flexWrap: "wrap" }}>
-									<Typography variant="h4">{customer.fullName}</Typography>
-									<Chip
-										icon={<CheckCircleIcon color="var(--mui-palette-success-main)" weight="fill" />}
-										label="Activo"
-										size="small"
-										variant="outlined"
-									/>
-								</Stack>
-							</div>
-						</Stack>
-					</Stack>
 				</Stack>
 				<Grid container spacing={4}>
 					<Grid
@@ -76,6 +74,11 @@ export default async function Page({ params }) {
 						<Stack spacing={4}>
 							<Card>
 								<CardHeader
+									subheader={
+										<Stack direction="row" spacing={2} sx={{ alignItems: "center", flexWrap: "wrap", paddingTop: 1 }}>
+											<Chip icon={icon} label={label} size="small" variant="outlined" />
+										</Stack>
+									}
 									avatar={
 										<Avatar>
 											<UserIcon fontSize="var(--Icon-fontSize)" />

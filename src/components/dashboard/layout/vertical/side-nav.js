@@ -49,7 +49,7 @@ export function SideNav({ color = "evident", items = [] }) {
 		>
 			<Stack spacing={2} sx={{ p: 2 }}>
 				<div>
-					<Box component={RouterLink} href={paths.home} sx={{ display: "inline-flex", textDecoration: "none" }}>
+					<Box component={RouterLink} href={paths.dashboard.overview} sx={{ display: "inline-flex", textDecoration: "none" }}>
 						<Logo color={logoColor} height={60} width={60} />
 						<Typography variant="body1" color="white" alignContent={"center"} fontWeight={"bold"}>
 							icroImpulso

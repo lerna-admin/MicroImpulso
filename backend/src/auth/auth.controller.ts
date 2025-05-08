@@ -19,7 +19,7 @@ export class AuthController {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    const [token, role] = result;
-    return { token, role };
+    const [token] = result;
+    return { token };
   }
 }
