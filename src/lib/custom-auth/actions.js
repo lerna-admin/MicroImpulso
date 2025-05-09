@@ -81,7 +81,7 @@ export async function signInWithApi({ document, password }) {
 		cookieStore.set("access_token", token, {
 			path: "/",
 			httpOnly: true,
-			secure: true,
+			secure: false,
 			sameSite: "lax",
 			maxAge: 60 * 60 * 24, // 1 día
 		});
