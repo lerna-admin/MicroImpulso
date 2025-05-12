@@ -17,10 +17,10 @@ import { FilterButton, FilterPopover, useFilterContext } from "@/components/core
 export function CustomersFilters({ filters = {}, sortDir = "desc", count }) {
 	const [tabs, setTabs] = React.useState([
 		{ label: "Todos", value: "", count: 0 },
-		{ label: "Activos", value: "active", count: 0 },
-		{ label: "Inactivos", value: "inactive", count: 0 },
-		{ label: "Suspendidos", value: "suspended", count: 0 },
-		{ label: "Prospectos", value: "prospect", count: 0 },
+		{ label: "Activos", value: "ACTIVE", count: 0 },
+		{ label: "Inactivos", value: "INACTIVE", count: 0 },
+		{ label: "Suspendidos", value: "SUSPENDED", count: 0 },
+		{ label: "Prospectos", value: "PROSPECT", count: 0 },
 	]);
 	const { email, phone, status, document } = filters;
 

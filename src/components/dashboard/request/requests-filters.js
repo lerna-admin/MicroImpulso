@@ -111,18 +111,6 @@ export function RequestsFilters({ filters = {}, sortDir = "desc", count }) {
 			<Stack direction="row" spacing={2} sx={{ alignItems: "center", flexWrap: "wrap", p: 2 }}>
 				<Stack direction="row" spacing={2} sx={{ alignItems: "center", flex: "1 1 auto", flexWrap: "wrap" }}>
 					<FilterButton
-						displayValue={document}
-						label="Identificación"
-						onFilterApply={(value) => {
-							handleIdChange(value);
-						}}
-						onFilterDelete={() => {
-							handleIdChange();
-						}}
-						popover={<IdFilterPopover />}
-						value={document}
-					/>
-					<FilterButton
 						displayValue={name}
 						label="Nombres"
 						onFilterApply={(value) => {
@@ -133,6 +121,18 @@ export function RequestsFilters({ filters = {}, sortDir = "desc", count }) {
 						}}
 						popover={<NameFilterPopover />}
 						value={name}
+					/>
+					<FilterButton
+						displayValue={document}
+						label="Identificación"
+						onFilterApply={(value) => {
+							handleIdChange(value);
+						}}
+						onFilterDelete={() => {
+							handleIdChange();
+						}}
+						popover={<DocumentFilterPopover />}
+						value={document}
 					/>
 					{hasFilters ? <Button onClick={handleClearFilters}>Borrar filtros</Button> : null}
 				</Stack>
@@ -181,7 +181,7 @@ function NameFilterPopover() {
 	);
 }
 
-function IdFilterPopover() {
+function DocumentFilterPopover() {
 	const { anchorEl, onApply, onClose, open, value: initialValue } = useFilterContext();
 	const [value, setValue] = React.useState("");
 

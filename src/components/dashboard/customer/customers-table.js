@@ -74,7 +74,7 @@ export function CustomersTable({ rows }) {
 						icon: <WarningDiamondIcon color="var(--mui-palette-info-main)" weight="fill" />,
 					},
 				};
-				const { label, icon } = mapping[row.status] ?? { label: "Unknown", icon: null };
+				const { label, icon } = mapping[row.status.toLowerCase()] ?? { label: "Unknown", icon: null };
 
 				return <Chip icon={icon} label={label} size="small" variant="outlined" />;
 			},
