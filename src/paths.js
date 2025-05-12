@@ -55,7 +55,6 @@ export const paths = {
 			list: "/dashboard/customers",
 		},
 		eCommerce: "/dashboard/e-commerce",
-		employees: "/dashboard/employees",
 		fileStorage: "/dashboard/file-storage",
 		i18n: "/dashboard/i18n",
 		invoices: {
@@ -108,8 +107,9 @@ export const paths = {
 			feed: "/dashboard/social/feed",
 		},
 		tasks: "/dashboard/tasks",
+		users: "/dashboard/users"
 	},
-	dataDeletion:"/data-deletion",
+	dataDeletion: "/data-deletion",
 	docs: "https://material-kit-pro-react-docs.devias.io",
 	home: "/",
 	internalServerError: "/errors/internal-server-error",
