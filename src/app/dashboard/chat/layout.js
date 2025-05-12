@@ -3,6 +3,7 @@ import * as React from "react";
 import { dayjs } from "@/lib/dayjs";
 import { ChatProvider } from "@/components/dashboard/chat/chat-context";
 import { ChatView } from "@/components/dashboard/chat/chat-view";
+import {getAllConversationsByAgent} from "./hooks/use-conversations"
 
 const contacts = [
 	{
@@ -197,7 +198,10 @@ const messages = [
 	},
 ];
 
+const {client } = await getAllConversationsByAgent()
 export default function Layout({ children }) {
+
+
 	return (
 		<ChatProvider contacts={contacts} messages={messages} threads={threads}>
 			<ChatView>{children}</ChatView>

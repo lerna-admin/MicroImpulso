@@ -9,7 +9,8 @@ export const dashboardConfig = {
 		{
 			key: ROLES.GERENTE,
 			title: "Gerente",
-			items: [  // Si quitas un item de cualquiera de los roles, desaparece tanto del sidebar como tampoco deja acceder por el middleware
+			items: [
+				// Si quitas un item de cualquiera de los roles, desaparece tanto del sidebar como tampoco deja acceder por el middleware
 				{ key: "overview", title: "Resumen", href: paths.dashboard.overview, icon: "house" },
 				{ key: "analytics", title: "Analiticas", href: paths.dashboard.analytics, icon: "chart-pie" },
 				{ key: "reports", title: "Reportes", href: paths.dashboard.reports, icon: "article" },
@@ -39,8 +40,8 @@ export const dashboardConfig = {
 					key: "agents",
 					title: "Agentes",
 					icon: "identification-badge",
-					href: paths.dashboard.employees,
-					matcher: { type: "startsWith", href: "/dashboard/employees" },
+					href: paths.dashboard.users,
+					matcher: { type: "startsWith", href: "/dashboard/users" },
 				},
 			],
 		},
@@ -60,8 +61,8 @@ export const dashboardConfig = {
 					key: "agents",
 					title: "Agentes",
 					icon: "identification-badge",
-					href: paths.dashboard.employees,
-					matcher: { type: "startsWith", href: "/dashboard/employees" },
+					href: paths.dashboard.users,
+					matcher: { type: "startsWith", href: "/dashboard/users" },
 				},
 				{
 					key: "requests",

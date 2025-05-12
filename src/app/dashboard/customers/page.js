@@ -82,7 +82,6 @@ function applyFilters(row, { email, phone, status, document }) {
 		if (document && !item.document?.toLowerCase().includes(document.toLowerCase())) {
 			return false;
 		}
-
 		if (email && !item.email?.toLowerCase().includes(email.toLowerCase())) {
 			return false;
 		}
@@ -90,7 +89,6 @@ function applyFilters(row, { email, phone, status, document }) {
 		if (phone && !item.phone?.toLowerCase().includes(phone.toLowerCase())) {
 			return false;
 		}
-
 		if (status && item.status !== status) {
 			return false;
 		}

@@ -69,7 +69,7 @@ export function RequestsFilters({ filters = {}, sortDir = "desc", count }) {
 		[updateSearchParams, filters, sortDir]
 	);
 
-	const handleCustomerChange = React.useCallback(
+	const handleNameChange = React.useCallback(
 		(value) => {
 			updateSearchParams({ ...filters, name: value }, sortDir);
 		},
@@ -111,6 +111,18 @@ export function RequestsFilters({ filters = {}, sortDir = "desc", count }) {
 			<Stack direction="row" spacing={2} sx={{ alignItems: "center", flexWrap: "wrap", p: 2 }}>
 				<Stack direction="row" spacing={2} sx={{ alignItems: "center", flex: "1 1 auto", flexWrap: "wrap" }}>
 					<FilterButton
+						displayValue={name}
+						label="Nombres"
+						onFilterApply={(value) => {
+							handleNameChange(value);
+						}}
+						onFilterDelete={() => {
+							handleNameChange();
+						}}
+						popover={<NameFilterPopover />}
+						value={name}
+					/>
+					<FilterButton
 						displayValue={document}
 						label="Identificación"
 						onFilterApply={(value) => {
@@ -119,20 +131,8 @@ export function RequestsFilters({ filters = {}, sortDir = "desc", count }) {
 						onFilterDelete={() => {
 							handleIdChange();
 						}}
-						popover={<IdFilterPopover />}
+						popover={<DocumentFilterPopover />}
 						value={document}
-					/>
-					<FilterButton
-						displayValue={name}
-						label="Nombres"
-						onFilterApply={(value) => {
-							handleCustomerChange(value);
-						}}
-						onFilterDelete={() => {
-							handleCustomerChange();
-						}}
-						popover={<CustomerFilterPopover />}
-						value={name}
 					/>
 					{hasFilters ? <Button onClick={handleClearFilters}>Borrar filtros</Button> : null}
 				</Stack>
@@ -146,7 +146,7 @@ export function RequestsFilters({ filters = {}, sortDir = "desc", count }) {
 	);
 }
 
-function CustomerFilterPopover() {
+function NameFilterPopover() {
 	const { anchorEl, onApply, onClose, open, value: initialValue } = useFilterContext();
 	const [value, setValue] = React.useState("");
 
@@ -181,7 +181,7 @@ function CustomerFilterPopover() {
 	);
 }
 
-function IdFilterPopover() {
+function DocumentFilterPopover() {
 	const { anchorEl, onApply, onClose, open, value: initialValue } = useFilterContext();
 	const [value, setValue] = React.useState("");
 

@@ -4,18 +4,10 @@ import * as React from "react";
 import { useRouter } from "next/navigation";
 import { ListItemIcon, Menu, MenuItem, Tooltip } from "@mui/material";
 import Box from "@mui/material/Box";
-import Chip from "@mui/material/Chip";
 import IconButton from "@mui/material/IconButton";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
-import {
-	CardsThree as CardsThreeIcon,
-	DotsThree as DotsThreeIcon,
-	Timer as TimerIcon,
-	WarningDiamond as WarningDiamondIcon,
-	XCircle as XCircleIcon,
-} from "@phosphor-icons/react/dist/ssr";
-import { CheckCircle as CheckCircleIcon } from "@phosphor-icons/react/dist/ssr/CheckCircle";
+import { CardsThree as CardsThreeIcon, DotsThree as DotsThreeIcon } from "@phosphor-icons/react/dist/ssr";
 import { PencilSimple as PencilSimpleIcon } from "@phosphor-icons/react/dist/ssr/PencilSimple";
 
 import { paths } from "@/paths";
@@ -23,7 +15,7 @@ import { dayjs } from "@/lib/dayjs";
 import { usePopover } from "@/hooks/use-popover";
 import { DataTable } from "@/components/core/data-table";
 
-export function CustomersTable({ rows }) {
+export function UsersTable({ rows }) {
 	const columns = [
 		{
 			formatter: (row) => (
@@ -40,15 +32,7 @@ export function CustomersTable({ rows }) {
 			width: "150px",
 		},
 		{ field: "document", name: "Identificación", width: "150px" },
-		{ field: "phone", name: "Celular", width: "130px" },
-		{ field: "address", name: "Dirección", width: "150px" },
-		{
-			formatter(row) {
-				return new Intl.NumberFormat("en-US", { style: "currency", currency: "COP" }).format(row.totalLoanAmount);
-			},
-			name: "Monto Prestado",
-			width: "100px",
-		},
+		{ field: "role", name: "Rol", width: "150px" },
 		{
 			formatter(row) {
 				return dayjs(row.createdAt).format("MMM D, YYYY");
@@ -63,31 +47,14 @@ export function CustomersTable({ rows }) {
 			name: "Fecha actualizada",
 			width: "150px",
 		},
-		{
-			formatter: (row) => {
-				const mapping = {
-					active: { label: "Activo", icon: <CheckCircleIcon color="var(--mui-palette-success-main)" weight="fill" /> },
-					inactive: { label: "Inactivo", icon: <XCircleIcon color="var(--mui-palette-error-main)" weight="fill" /> },
-					suspended: { label: "Suspendido", icon: <TimerIcon color="var(--mui-palette-warning-main)" weight="fill" /> },
-					prospect: {
-						label: "Prospecto",
-						icon: <WarningDiamondIcon color="var(--mui-palette-info-main)" weight="fill" />,
-					},
-				};
-				const { label, icon } = mapping[row.status.toLowerCase()] ?? { label: "Unknown", icon: null };
 
-				return <Chip icon={icon} label={label} size="small" variant="outlined" />;
-			},
-			name: "Estado",
-			width: "100px",
-		},
-		{
-			formatter: (row) => <ActionsCell row={row} />,
-			name: "Acciones",
-			hideName: true,
-			width: "70px",
-			align: "right",
-		},
+		// {
+		// 	formatter: (row) => <ActionsCell row={row} />,
+		// 	name: "Acciones",
+		// 	hideName: true,
+		// 	width: "70px",
+		// 	align: "right",
+		// },
 	];
 
 	return (
@@ -96,7 +63,7 @@ export function CustomersTable({ rows }) {
 			{rows.length === 0 ? (
 				<Box sx={{ p: 3 }}>
 					<Typography color="text.secondary" sx={{ textAlign: "center" }} variant="body2">
-						No se encontraron clientes
+						No se encontraron usuarios
 					</Typography>
 				</Box>
 			) : null}
@@ -116,7 +83,7 @@ export function ActionsCell({ row }) {
 
 	const handleEditProfile = () => {
 		popover.handleClose();
-		router.push(paths.dashboard.customers.details(row.id));
+		router.push(paths.dashboard.users);
 	};
 
 	const handleLoanRequests = () => {
