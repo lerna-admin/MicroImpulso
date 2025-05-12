@@ -109,6 +109,7 @@ export const paths = {
 		},
 		tasks: "/dashboard/tasks",
 	},
+	dataDeletion:"/data-deletion",
 	docs: "https://material-kit-pro-react-docs.devias.io",
 	home: "/",
 	internalServerError: "/errors/internal-server-error",
@@ -117,4 +118,5 @@ export const paths = {
 	pdf: { invoice: (invoiceId) => `/pdf/invoices/${invoiceId}` },
 	pricing: "/pricing",
 	purchase: "https://mui.com/store/items/devias-kit-pro",
+	privacy: "/privacy",
 };

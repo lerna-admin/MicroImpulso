@@ -1,50 +1,7 @@
 "use server";
 
 import { cookies } from "next/headers";
-
-import { user } from "./data";
-
-function generateToken() {
-	const arr = new Uint8Array(12);
-	globalThis.crypto.getRandomValues(arr);
-	return Array.from(arr, (v) => v.toString(16).padStart(2, "0")).join("");
-}
-
-export async function signUp(_) {
-	// Store the user in the database
-	const token = generateToken();
-	const cookieStore = await cookies();
-	cookieStore.set("access_token", token);
-
-	return { data: { user } };
-}
-
-export async function signInWithOAuth(_) {
-	return { error: "Social authentication not implemented" };
-}
-
-export async function signInWithPassword(params) {
-	const { email, password } = params;
-
-	// We hardcode the credentials for the simplicity of the example
-	if (email !== "sofia@devias.io" || password !== "Secret1") {
-		return { error: "Invalid credentials" };
-	}
-
-	const token = generateToken();
-	const cookieStore = await cookies();
-	cookieStore.set("access_token", token);
-
-	return { data: { user } };
-}
-
-export async function resetPassword(_) {
-	return { error: "Password reset not implemented" };
-}
-
-export async function updatePassword(_) {
-	return { error: "Update reset not implemented" };
-}
+import { jwtDecode } from "jwt-decode";
 
 export async function signOut() {
 	const cookieStore = await cookies();
@@ -53,7 +10,7 @@ export async function signOut() {
 	return {};
 }
 
-export async function 	signInWithApi({ document, password }) {
+export async function signInWithApi({ document, password }) {
 	try {
 		const response = await fetch(`${process.env.BASE_URL}/auth/login`, {
 			method: "POST",
@@ -70,7 +27,8 @@ export async function 	signInWithApi({ document, password }) {
 			return { error: message || "Login failed" };
 		}
 
-		const { token, role } = await response.json();
+		const { token } = await response.json();
+		const { user } = jwtDecode(token);
 
 		const cookieStore = await cookies();
 
@@ -81,11 +39,11 @@ export async function 	signInWithApi({ document, password }) {
 			secure: false,
 			sameSite: "lax",
 			maxAge: 60 * 60 * 24, // 1 día
-		})
+		});
 
 		// 🔓 Rol (puedes decidir si quieres que sea accesible desde el cliente)
 
-		return { data: { token } };
+		return { data: user };
 	} catch (error) {
 		console.error("[signInWithApi] Error:", error);
 		return { error: "Unexpected error occurred" };
