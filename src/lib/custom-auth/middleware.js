@@ -15,7 +15,7 @@ export async function middleware(req) {
 	const res = NextResponse.next({ request: req });
 	const { data } = await getUser();
 
-	if (req.nextUrl.pathname.startsWith("/dashboard") && !data?.user) {
+	if (req.nextUrl.pathname.startsWith("/privacy") && req.nextUrl.pathname.startsWith("/dashboard") && !data?.user) {
 		logger.debug("[Middleware] User is not logged in, redirecting to sign in");
 		const redirectTo = new URL(paths.auth.signIn, getAppUrl());
 		return NextResponse.redirect(redirectTo);
