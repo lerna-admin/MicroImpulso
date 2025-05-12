@@ -1,4 +1,5 @@
-// /app/data-deletion/page.tsx
+import * as React from "react";
+
 export default function DataDeletionPage() {
   return (
     <main style={{
