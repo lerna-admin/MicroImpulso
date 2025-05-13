@@ -1,4 +1,5 @@
 import * as React from "react";
+import { stringAvatar } from "@/helpers/avatar-colors";
 import Avatar from "@mui/material/Avatar";
 import AvatarGroup from "@mui/material/AvatarGroup";
 import Box from "@mui/material/Box";
@@ -6,15 +7,9 @@ import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 
 import { dayjs } from "@/lib/dayjs";
+import { useAuth } from "@/components/auth/custom/auth-context";
 
-dayjs.locale('es');
-
-const user = {
-	id: "USR-000",
-	name: "Sofia Rivers",
-	avatar: "/assets/avatar.png",
-	email: "sofia@devias.io",
-};
+dayjs.locale("es");
 
 function getDisplayContent(lastMessage, userId) {
 	const author = lastMessage.author.id === userId ? "Yo: " : "";
@@ -24,6 +19,8 @@ function getDisplayContent(lastMessage, userId) {
 }
 
 export function ThreadItem({ active = false, thread, messages, onSelect }) {
+	const { user } = useAuth();
+
 	const recipients = (thread.participants ?? []).filter((participant) => participant.id !== user.id);
 
 	const lastMessage = messages.at(-1);
@@ -64,7 +61,7 @@ export function ThreadItem({ active = false, thread, messages, onSelect }) {
 						}}
 					>
 						{recipients.map((recipient) => (
-							<Avatar key={recipient.id} src={recipient.avatar} />
+							<Avatar key={recipient.id} {...stringAvatar(recipient.name)} />
 						))}
 					</AvatarGroup>
 				</div>

@@ -1,4 +1,5 @@
 import * as React from "react";
+import { stringAvatar } from "@/helpers/avatar-colors";
 import Avatar from "@mui/material/Avatar";
 import AvatarGroup from "@mui/material/AvatarGroup";
 import Box from "@mui/material/Box";
@@ -9,25 +10,18 @@ import MenuItem from "@mui/material/MenuItem";
 import Stack from "@mui/material/Stack";
 import Tooltip from "@mui/material/Tooltip";
 import Typography from "@mui/material/Typography";
-import { Archive as ArchiveIcon } from "@phosphor-icons/react/dist/ssr/Archive";
 import { Bell as BellIcon } from "@phosphor-icons/react/dist/ssr/Bell";
 import { DotsThree as DotsThreeIcon } from "@phosphor-icons/react/dist/ssr/DotsThree";
 import { PencilSimple as PencilSimpleIcon } from "@phosphor-icons/react/dist/ssr/PencilSimple";
 import { Prohibit as ProhibitIcon } from "@phosphor-icons/react/dist/ssr/Prohibit";
-import { Trash as TrashIcon } from "@phosphor-icons/react/dist/ssr/Trash";
 
 import { usePopover } from "@/hooks/use-popover";
+import { useAuth } from "@/components/auth/custom/auth-context";
 
 import { ChatContext } from "./chat-context";
 
-const user = {
-	id: "USR-000",
-	name: "Sofia Rivers",
-	avatar: "/assets/avatar.png",
-	email: "sofia@devias.io",
-};
-
 export function ThreadToolbar({ thread }) {
+	const { user } = useAuth();
 	const popover = usePopover();
 
 	const recipients = (thread.participants ?? []).filter((participant) => participant.id !== user.id);
@@ -62,22 +56,17 @@ export function ThreadToolbar({ thread }) {
 						}}
 					>
 						{recipients.map((recipient) => (
-							<Avatar key={recipient.id} src={recipient.avatar} />
+							<Avatar key={recipient.id} {...stringAvatar(recipient.name)} />
 						))}
 					</AvatarGroup>
 					<Box sx={{ minWidth: 0 }}>
 						<Typography noWrap variant="subtitle2">
 							{recipients.map((recipient) => recipient.name).join(", ")}
 						</Typography>
-						{thread.type === "direct" ? (
-							<Typography color="text.secondary" variant="caption">
-								Recientemente activo
-							</Typography>
-						) : null}
 					</Box>
 				</Stack>
 				<Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
-					<Tooltip title="More options">
+					<Tooltip title="Más opciones">
 						<IconButton onClick={popover.handleOpen} ref={popover.anchorRef}>
 							<DotsThreeIcon weight="bold" />
 						</IconButton>
@@ -91,12 +80,6 @@ export function ThreadToolbar({ thread }) {
 					</ListItemIcon>
 					<Typography>Bloquear</Typography>
 				</MenuItem>
-				<MenuItem>
-					<ListItemIcon>
-						<TrashIcon />
-					</ListItemIcon>
-					<Typography>Borrar</Typography>
-				</MenuItem>
 				<MenuItem
 					onClick={() => {
 						setOpenDesktopSidebarRight((prev) => !prev);
@@ -107,12 +90,6 @@ export function ThreadToolbar({ thread }) {
 						<PencilSimpleIcon />
 					</ListItemIcon>
 					<Typography>Editar</Typography>
-				</MenuItem>
-				<MenuItem>
-					<ListItemIcon>
-						<ArchiveIcon />
-					</ListItemIcon>
-					<Typography>Archivar</Typography>
 				</MenuItem>
 				<MenuItem>
 					<ListItemIcon>

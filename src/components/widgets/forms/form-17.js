@@ -1,5 +1,4 @@
 import * as React from "react";
-// import { Link } from "@mui/material";
 import Button from "@mui/material/Button";
 import FormControl from "@mui/material/FormControl";
 import Grid from "@mui/material/Grid2";
@@ -76,18 +75,6 @@ export function Form17() {
 						<OutlinedInput defaultValue="(315) 434-5535" name="phone" />
 					</FormControl>
 				</Grid>
-
-				{/* <Grid
-					size={{
-						md: 6,
-						xs: 12,
-					}}
-				>
-					<FormControl fullWidth>
-						<InputLabel required>Monto a Prestar</InputLabel>
-						<OutlinedInput defaultValue="" name="amount" />
-					</FormControl>
-				</Grid> */}
 			</Grid>
 
 			<Grid

@@ -1,24 +1,21 @@
 import * as React from "react";
+import { stringAvatar } from "@/helpers/avatar-colors";
 import Avatar from "@mui/material/Avatar";
 import Box from "@mui/material/Box";
 import Card from "@mui/material/Card";
 import CardMedia from "@mui/material/CardMedia";
-import Link from "@mui/material/Link";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 
 import { dayjs } from "@/lib/dayjs";
+import { useAuth } from "@/components/auth/custom/auth-context";
 
 dayjs.locale("es");
 
-const user = {
-	id: "USR-000",
-	name: "Sofia Rivers",
-	avatar: "/assets/avatar.png",
-	email: "sofia@devias.io",
-};
-
 export function MessageBox({ message }) {
+	const { user } = useAuth();
+
+	const userName = message.author.name || "Usuario";
 	const position = message.author.id === user.id ? "right" : "left";
 
 	return (
@@ -33,7 +30,7 @@ export function MessageBox({ message }) {
 					mr: position === "left" ? "auto" : 0,
 				}}
 			>
-				<Avatar src={message.author.avatar} sx={{ "--Avatar-size": "32px" }} />
+				<Avatar {...stringAvatar(userName)} />
 				<Stack spacing={1} sx={{ flex: "1 1 auto" }}>
 					<Card
 						sx={{
@@ -47,9 +44,9 @@ export function MessageBox({ message }) {
 					>
 						<Stack spacing={1}>
 							<div>
-								<Link color="inherit" sx={{ cursor: "pointer" }} variant="subtitle2">
+								<Typography color="inherit" variant="subtitle2">
 									{message.author.name}
-								</Link>
+								</Typography>
 							</div>
 							{message.type === "image" ? (
 								<CardMedia
