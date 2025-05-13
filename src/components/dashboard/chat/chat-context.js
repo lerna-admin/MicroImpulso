@@ -2,6 +2,8 @@
 
 import * as React from "react";
 
+import { useAuth } from "@/components/auth/custom/auth-context";
+
 function noop() {
 	// No operation
 }
@@ -29,6 +31,7 @@ export function ChatProvider({
 	threads: initialLabels = [],
 	messages: initialMessages = [],
 }) {
+	const { user } = useAuth();
 	const [contacts, setContacts] = React.useState([]);
 	const [threads, setThreads] = React.useState([]);
 	const [messages, setMessages] = React.useState(new Map());
@@ -60,7 +63,7 @@ export function ChatProvider({
 	const handleCreateThread = React.useCallback(
 		(params) => {
 			// Authenticated user
-			const userId = "USR-000";
+			const userId = "USR-001";
 
 			// Check if the thread already exists
 			let thread = threads.find((thread) => {
@@ -159,7 +162,7 @@ export function ChatProvider({
 				id: `MSG-${Date.now()}`,
 				threadId: params.threadId,
 				type: params.type,
-				author: { id: "USR-000", name: "Sofia Rivers", avatar: "/assets/avatar.png" },
+				author: { id: user.id, name: user.name },
 				content: params.content,
 				createdAt: new Date(),
 			};

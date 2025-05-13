@@ -69,7 +69,7 @@ function SidebarContent() {
 				</Typography>
 			</Stack>
 
-			<Form17></Form17>
+			<Form17 />
 		</Box>
 	);
 }

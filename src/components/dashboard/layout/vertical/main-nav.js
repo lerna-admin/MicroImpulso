@@ -1,8 +1,8 @@
 "use client";
 
 import * as React from "react";
+import { stringAvatar } from "@/helpers/avatar-colors";
 import Avatar from "@mui/material/Avatar";
-import Badge from "@mui/material/Badge";
 import Box from "@mui/material/Box";
 import IconButton from "@mui/material/IconButton";
 import Stack from "@mui/material/Stack";
@@ -102,43 +102,4 @@ function UserButton() {
 			</Tooltip>
 		</React.Fragment>
 	);
-}
-
-function stringAvatar(name = "") {
-	const initials = name
-		.split(" ")
-		.filter(Boolean)
-		.map((n) => n[0])
-		.slice(0, 2)
-		.join("");
-
-	return {
-		sx: {
-			bgcolor: stringToColor(name),
-		},
-		children: initials || "U",
-	};
-}
-
-function stringToColor(string) {
-	let hash = 0;
-	let i;
-
-	for (i = 0; i < string.length; i += 1) {
-		hash = string.codePointAt(i) + ((hash << 5) - hash);
-	}
-
-	let color = "#";
-
-	for (i = 0; i < 3; i += 1) {
-		// eslint-disable-next-line unicorn/number-literal-case
-		const value = (hash >> (i * 8)) & 0xff;
-		color += `00${value.toString(16)}`.slice(-2);
-	}
-
-	if (string === "Usuario") {
-		color = "#999999";
-	}
-
-	return color;
 }

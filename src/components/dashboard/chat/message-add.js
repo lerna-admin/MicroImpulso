@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { stringAvatar } from "@/helpers/avatar-colors";
 import Avatar from "@mui/material/Avatar";
 import IconButton from "@mui/material/IconButton";
 import OutlinedInput from "@mui/material/OutlinedInput";
@@ -10,14 +11,13 @@ import { Camera as CameraIcon } from "@phosphor-icons/react/dist/ssr/Camera";
 import { Paperclip as PaperclipIcon } from "@phosphor-icons/react/dist/ssr/Paperclip";
 import { PaperPlaneTilt as PaperPlaneTiltIcon } from "@phosphor-icons/react/dist/ssr/PaperPlaneTilt";
 
-const user = {
-	id: "USR-000",
-	name: "Sofia Rivers",
-	avatar: "/assets/avatar.png",
-	email: "sofia@devias.io",
-};
+import { useAuth } from "@/components/auth/custom/auth-context";
 
 export function MessageAdd({ disabled = false, onSend }) {
+	const { user } = useAuth();
+
+	const userName = user?.name || "Usuario";
+
 	const [content, setContent] = React.useState("");
 	const fileInputRef = React.useRef(null);
 
@@ -49,7 +49,7 @@ export function MessageAdd({ disabled = false, onSend }) {
 
 	return (
 		<Stack direction="row" spacing={2} sx={{ alignItems: "center", flex: "0 0 auto", px: 3, py: 1 }}>
-			<Avatar src={user.avatar} sx={{ display: { xs: "none", sm: "inline" } }} />
+			<Avatar {...stringAvatar(userName)} />
 			<OutlinedInput
 				disabled={disabled}
 				onChange={handleChange}
