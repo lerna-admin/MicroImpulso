@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { sendMessageToClient } from "@/app/dashboard/chat/hooks/use-conversations";
 
 import { useAuth } from "@/components/auth/custom/auth-context";
 
@@ -157,27 +158,44 @@ export function ChatProvider({
 	);
 
 	const handleCreateMessage = React.useCallback(
-		(params) => {
-			const message = {
-				id: `MSG-${Date.now()}`,
-				threadId: params.threadId,
-				type: params.type,
-				author: { id: user.id, name: user.name },
-				content: params.content,
-				createdAt: new Date(),
-			};
+		async (params) => {
+			const resp = await fetch("/dashboard/chat/send", {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+				},
+				body: JSON.stringify({
+					clientId: "110",
+					message: params.content,
+				}),
+			});
+			// const resp = await sendMessageToClient({ clientId: "110", message: params.content });
 
-			const updatedMessages = new Map(messages);
-
-			// Add it to the messages
-			if (updatedMessages.has(params.threadId)) {
-				updatedMessages.set(params.threadId, [...updatedMessages.get(params.threadId), message]);
+			if (resp.sucess === false) {
+				console.error("Ocurrio un error");
 			} else {
-				updatedMessages.set(params.threadId, [message]);
-			}
+				const message = {
+					id: `MSG-${Date.now()}`,
+					threadId: params.threadId,
+					type: params.type,
+					author: { id: user.id, name: user.name },
+					content: params.content,
+					direction: "OUTGOING",
+					createdAt: new Date(),
+				};
 
-			// Dispatch messages update
-			setMessages(updatedMessages);
+				const updatedMessages = new Map(messages);
+
+				// Add it to the messages
+				if (updatedMessages.has(params.threadId)) {
+					updatedMessages.set(params.threadId, [...updatedMessages.get(params.threadId), message]);
+				} else {
+					updatedMessages.set(params.threadId, [message]);
+				}
+
+				// Dispatch messages update
+				setMessages(updatedMessages);
+			}
 		},
 		[messages]
 	);
