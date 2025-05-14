@@ -26,9 +26,10 @@ export default async function Layout({ children }) {
 				threadId: threadId,
 				type: "text",
 				content: msg.content,
+				direction: msg.direction,
 				author: {
-					id: `USR-${msg.client.id}`,
-					name: msg.client.name || "Sin nombre",
+					id: msg.direction == "INCOMING" ? `USR-${msg.client.id}` : user.id,
+					name: msg.direction == "INCOMING" ? msg.client.name || "Sin nombre" : user.name,
 				},
 				createdAt: new Date(msg.createdAt),
 			};

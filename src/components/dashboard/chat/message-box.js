@@ -8,15 +8,13 @@ import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 
 import { dayjs } from "@/lib/dayjs";
-import { useAuth } from "@/components/auth/custom/auth-context";
 
 dayjs.locale("es");
 
 export function MessageBox({ message }) {
-	const { user } = useAuth();
 
 	const userName = message.author.name || "Usuario";
-	const position = message.author.id === user.id ? "right" : "left";
+	const position = message.direction === "OUTGOING" ? "right" : "left";
 
 	return (
 		<Box sx={{ alignItems: position === "right" ? "flex-end" : "flex-start", flex: "0 0 auto", display: "flex" }}>
