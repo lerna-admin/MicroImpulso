@@ -15,14 +15,8 @@ import { paths } from "@/paths";
 import { FilterButton, FilterPopover, useFilterContext } from "@/components/core/filter-button";
 
 export function CustomersFilters({ filters = {}, sortDir = "desc", count }) {
-	const [tabs, setTabs] = React.useState([
-		{ label: "Todos", value: "", count: 0 },
-		{ label: "Activos", value: "ACTIVE", count: 0 },
-		{ label: "Inactivos", value: "INACTIVE", count: 0 },
-		{ label: "Suspendidos", value: "SUSPENDED", count: 0 },
-		{ label: "Prospectos", value: "PROSPECT", count: 0 },
-	]);
-	const { email, phone, status, document } = filters;
+	const [tabs, setTabs] = React.useState([{ label: "Todos", value: "", count: 0 }]);
+	const { name, phone, status, document } = filters;
 
 	React.useEffect(() => {
 		setTabs((tabs) => tabs.map((tab) => (tab.value === status ? { ...tab, count: count } : tab)));
@@ -42,8 +36,8 @@ export function CustomersFilters({ filters = {}, sortDir = "desc", count }) {
 				searchParams.set("status", newFilters.status);
 			}
 
-			if (newFilters.email) {
-				searchParams.set("email", newFilters.email);
+			if (newFilters.name) {
+				searchParams.set("name", newFilters.name);
 			}
 
 			if (newFilters.document) {
@@ -85,9 +79,9 @@ export function CustomersFilters({ filters = {}, sortDir = "desc", count }) {
 		[updateSearchParams, filters, sortDir]
 	);
 
-	const handleEmailChange = React.useCallback(
+	const handleNameChange = React.useCallback(
 		(value) => {
-			updateSearchParams({ ...filters, email: value }, sortDir);
+			updateSearchParams({ ...filters, name: value }, sortDir);
 		},
 		[updateSearchParams, filters, sortDir]
 	);
@@ -99,7 +93,7 @@ export function CustomersFilters({ filters = {}, sortDir = "desc", count }) {
 		[updateSearchParams, filters, sortDir]
 	);
 
-	const hasFilters = status || email || phone || document;
+	const hasFilters = status || name || phone || document;
 
 	return (
 		<div>
@@ -121,7 +115,7 @@ export function CustomersFilters({ filters = {}, sortDir = "desc", count }) {
 				<Stack direction="row" spacing={2} sx={{ alignItems: "center", flex: "1 1 auto", flexWrap: "wrap" }}>
 					<FilterButton
 						displayValue={document}
-						label="Identificación"
+						label="N. Documento"
 						onFilterApply={(value) => {
 							handleCedulaChange(value);
 						}}
@@ -132,16 +126,16 @@ export function CustomersFilters({ filters = {}, sortDir = "desc", count }) {
 						value={document}
 					/>
 					<FilterButton
-						displayValue={email}
-						label="Correo"
+						displayValue={name}
+						label="Nombre"
 						onFilterApply={(value) => {
-							handleEmailChange(value);
+							handleNameChange(value);
 						}}
 						onFilterDelete={() => {
-							handleEmailChange();
+							handleNameChange();
 						}}
 						popover={<EmailFilterPopover />}
-						value={email}
+						value={name}
 					/>
 					<FilterButton
 						displayValue={phone}

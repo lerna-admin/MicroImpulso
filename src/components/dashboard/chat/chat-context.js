@@ -1,7 +1,6 @@
 "use client";
 
 import * as React from "react";
-import { sendMessageToClient } from "@/app/dashboard/chat/hooks/use-conversations";
 
 import { useAuth } from "@/components/auth/custom/auth-context";
 
@@ -159,17 +158,18 @@ export function ChatProvider({
 
 	const handleCreateMessage = React.useCallback(
 		async (params) => {
+			const { participants } = threads.find((thread) => thread.id === params.threadId);
+
 			const resp = await fetch("/dashboard/chat/send", {
 				method: "POST",
 				headers: {
 					"Content-Type": "application/json",
 				},
 				body: JSON.stringify({
-					clientId: "110",
+					clientId: participants[1].id,
 					message: params.content,
 				}),
 			});
-			// const resp = await sendMessageToClient({ clientId: "110", message: params.content });
 
 			if (resp.sucess === false) {
 				console.error("Ocurrio un error");

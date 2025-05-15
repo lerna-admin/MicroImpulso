@@ -8,7 +8,7 @@ import Typography from "@mui/material/Typography";
 
 import { appConfig } from "@/config/app";
 import { getUser } from "@/lib/custom-auth/server";
-import { dayjs } from "@/lib/dayjs";
+import { CustomerStatistics } from "@/components/dashboard/customer/customer-statistics";
 import { CustomersFilters } from "@/components/dashboard/customer/customers-filters";
 import { CustomersPagination } from "@/components/dashboard/customer/customers-pagination";
 import { CustomersSelectionProvider } from "@/components/dashboard/customer/customers-selection-context";
@@ -27,8 +27,8 @@ export default async function Page({ searchParams }) {
 
 	const { email, phone, sortDir, status, document } = await searchParams;
 
-	const sortedCustomers = applySort(customers, sortDir);
-	const filteredCustomers = applyFilters(sortedCustomers, { email, phone, status, document });
+	// const sortedCustomers = applySort(customers, sortDir);
+	const filteredCustomers = applyFilters(customers, { email, phone, status, document });
 
 	return (
 		<Box
@@ -44,6 +44,7 @@ export default async function Page({ searchParams }) {
 					<Box sx={{ flex: "1 1 auto" }}>
 						<Typography variant="h4">Clientes</Typography>
 					</Box>
+					<CustomerStatistics />
 				</Stack>
 				<CustomersSelectionProvider customers={filteredCustomers}>
 					<Card>
@@ -67,15 +68,15 @@ export default async function Page({ searchParams }) {
 
 // Sorting and filtering has to be done on the server.
 
-function applySort(row, sortDir) {
-	return row.sort((a, b) => {
-		if (sortDir === "asc") {
-			return dayjs.utc(a.createdAt) - dayjs.utc(b.createdAt);
-		}
+// function applySort(row, sortDir) {
+// 	return row.sort((a, b) => {
+// 		if (sortDir === "asc") {
+// 			return dayjs.utc(a.createdAt) - dayjs.utc(b.createdAt);
+// 		}
 
-		return dayjs.utc(b.createdAt) - dayjs.utc(a.createdAt);
-	});
-}
+// 		return dayjs.utc(b.createdAt) - dayjs.utc(a.createdAt);
+// 	});
+// }
 
 function applyFilters(row, { email, phone, status, document }) {
 	return row.filter((item) => {

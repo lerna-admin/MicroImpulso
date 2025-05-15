@@ -1,11 +1,13 @@
 "use client";
 
 import * as React from "react";
+import RouterLink from "next/link";
 import { useRouter } from "next/navigation";
 import { ListItemIcon, Menu, MenuItem, Tooltip } from "@mui/material";
 import Box from "@mui/material/Box";
 import Chip from "@mui/material/Chip";
 import IconButton from "@mui/material/IconButton";
+import Link from "@mui/material/Link";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 import {
@@ -25,13 +27,25 @@ import { DataTable } from "@/components/core/data-table";
 
 export function CustomersTable({ rows }) {
 	const columns = [
+		{ field: "clientId", name: "#", width: "50px" },
 		{
 			formatter: (row) => (
 				<Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
 					<div>
-						<Typography variant="subtitle2">{row.name}</Typography>
+						<Link
+							color="inherit"
+							component={RouterLink}
+							href={paths.dashboard.customers.details(row.clientId)}
+							sx={{ whiteSpace: "nowrap" }}
+							variant="subtitle2"
+						>
+							{row.clientName}
+						</Link>
 						<Typography color="text.secondary" variant="body2">
-							{row.email}
+							{row.phone}
+						</Typography>
+						<Typography color="text.secondary" variant="body2">
+							{row.document}
 						</Typography>
 					</div>
 				</Stack>
@@ -39,48 +53,66 @@ export function CustomersTable({ rows }) {
 			name: "Nombre Completo",
 			width: "150px",
 		},
-		{ field: "document", name: "Identificación", width: "150px" },
-		{ field: "phone", name: "Celular", width: "130px" },
-		{ field: "address", name: "Dirección", width: "150px" },
-		{
-			formatter(row) {
-				return new Intl.NumberFormat("en-US", { style: "currency", currency: "COP" }).format(row.totalLoanAmount);
-			},
-			name: "Monto Prestado",
-			width: "100px",
-		},
 		{
 			formatter(row) {
 				return dayjs(row.createdAt).format("MMM D, YYYY");
 			},
-			name: "Fecha creación",
+			name: "Fecha Inicio",
 			width: "150px",
 		},
 		{
 			formatter(row) {
 				return dayjs(row.updatedAt).format("MMM D, YYYY");
 			},
-			name: "Fecha actualizada",
+			name: "Fecha Final",
 			width: "150px",
 		},
 		{
-			formatter: (row) => {
-				const mapping = {
-					active: { label: "Activo", icon: <CheckCircleIcon color="var(--mui-palette-success-main)" weight="fill" /> },
-					inactive: { label: "Inactivo", icon: <XCircleIcon color="var(--mui-palette-error-main)" weight="fill" /> },
-					suspended: { label: "Suspendido", icon: <TimerIcon color="var(--mui-palette-warning-main)" weight="fill" /> },
-					prospect: {
-						label: "Prospecto",
-						icon: <WarningDiamondIcon color="var(--mui-palette-info-main)" weight="fill" />,
-					},
-				};
-				const { label, icon } = mapping[row.status.toLowerCase()] ?? { label: "Unknown", icon: null };
-
-				return <Chip icon={icon} label={label} size="small" variant="outlined" />;
+			formatter(row) {
+				return dayjs(row.createdAt).format("MMM D, YYYY");
 			},
-			name: "Estado",
-			width: "100px",
+			name: "Fecha Ult. Pago",
+			width: "150px",
 		},
+		{ field: "loanType", name: "Tipo Pago", width: "150px" },
+		{ field: "loanMode", name: "Modalidad", width: "150px" },
+		{ field: "amountBorrowed", name: "Prestamo", width: "150px" },
+		{ field: "", name: "Dia Pago", width: "150px" },
+		{ field: "moraDays", name: "Mora", width: "150px" },
+		{ field: "totalPaid", name: "Abono", width: "150px" },
+
+		{
+			formatter(row) {
+				return row.totalAmountToPay - row.totalPaid;
+			},
+			name: "Saldo",
+			width: "150px",
+		},
+		// {
+		// 	formatter(row) {
+		// 		return new Intl.NumberFormat("en-US", { style: "currency", currency: "COP" }).format(row.totalLoanAmount);
+		// 	},
+		// 	name: "Monto Prestado",
+		// 	width: "100px",
+		// },
+		// {
+		// 	formatter: (row) => {
+		// 		const mapping = {
+		// 			active: { label: "Activo", icon: <CheckCircleIcon color="var(--mui-palette-success-main)" weight="fill" /> },
+		// 			inactive: { label: "Inactivo", icon: <XCircleIcon color="var(--mui-palette-error-main)" weight="fill" /> },
+		// 			suspended: { label: "Suspendido", icon: <TimerIcon color="var(--mui-palette-warning-main)" weight="fill" /> },
+		// 			prospect: {
+		// 				label: "Prospecto",
+		// 				icon: <WarningDiamondIcon color="var(--mui-palette-info-main)" weight="fill" />,
+		// 			},
+		// 		};
+		// 		const { label, icon } = mapping[row.status.toLowerCase()] ?? { label: "Unknown", icon: null };
+
+		// 		return <Chip icon={icon} label={label} size="small" variant="outlined" />;
+		// 	},
+		// 	name: "Estado",
+		// 	width: "100px",
+		// },
 		{
 			formatter: (row) => <ActionsCell row={row} />,
 			name: "Acciones",
@@ -104,7 +136,7 @@ export function CustomersTable({ rows }) {
 	);
 }
 
-export function ActionsCell({ row }) {
+function ActionsCell({ row }) {
 	const router = useRouter();
 	const popover = usePopover();
 	const [anchorEl, setAnchorEl] = React.useState(null);
@@ -137,17 +169,20 @@ export function ActionsCell({ row }) {
 				onClose={popover.handleClose}
 				slotProps={{ paper: { elevation: 0 } }}
 			>
-				<MenuItem onClick={handleEditProfile}>
+				{/* <MenuItem onClick={handleEditProfile}>
 					<ListItemIcon>
 						<PencilSimpleIcon />
 					</ListItemIcon>
 					<Typography>Editar perfil</Typography>
-				</MenuItem>
-				<MenuItem onClick={handleLoanRequests}>
+				</MenuItem> */}
+				{/* <MenuItem onClick={handleLoanRequests}>
 					<ListItemIcon>
 						<CardsThreeIcon />
 					</ListItemIcon>
 					<Typography>Ver solicitudes</Typography>
+				</MenuItem> */}
+				<MenuItem>
+					<Typography>Abonar</Typography>
 				</MenuItem>
 			</Menu>
 		</>

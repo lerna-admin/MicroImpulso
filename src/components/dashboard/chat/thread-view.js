@@ -22,7 +22,6 @@ function useThread(threadId) {
 
 function useMessages(threadId) {
 	const { messages } = React.useContext(ChatContext);
-
 	return messages.get(threadId) ?? [];
 }
 

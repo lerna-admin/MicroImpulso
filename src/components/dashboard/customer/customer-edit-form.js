@@ -22,7 +22,7 @@ export function CustomerEditForm({ customerToEdit }) {
 		phone: "",
 		email: "",
 		address: "",
-		totalLoanAmount: "",
+		amountBorrowed: "",
 		createdAt: "",
 		updatedAt: "",
 	});
@@ -83,7 +83,7 @@ export function CustomerEditForm({ customerToEdit }) {
 						>
 							<FormControl fullWidth>
 								<InputLabel>Nombre Completo</InputLabel>
-								<OutlinedInput defaultValue={customerToEdit.name} id="name" name="name" onChange={handleChange} />
+								<OutlinedInput defaultValue={customerToEdit.clientName} id="name" name="name" onChange={handleChange} />
 							</FormControl>
 						</Grid>
 						<Grid
@@ -141,10 +141,10 @@ export function CustomerEditForm({ customerToEdit }) {
 								<InputLabel>Monto Prestado</InputLabel>
 								<OutlinedInput
 									disabled
-									id="totalLoanAmount"
-									name="totalLoanAmount"
+									id="amountBorrowed"
+									name="amountBorrowed"
 									defaultValue={new Intl.NumberFormat("en-US", { style: "currency", currency: "COP" }).format(
-										customerToEdit.totalLoanAmount
+										customerToEdit.amountBorrowed
 									)}
 									onChange={handleChange}
 								/>
