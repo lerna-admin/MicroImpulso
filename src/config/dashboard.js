@@ -11,10 +11,34 @@ export const dashboardConfig = {
 			title: "Gerente",
 			items: [
 				// Si quitas un item de cualquiera de los roles, desaparece tanto del sidebar como tampoco deja acceder por el middleware
-				{ key: "overview", title: "Resumen", href: paths.dashboard.overview, icon: "house" },
-				{ key: "analytics", title: "Analiticas", href: paths.dashboard.analytics, icon: "chart-pie" },
-				{ key: "reports", title: "Reportes", href: paths.dashboard.reports, icon: "article" },
-				{ key: "configuration", title: "Configuración", href: paths.dashboard.configuration, icon: "gear" },
+				{
+					key: "overview",
+					title: "Resumen",
+					href: paths.dashboard.overview,
+					icon: "house",
+					matcher: { type: "startsWith", href: "/dashboard/overview" },
+				},
+				{
+					key: "analytics",
+					title: "Analiticas",
+					href: paths.dashboard.analytics,
+					icon: "chart-pie",
+					matcher: { type: "startsWith", href: "/dashboard/analytics" },
+				},
+				{
+					key: "reports",
+					title: "Reportes",
+					href: paths.dashboard.reports,
+					icon: "article",
+					matcher: { type: "startsWith", href: "/dashboard/reports" },
+				},
+				{
+					key: "configuration",
+					title: "Configuración",
+					icon: "gear",
+					href: paths.dashboard.configuration,
+					matcher: { type: "startsWith", href: "/dashboard/configuration" },
+				},
 				{
 					key: "requests",
 					title: "Solicitudes",

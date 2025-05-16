@@ -23,7 +23,6 @@ import { EyeSlash as EyeSlashIcon } from "@phosphor-icons/react/dist/ssr/EyeSlas
 import { Controller, useForm } from "react-hook-form";
 import { z as zod } from "zod";
 
-import { paths } from "@/paths";
 import { signInWithApi } from "@/lib/custom-auth/actions";
 import { useAuth } from "@/components/auth/custom/auth-context";
 import { DynamicLogo } from "@/components/core/logo";
@@ -59,10 +58,9 @@ export function SignInForm() {
 				setIsPending(false);
 				return;
 			}
-
 			auth.setUser(data || null);
 
-			router.push(paths.dashboard.overview); // Redirige al dashboard
+			router.refresh();
 		},
 		[auth, router, setError]
 	);
