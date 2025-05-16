@@ -78,7 +78,7 @@ export const paths = {
 			list: (label) => `/dashboard/mail/${label}`,
 			details: (label, emailId) => `/dashboard/mail/${label}/${emailId}`,
 		},
-		overview: "/dashboard",
+		overview: "/dashboard/overview",
 		products: {
 			list: "/dashboard/products",
 			create: "/dashboard/products/create",

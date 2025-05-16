@@ -41,7 +41,7 @@ export default function Page() {
 						</Typography>
 					</Stack>
 					<Box sx={{ display: "flex", justifyContent: "center" }}>
-						<Button component={RouterLink} href={paths.dashboard.overview} variant="contained">
+						<Button component={RouterLink} href={"/dashboard"} variant="contained">
 							Volver al inicio
 						</Button>
 					</Box>

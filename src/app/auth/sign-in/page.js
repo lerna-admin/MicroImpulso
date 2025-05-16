@@ -2,11 +2,11 @@ import * as React from "react";
 import { redirect } from "next/navigation";
 
 import { appConfig } from "@/config/app";
-import { paths } from "@/paths";
 import { getUser } from "@/lib/custom-auth/server";
 import { logger } from "@/lib/default-logger";
-import { SignInForm } from "@/components/auth/custom/sign-in-form";
+import { getFirstRolePath } from "@/lib/get-role-permissions";
 import { CenteredLayout } from "@/components/auth/centered-layout";
+import { SignInForm } from "@/components/auth/custom/sign-in-form";
 
 export const metadata = { title: `Iniciar sesión | ${appConfig.name}` };
 
@@ -14,8 +14,9 @@ export default async function Page() {
 	const { data } = await getUser();
 
 	if (data?.user) {
+		const firstPath = getFirstRolePath(data.user.role);
 		logger.debug("[Sign in] User is authenticated, redirecting to dashboard");
-		redirect(paths.dashboard.overview);
+		redirect(firstPath);
 	}
 
 	return (

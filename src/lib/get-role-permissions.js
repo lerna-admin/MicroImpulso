@@ -21,3 +21,8 @@ export function getProtectedRoutes() {
 
 	return routePermissions;
 }
+
+export function getFirstRolePath(role) {
+	const { items } = dashboardConfig.navItems.find((item) => item.key === role);
+	return items[0].href;
+}
