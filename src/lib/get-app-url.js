@@ -5,11 +5,13 @@ function withProtocol(url) {
 export function getAppUrl() {
 	// In production you should set this to your app URL.
 	if (process.env.NEXT_PUBLIC_APP_URL) {
+		console.log("process.env.NEXT_PUBLIC_APP_URL", process.env.NEXT_PUBLIC_APP_URL);
 		return new URL(withProtocol(process.env.NEXT_PUBLIC_APP_URL));
 	}
 
 	// Automatically set by Vercel.
 	if (process.env.NEXT_PUBLIC_VERCEL_URL) {
+		console.log("process.env.NEXT_PUBLIC_VERCEL_URL", process.env.NEXT_PUBLIC_VERCEL_URL);
 		return new URL(withProtocol(process.env.NEXT_PUBLIC_VERCEL_URL));
 	}
 
