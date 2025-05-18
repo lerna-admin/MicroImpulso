@@ -136,3 +136,17 @@ body {
 	height: 100%;
 	overflow-x: hidden;
 }
+
+/* Hide the “Download” button in React-PDF-Viewer */
+button[data-testid="get-file__download-button"] {
+    display: none !important;
+}
+
+button[data-testid="print__button"] {
+    display: none !important;
+}
+
+button[data-testid="open__button"] {
+    display: none !important;
+}
+
