@@ -25,20 +25,32 @@ const lineItems = [
 export default function Page() {
   const { documentId } = useParams();
   const [clientId, setClientId] = useState(null);
+  const [apiUrl, setApiUrl] = useState(null);
 
   useEffect(() => {
-    if (!documentId) return;
+    // Fetch the dynamic API URL
+    fetch("/api/routes")
+      .then((res) => res.json())
+      .then((config) => {
+        console.log(config)
+        setApiUrl(config.apiUrl);
+      })
+      .catch((err) => console.error("Failed to load API config:", err));
+  }, []);
 
-    fetch(`http://localhost:3100/documents/${documentId}`)
+  useEffect(() => {
+    if (!documentId || !apiUrl) return;
+
+    fetch(`${apiUrl}/documents/${documentId}`)
       .then((res) => res.json())
       .then((data) => {
         if (data?.clientId) {
           setClientId(data.clientId);
         }
-        console.log(data)
+        console.log(data);
       })
       .catch((err) => console.error("Failed to fetch document:", err));
-  }, [documentId]);
+  }, [documentId, apiUrl]);
 
   const backHref = clientId
     ? `/dashboard/client/${clientId}/documents`
