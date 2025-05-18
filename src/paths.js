@@ -46,6 +46,7 @@ export const paths = {
 			base: "/dashboard/chat",
 			compose: "/dashboard/chat/compose",
 			thread: (threadType, threadId) => `/dashboard/chat/${threadType}/${threadId}`,
+			preview: (clientId) => `/dashboard/chat?previewId=${clientId}`,
 		},
 		configuration: "/dashboard/configuration",
 		crypto: "/dashboard/crypto",

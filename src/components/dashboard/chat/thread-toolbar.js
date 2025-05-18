@@ -1,4 +1,5 @@
 import * as React from "react";
+import { useRouter } from "next/navigation";
 import { stringAvatar } from "@/helpers/avatar-colors";
 import Avatar from "@mui/material/Avatar";
 import AvatarGroup from "@mui/material/AvatarGroup";
@@ -10,19 +11,23 @@ import MenuItem from "@mui/material/MenuItem";
 import Stack from "@mui/material/Stack";
 import Tooltip from "@mui/material/Tooltip";
 import Typography from "@mui/material/Typography";
-// import { Bell as BellIcon } from "@phosphor-icons/react/dist/ssr/Bell";
 import { DotsThree as DotsThreeIcon } from "@phosphor-icons/react/dist/ssr/DotsThree";
-import { PencilSimple as PencilSimpleIcon } from "@phosphor-icons/react/dist/ssr/PencilSimple";
+import { Eye as EyeIcon } from "@phosphor-icons/react/dist/ssr/Eye";
 
-// import { Prohibit as ProhibitIcon } from "@phosphor-icons/react/dist/ssr/Prohibit";
+import { paths } from "@/paths";
 import { usePopover } from "@/hooks/use-popover";
 import { useAuth } from "@/components/auth/custom/auth-context";
 
+import { ChatContext } from "./chat-context";
+
 export function ThreadToolbar({ thread }) {
 	const { user } = useAuth();
+	const router = useRouter();
 	const popover = usePopover();
 
 	const recipients = (thread.participants ?? []).filter((participant) => participant.id !== user.id);
+
+	const { setOpenDesktopSidebarRight } = React.useContext(ChatContext);
 
 	return (
 		<React.Fragment>
@@ -70,28 +75,28 @@ export function ThreadToolbar({ thread }) {
 				</Stack>
 			</Stack>
 			<Menu anchorEl={popover.anchorRef.current} onClose={popover.handleClose} open={popover.open}>
-				{/* <MenuItem>
-					<ListItemIcon>
-						<ProhibitIcon />
-					</ListItemIcon>
-					<Typography>Bloquear</Typography>
-				</MenuItem> */}
 				<MenuItem
 					onClick={() => {
 						popover.handleClose();
+						router.push(paths.dashboard.chat.preview("1"));
 					}}
 				>
 					<ListItemIcon>
-						<PencilSimpleIcon />
+						<EyeIcon />
 					</ListItemIcon>
 					<Typography>Ver documentos</Typography>
 				</MenuItem>
-				{/* <MenuItem>
+				<MenuItem
+					onClick={() => {
+						popover.handleClose();
+						setOpenDesktopSidebarRight((prev) => !prev);
+					}}
+				>
 					<ListItemIcon>
-						<BellIcon />
+						<EyeIcon />
 					</ListItemIcon>
-					<Typography>Mutear</Typography>
-				</MenuItem> */}
+					<Typography>Ver perfil</Typography>
+				</MenuItem>
 			</Menu>
 		</React.Fragment>
 	);

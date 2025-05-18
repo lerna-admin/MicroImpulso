@@ -13,7 +13,7 @@ export default async function Layout({ children }) {
 
 	const resp = await getAllConversationsByAgent(user.id);
 
-	const contacts = resp.map(({ client }) => ({ id: client.id, name: client.name }));
+	const contacts = resp.map(({ client }) => client);
 
 	let threadCounter = 1;
 
