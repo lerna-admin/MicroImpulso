@@ -16,7 +16,7 @@ export default function PdfViewer({ documentId }: PdfViewerProps) {
   const layoutPluginInstance = defaultLayoutPlugin();
 
   useEffect(() => {
-    fetch("/api/routes")
+    fetch("/dashboard/api/routes")
       .then((res) => res.json())
       .then((config) => {
         const base = config.apiUrl?.startsWith("http")
