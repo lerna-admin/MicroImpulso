@@ -3,37 +3,28 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Box from "@mui/material/Box";
-import Button from "@mui/material/Button";
 import Card from "@mui/material/Card";
 import Chip from "@mui/material/Chip";
-import Grid from "@mui/material/Grid2";
 import Link from "@mui/material/Link";
 import Stack from "@mui/material/Stack";
-import Typography from "@mui/material/Typography";
 import RouterLink from "next/link";
 import { ArrowLeft as ArrowLeftIcon } from "@phosphor-icons/react/dist/ssr/ArrowLeft";
 
 import { paths } from "@/paths";
-import { DynamicLogo } from "@/components/core/logo";
-import { LineItemsTable } from "@/components/dashboard/invoice/line-items-table";
 import PdfViewer from "@/app/pdf/invoices/[invoiceId]/pdfViewer";
-
-const lineItems = [
-  { id: "LI-001", name: "Pro Subscription", quantity: 1, currency: "USD", unitAmount: 14.99, totalAmount: 14.99 },
-];
 
 export default function Page() {
   const { documentId } = useParams();
   const [clientId, setClientId] = useState(null);
   const [apiUrl, setApiUrl] = useState(null);
+  const [documentData, setDocumentData] = useState(null);
 
   useEffect(() => {
-    // Fetch the dynamic API URL
     fetch("/dashboard/api/routes")
       .then((res) => res.json())
       .then((config) => {
-        console.log(config)
-        setApiUrl(config.apiUrl);
+        const fullUrl = config.apiUrl.startsWith("http") ? config.apiUrl : `https://${config.apiUrl}`;
+        setApiUrl(fullUrl);
       })
       .catch((err) => console.error("Failed to load API config:", err));
   }, []);
@@ -44,10 +35,8 @@ export default function Page() {
     fetch(`${apiUrl}/documents/${documentId}`)
       .then((res) => res.json())
       .then((data) => {
-        if (data?.clientId) {
-          setClientId(data.clientId);
-        }
-        console.log(data);
+        if (data?.clientId) setClientId(data.clientId);
+        setDocumentData(data);
       })
       .catch((err) => console.error("Failed to fetch document:", err));
   }, [documentId, apiUrl]);
@@ -55,6 +44,8 @@ export default function Page() {
   const backHref = clientId
     ? `/dashboard/client/${clientId}/documents`
     : paths.dashboard.documents.list;
+
+  const isPdf = documentData?.mimeType === "application/pdf";
 
   return (
     <Box
@@ -81,15 +72,23 @@ export default function Page() {
           </div>
           <Stack direction="row" spacing={3} sx={{ alignItems: "flex-start", justifyContent: "space-between" }}>
             <Stack spacing={1}>
-              <div>
-                <Chip color="warning" label="Pending" variant="soft" />
-              </div>
+              <Chip color="warning" label="Pending" variant="soft" />
             </Stack>
           </Stack>
         </Stack>
 
-        <Card sx={{ p: 2 }}>
-          <PdfViewer documentId={documentId} />
+        <Card sx={{ p: 2, minHeight: "500px", display: "flex", justifyContent: "center", alignItems: "center" }}>
+          {!documentData ? (
+            <p>Loading...</p>
+          ) : isPdf ? (
+            <PdfViewer documentId={documentId} />
+          ) : (
+            <img
+              src={`${apiUrl}${documentData.url}`}
+              alt="Uploaded document"
+              style={{ maxWidth: "100%", maxHeight: "700px", objectFit: "contain" }}
+            />
+          )}
         </Card>
       </Stack>
     </Box>

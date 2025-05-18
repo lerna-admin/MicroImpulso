@@ -16,12 +16,12 @@ export default function PdfViewer({ documentId }: PdfViewerProps) {
   const layoutPluginInstance = defaultLayoutPlugin();
 
   useEffect(() => {
-    fetch("/dashboard/api/routes")
+    fetch("/api/routes")
       .then((res) => res.json())
       .then((config) => {
         const base = config.apiUrl?.startsWith("http")
           ? config.apiUrl
-          : `http://${config.apiUrl}`;
+          : `https://${config.apiUrl}`;
         setFileUrl(`${base}/documents/${documentId}/file`);
       })
       .catch((err) => console.error("Failed to load API config:", err));
