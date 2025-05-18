@@ -57,10 +57,10 @@ export const paths = {
 		eCommerce: "/dashboard/e-commerce",
 		fileStorage: "/dashboard/file-storage",
 		i18n: "/dashboard/i18n",
-		invoices: {
-			create: "/dashboard/invoices/create",
-			details: (invoiceId) => `/dashboard/invoices/${invoiceId}`,
-			list: "/dashboard/invoices",
+		documents: {
+			create: "/dashboard/documents/create",
+			details: (documentId) => `/dashboard/documents/${documentId}`,
+			list: "/dashboard/documents",
 		},
 		jobs: {
 			browse: "/dashboard/jobs",
