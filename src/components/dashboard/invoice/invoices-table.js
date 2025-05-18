@@ -37,7 +37,7 @@ const columns = [
 			<Stack
 				component={RouterLink}
 				direction="row"
-				href={paths.dashboard.invoices.details("1")}
+				href={paths.dashboard.documents.details("4e4ca227-866a-4a17-aabb-ebd0b0efb85b")}
 				spacing={2}
 				sx={{ alignItems: "center", display: "inline-flex", textDecoration: "none", whiteSpace: "nowrap" }}
 			>
@@ -104,7 +104,7 @@ const columns = [
 	},
 	{
 		formatter: () => (
-			<IconButton component={RouterLink} href={paths.dashboard.invoices.details("1")}>
+			<IconButton component={RouterLink} href={paths.dashboard.documents.details("4e4ca227-866a-4a17-aabb-ebd0b0efb85b")}>
 				<ArrowRightIcon />
 			</IconButton>
 		),

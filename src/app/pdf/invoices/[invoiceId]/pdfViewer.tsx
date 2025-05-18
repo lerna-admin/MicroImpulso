@@ -12,12 +12,12 @@ interface PdfViewerProps {
 
 export default function PdfViewer({ documentId }: PdfViewerProps) {
   const fileUrl = `http://localhost:3100/documents/${documentId}/file`;
-  const layout   = defaultLayoutPlugin();
+  const layoutPluginInstance = defaultLayoutPlugin();
 
   return (
     <div style={{ height: "800px", width: "100%" }}>
       <Worker workerUrl="https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js">
-        <Viewer fileUrl={fileUrl} plugins={[layout]} />
+        <Viewer fileUrl={fileUrl} plugins={[layoutPluginInstance]} />
       </Worker>
     </div>
   );
