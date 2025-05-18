@@ -12,7 +12,13 @@ export async function signOut() {
 
 export async function signInWithApi({ document, password }) {
 	try {
-		const response = await fetch(`${process.env.BASE_URL}/auth/login`, {
+		// Asegurar que BASE_URL tenga formato correcto
+		let baseUrl = process.env.BASE_URL || "";
+		if (!baseUrl.startsWith("http")) {
+			baseUrl = `http://${baseUrl}`;
+		}
+
+		const response = await fetch(`${baseUrl}/auth/login`, {
 			method: "POST",
 			headers: {
 				"Content-Type": "application/json",
@@ -21,7 +27,6 @@ export async function signInWithApi({ document, password }) {
 			cache: "no-store",
 		});
 
-		// Error del backend (como 401)
 		if (!response.ok) {
 			const { message } = await response.json();
 			return { error: message || "Login failed" };
@@ -30,18 +35,14 @@ export async function signInWithApi({ document, password }) {
 		const { token } = await response.json();
 		const { user } = jwtDecode(token);
 
-		const cookieStore = await cookies();
-
-		// 🔐 Token JWT (solo accesible por el servidor)
+		const cookieStore = cookies();
 		cookieStore.set("access_token", token, {
 			path: "/",
 			httpOnly: true,
 			secure: false,
 			sameSite: "lax",
-			maxAge: 60 * 60 * 24, // 1 día
+			maxAge: 60 * 60 * 24,
 		});
-
-		// 🔓 Rol (puedes decidir si quieres que sea accesible desde el cliente)
 
 		return { data: user };
 	} catch (error) {
