@@ -18,7 +18,7 @@ export async function signInWithApi({ document, password }) {
 			baseUrl = `http://${baseUrl}`;
 		}
 
-		const response = await fetch(`${baseUrl}/api/auth/login`, {
+		const response = await fetch(`${baseUrl}/auth/login`, {
 			method: "POST",
 			headers: {
 				"Content-Type": "application/json",
