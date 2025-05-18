@@ -10,23 +10,19 @@ import MenuItem from "@mui/material/MenuItem";
 import Stack from "@mui/material/Stack";
 import Tooltip from "@mui/material/Tooltip";
 import Typography from "@mui/material/Typography";
-import { Bell as BellIcon } from "@phosphor-icons/react/dist/ssr/Bell";
+// import { Bell as BellIcon } from "@phosphor-icons/react/dist/ssr/Bell";
 import { DotsThree as DotsThreeIcon } from "@phosphor-icons/react/dist/ssr/DotsThree";
 import { PencilSimple as PencilSimpleIcon } from "@phosphor-icons/react/dist/ssr/PencilSimple";
-import { Prohibit as ProhibitIcon } from "@phosphor-icons/react/dist/ssr/Prohibit";
 
+// import { Prohibit as ProhibitIcon } from "@phosphor-icons/react/dist/ssr/Prohibit";
 import { usePopover } from "@/hooks/use-popover";
 import { useAuth } from "@/components/auth/custom/auth-context";
-
-import { ChatContext } from "./chat-context";
 
 export function ThreadToolbar({ thread }) {
 	const { user } = useAuth();
 	const popover = usePopover();
 
 	const recipients = (thread.participants ?? []).filter((participant) => participant.id !== user.id);
-
-	const { setOpenDesktopSidebarRight } = React.useContext(ChatContext);
 
 	return (
 		<React.Fragment>
@@ -74,29 +70,28 @@ export function ThreadToolbar({ thread }) {
 				</Stack>
 			</Stack>
 			<Menu anchorEl={popover.anchorRef.current} onClose={popover.handleClose} open={popover.open}>
-				<MenuItem>
+				{/* <MenuItem>
 					<ListItemIcon>
 						<ProhibitIcon />
 					</ListItemIcon>
 					<Typography>Bloquear</Typography>
-				</MenuItem>
+				</MenuItem> */}
 				<MenuItem
 					onClick={() => {
-						setOpenDesktopSidebarRight((prev) => !prev);
 						popover.handleClose();
 					}}
 				>
 					<ListItemIcon>
 						<PencilSimpleIcon />
 					</ListItemIcon>
-					<Typography>Editar</Typography>
+					<Typography>Ver documentos</Typography>
 				</MenuItem>
-				<MenuItem>
+				{/* <MenuItem>
 					<ListItemIcon>
 						<BellIcon />
 					</ListItemIcon>
 					<Typography>Mutear</Typography>
-				</MenuItem>
+				</MenuItem> */}
 			</Menu>
 		</React.Fragment>
 	);

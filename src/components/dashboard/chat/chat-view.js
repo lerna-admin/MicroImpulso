@@ -11,7 +11,6 @@ import { useMediaQuery } from "@/hooks/use-media-query";
 
 import { ChatContext } from "./chat-context";
 import { Sidebar } from "./sidebar";
-import { SidebarRight } from "./sidebar-right";
 
 export function ChatView({ children }) {
 	const {
@@ -21,11 +20,8 @@ export function ChatView({ children }) {
 		createThread,
 		openDesktopSidebar,
 		setOpenDesktopSidebar,
-		openDesktopSidebarRight,
 		openMobileSidebar,
 		setOpenMobileSidebar,
-		openMobileSidebarRight,
-		setOpenMobileSidebarRight,
 	} = React.useContext(ChatContext);
 
 	const router = useRouter();
@@ -85,21 +81,6 @@ export function ChatView({ children }) {
 				</Box>
 				{children}
 			</Box>
-			{/* <Box sx={{ width: "100vw", overflowX: "hidden" }}> */}
-			<SidebarRight
-				contacts={contacts}
-				currentThreadId={currentThreadId}
-				messages={messages}
-				onCloseMobile={() => {
-					setOpenMobileSidebarRight(false);
-				}}
-				onSelectContact={handleContactSelect}
-				onSelectThread={handleThreadSelect}
-				openDesktop={openDesktopSidebarRight}
-				openMobile={openMobileSidebarRight}
-				threads={threads}
-			/>
-			{/* </Box> */}
 		</Box>
 	);
 }

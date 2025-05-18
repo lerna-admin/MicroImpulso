@@ -107,7 +107,7 @@ export const paths = {
 			feed: "/dashboard/social/feed",
 		},
 		tasks: "/dashboard/tasks",
-		users: "/dashboard/users"
+		users: "/dashboard/users",
 	},
 	dataDeletion: "/data-deletion",
 	docs: "https://material-kit-pro-react-docs.devias.io",

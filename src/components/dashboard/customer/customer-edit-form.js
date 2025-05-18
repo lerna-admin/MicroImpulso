@@ -16,6 +16,8 @@ import { dayjs } from "@/lib/dayjs";
 import { NotificationAlert } from "@/components/widgets/notifications/notification-alert";
 
 export function CustomerEditForm({ customerToEdit }) {
+	console.log(customerToEdit);
+
 	const [formData, setFormData] = React.useState({
 		document: "",
 		name: "",
@@ -68,7 +70,7 @@ export function CustomerEditForm({ customerToEdit }) {
 							<FormControl fullWidth>
 								<InputLabel>Cedula</InputLabel>
 								<OutlinedInput
-									defaultValue={customerToEdit.document}
+									defaultValue={customerToEdit.client.document}
 									id="document"
 									name="document"
 									onChange={handleChange}
@@ -83,7 +85,12 @@ export function CustomerEditForm({ customerToEdit }) {
 						>
 							<FormControl fullWidth>
 								<InputLabel>Nombre Completo</InputLabel>
-								<OutlinedInput defaultValue={customerToEdit.clientName} id="name" name="name" onChange={handleChange} />
+								<OutlinedInput
+									defaultValue={customerToEdit.client.name}
+									id="name"
+									name="name"
+									onChange={handleChange}
+								/>
 							</FormControl>
 						</Grid>
 						<Grid
@@ -94,7 +101,12 @@ export function CustomerEditForm({ customerToEdit }) {
 						>
 							<FormControl fullWidth>
 								<InputLabel>Celular</InputLabel>
-								<OutlinedInput defaultValue={customerToEdit.phone} id="phone" name="phone" onChange={handleChange} />
+								<OutlinedInput
+									defaultValue={customerToEdit.client.phone}
+									id="phone"
+									name="phone"
+									onChange={handleChange}
+								/>
 							</FormControl>
 						</Grid>
 						<Grid
@@ -106,7 +118,7 @@ export function CustomerEditForm({ customerToEdit }) {
 							<FormControl fullWidth>
 								<InputLabel>Correo</InputLabel>
 								<OutlinedInput
-									defaultValue={customerToEdit.email}
+									defaultValue={customerToEdit.client.email}
 									name="email"
 									id="email"
 									type="email"
@@ -124,7 +136,7 @@ export function CustomerEditForm({ customerToEdit }) {
 							<FormControl fullWidth>
 								<InputLabel>Dirección</InputLabel>
 								<OutlinedInput
-									defaultValue={customerToEdit.address}
+									defaultValue={customerToEdit.client.address}
 									id="address"
 									name="address"
 									onChange={handleChange}
@@ -141,11 +153,13 @@ export function CustomerEditForm({ customerToEdit }) {
 								<InputLabel>Monto Prestado</InputLabel>
 								<OutlinedInput
 									disabled
-									id="amountBorrowed"
-									name="amountBorrowed"
-									defaultValue={new Intl.NumberFormat("en-US", { style: "currency", currency: "COP" }).format(
-										customerToEdit.amountBorrowed
-									)}
+									id="montoPrestado"
+									name="montoPrestado"
+									defaultValue={new Intl.NumberFormat("es-CO", {
+										style: "currency",
+										currency: "COP",
+										minimumFractionDigits: 0,
+									}).format(customerToEdit.montoPrestado)}
 									onChange={handleChange}
 								/>
 							</FormControl>
