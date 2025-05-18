@@ -29,7 +29,7 @@ export default function Page() {
 
   useEffect(() => {
     // Fetch the dynamic API URL
-    fetch("/api/routes")
+    fetch("/dashboard/api/routes")
       .then((res) => res.json())
       .then((config) => {
         console.log(config)
