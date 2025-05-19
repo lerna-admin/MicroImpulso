@@ -1,5 +1,7 @@
 import * as React from "react";
+import RouterLink from "next/link";
 import { stringAvatar } from "@/helpers/avatar-colors";
+import { Link } from "@mui/material";
 import Avatar from "@mui/material/Avatar";
 import Box from "@mui/material/Box";
 import Card from "@mui/material/Card";
@@ -7,14 +9,21 @@ import CardMedia from "@mui/material/CardMedia";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 
+import { paths } from "@/paths";
 import { dayjs } from "@/lib/dayjs";
 
 dayjs.locale("es");
 
-export function MessageBox({ message }) {
+function extractUuid(text) {
+	const uuidRegex = /[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}/i;
+	const match = text.match(uuidRegex);
+	return match ? match[0] : null;
+}
 
+export function MessageBox({ message }) {
 	const userName = message.author.name || "Usuario";
 	const position = message.direction === "OUTGOING" ? "right" : "left";
+	const uuid = extractUuid(message.content);
 
 	return (
 		<Box sx={{ alignItems: position === "right" ? "flex-end" : "flex-start", flex: "0 0 auto", display: "flex" }}>
@@ -55,11 +64,20 @@ export function MessageBox({ message }) {
 									sx={{ height: "200px", width: "200px" }}
 								/>
 							) : null}
-							{message.type === "text" ? (
+							{message.type === "text" && uuid === null ? (
 								<Typography color="inherit" variant="body1">
 									{message.content}
 								</Typography>
-							) : null}
+							) : (
+								<Link
+									component={RouterLink}
+									target="_blank"
+									href={paths.dashboard.documents.details(uuid)}
+									variant="subtitle2"
+								>
+									Documento recibido
+								</Link>
+							)}
 						</Stack>
 					</Card>
 					<Box sx={{ display: "flex", justifyContent: position === "right" ? "flex-end" : "flex-start", px: 2 }}>
