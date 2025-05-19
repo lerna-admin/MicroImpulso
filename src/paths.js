@@ -46,6 +46,7 @@ export const paths = {
 			base: "/dashboard/chat",
 			compose: "/dashboard/chat/compose",
 			thread: (threadType, threadId) => `/dashboard/chat/${threadType}/${threadId}`,
+			preview: (clientId) => `/dashboard/chat?previewId=${clientId}`,
 		},
 		configuration: "/dashboard/configuration",
 		crypto: "/dashboard/crypto",
@@ -107,7 +108,7 @@ export const paths = {
 			feed: "/dashboard/social/feed",
 		},
 		tasks: "/dashboard/tasks",
-		users: "/dashboard/users"
+		users: "/dashboard/users",
 	},
 	dataDeletion: "/data-deletion",
 	docs: "https://material-kit-pro-react-docs.devias.io",

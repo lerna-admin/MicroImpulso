@@ -40,7 +40,7 @@ export default async function Page({ searchParams }) {
 			}}
 		>
 			<Stack spacing={4}>
-				<Stack direction={{ xs: "column", sm: "row" }} spacing={3} sx={{ alignItems: "flex-start" }}>
+				<Stack direction={{ xs: "column", sm: "row" }} spacing={3} sx={{ alignItems: "center" }}>
 					<Box sx={{ flex: "1 1 auto" }}>
 						<Typography variant="h4">Clientes</Typography>
 					</Box>
