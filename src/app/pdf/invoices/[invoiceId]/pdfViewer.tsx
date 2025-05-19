@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { Worker, Viewer } from "@react-pdf-viewer/core";
 import { defaultLayoutPlugin } from "@react-pdf-viewer/default-layout";
 
@@ -11,8 +12,22 @@ interface PdfViewerProps {
 }
 
 export default function PdfViewer({ documentId }: PdfViewerProps) {
-  const fileUrl = `http://localhost:3100/documents/${documentId}/file`;
+  const [fileUrl, setFileUrl] = useState<string | null>(null);
   const layoutPluginInstance = defaultLayoutPlugin();
+
+  useEffect(() => {
+    fetch("/dashboard/api/routes")
+      .then((res) => res.json())
+      .then((config) => {
+        const base = config.apiUrl?.startsWith("http")
+          ? config.apiUrl
+          : `https://${config.apiUrl}`;
+        setFileUrl(`${base}/documents/${documentId}/file`);
+      })
+      .catch((err) => console.error("Failed to load API config:", err));
+  }, [documentId]);
+
+  if (!fileUrl) return <p>Loading PDF...</p>;
 
   return (
     <div style={{ height: "800px", width: "100%" }}>

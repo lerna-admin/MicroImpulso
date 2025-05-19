@@ -1,19 +1,16 @@
 "use client";
 
 import * as React from "react";
-import RouterLink from "next/link";
 import Box from "@mui/material/Box";
-import Button from "@mui/material/Button";
 import Drawer from "@mui/material/Drawer";
 import IconButton from "@mui/material/IconButton";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
-import { Plus as PlusIcon } from "@phosphor-icons/react/dist/ssr/Plus";
 import { X as XIcon } from "@phosphor-icons/react/dist/ssr/X";
 
-import { paths } from "@/paths";
 import { useMediaQuery } from "@/hooks/use-media-query";
 
+import { ChatContext } from "./chat-context";
 import { DirectSearch } from "./direct-search";
 import { ThreadItem } from "./thread-item";
 
@@ -69,7 +66,6 @@ export function Sidebar({
 }
 
 function SidebarContent({
-	closeOnGroupClick,
 	closeOnThreadSelect,
 	contacts,
 	currentThreadId,
@@ -84,6 +80,8 @@ function SidebarContent({
 	const [searchFocused, setSearchFocused] = React.useState(false);
 	const [searchQuery, setSearchQuery] = React.useState("");
 	const [searchResults, setSearchResults] = React.useState([]);
+
+	const { setOpenDesktopSidebarRight } = React.useContext(ChatContext);
 
 	const handleSearchChange = React.useCallback(
 		async (event) => {
@@ -143,19 +141,6 @@ function SidebarContent({
 				<Typography sx={{ flex: "1 1 auto" }} variant="h5">
 					Chats
 				</Typography>
-				<Button
-					component={RouterLink}
-					href={paths.dashboard.chat.compose}
-					onClick={() => {
-						if (closeOnGroupClick) {
-							onClose?.();
-						}
-					}}
-					startIcon={<PlusIcon />}
-					variant="contained"
-				>
-					Grupo
-				</Button>
 				<IconButton onClick={onClose} sx={{ display: { md: "none" } }}>
 					<XIcon />
 				</IconButton>
@@ -182,6 +167,7 @@ function SidebarContent({
 							messages={messages.get(thread.id) ?? []}
 							onSelect={() => {
 								handleThreadSelect(thread.type, thread.id);
+								setOpenDesktopSidebarRight((prev) => !prev);
 							}}
 							thread={thread}
 						/>

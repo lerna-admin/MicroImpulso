@@ -16,15 +16,15 @@ import { dayjs } from "@/lib/dayjs";
 import { NotificationAlert } from "@/components/widgets/notifications/notification-alert";
 
 export function CustomerEditForm({ customerToEdit }) {
-	console.log(customerToEdit);
-
 	const [formData, setFormData] = React.useState({
-		document: "",
+		id: "",
 		name: "",
 		phone: "",
 		email: "",
+		document: "",
 		address: "",
-		amountBorrowed: "",
+		totalLoanAmount: "",
+		status: "",
 		createdAt: "",
 		updatedAt: "",
 	});

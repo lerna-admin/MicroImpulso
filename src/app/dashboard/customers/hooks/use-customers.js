@@ -51,6 +51,8 @@ export async function createCustomer(data) {
 }
 
 export async function updateCustomer(data) {
+	console.log(data);
+	
 	const res = await fetch(`${BASE_URL}/clients/${data.id}`, {
 		method: "PUT",
 		headers: { "Content-Type": "application/json" },
