@@ -23,13 +23,13 @@ export default async function Layout({ children }) {
 	// ✅ Obtener el appUrl desde la API
 	const routesRes = await fetch("/dashboard/api/routes");
 	let routes;
-	await fetch("/dashboard/api/routes")
+	await fetch("http://localhost:3000/dashboard/api/routes")
 		.then(res => {
 			routes = res;
 		});
 
 
-		const baseUrl = routes.appUrl || "/";
+		const baseUrl = routes.appUrl || "http://localhost:3000";
 
 	// ✅ Generar mensajes enriquecidos con link si aplica
 	const messages = resp.flatMap((entry) => {
