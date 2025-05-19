@@ -30,19 +30,18 @@ export function CustomerStatistics() {
 	};
 
 	return (
-		<Box sx={{ flexGrow: 1, px: 1 }}>
-			<Grid2 container spacing={{ xs: 1, md: 1 }} columns={{ xs: 4, sm: 8, md: 12 }} alignItems="center">
+		<Box sx={{ flexGrow: 1 }}>
+			{/* <Box sx={{ flexGrow: 1, px: 1 }}> */}
+			{/* <Grid2 container spacing={{ xs: 1, md: 1 }} columns={{ xs: 4, sm: 8, md: 12 }} alignItems="center"> */}
+
+			<Grid2 container spacing={1} columns={{ xs: 4, sm: 8, md: 12 }} alignItems="center">
 				{filterButtonsAndStatistics.map((item, index) => {
 					if (item.divider) {
-						return (
-							<Grid2 key={`divider-${index}`} xs={12}>
-								<Divider orientation="vertical" flexItem sx={{ mx: 1, borderColor: "gray" }} />
-							</Grid2>
-						);
+						return <Divider key={index} orientation="vertical" flexItem sx={{ mx: 2, borderColor: "grey" }} />;
 					}
 					const { label, value, icon, action } = item;
 					return (
-						<Grid2 key={index} xs="auto">
+						<Grid2 key={index} size={"auto"}>
 							<Chip
 								icon={icon}
 								label={`${label} ${value}`.trim()}

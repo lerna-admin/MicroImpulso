@@ -85,7 +85,6 @@ export function ChatView({ children }) {
 				</Box>
 				{children}
 			</Box>
-			{/* <Box sx={{ width: "100vw", overflowX: "hidden" }}> */}
 			<SidebarRight
 				contacts={contacts}
 				currentThreadId={currentThreadId}
@@ -99,7 +98,6 @@ export function ChatView({ children }) {
 				openMobile={openMobileSidebarRight}
 				threads={threads}
 			/>
-			{/* </Box> */}
 		</Box>
 	);
 }
