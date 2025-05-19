@@ -18,12 +18,19 @@ function getDisplayContent(lastMessage, userId) {
 	return `${author}${message}`;
 }
 
+function extractUuid(text) {
+	const uuidRegex = /[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}/i;
+	const match = text.match(uuidRegex);
+	return match ? match[0] : null;
+}
+
 export function ThreadItem({ active = false, thread, messages, onSelect }) {
 	const { user } = useAuth();
 
 	const recipients = (thread.participants ?? []).filter((participant) => participant.id !== user.id);
 
 	const lastMessage = messages.at(-1);
+	const uuid = extractUuid(lastMessage.content);
 
 	return (
 		<Box component="li" sx={{ userSelect: "none" }}>
@@ -81,11 +88,15 @@ export function ThreadItem({ active = false, thread, messages, onSelect }) {
 								}}
 							/>
 						) : null}
-						{lastMessage ? (
+						{lastMessage && uuid === null ? (
 							<Typography color="text.secondary" noWrap sx={{ flex: "1 1 auto" }} variant="subtitle2">
 								{getDisplayContent(lastMessage, user.id)}
 							</Typography>
-						) : null}
+						) : (
+							<Typography color="text.secondary" noWrap sx={{ flex: "1 1 auto" }} variant="subtitle2">
+								Documento recibido
+							</Typography>
+						)}
 					</Stack>
 				</Box>
 				{lastMessage ? (
