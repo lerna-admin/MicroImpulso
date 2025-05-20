@@ -1,9 +1,10 @@
 "use client";
 
 import * as React from "react";
+import { useRouter } from "next/navigation";
 import { updateCustomer } from "@/app/dashboard/customers/hooks/use-customers";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { FormHelperText, IconButton } from "@mui/material";
+import { FormHelperText, IconButton, MenuItem } from "@mui/material";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import Drawer from "@mui/material/Drawer";
@@ -19,13 +20,20 @@ import { Controller, useForm } from "react-hook-form";
 import { z as zod } from "zod";
 
 import { useMediaQuery } from "@/hooks/use-media-query";
-import { Option } from "@/components/core/option";
 import { NotificationAlert } from "@/components/widgets/notifications/notification-alert";
 
 import { ChatContext } from "./chat-context";
+import { LoanSimulation } from "./loan-simulation";
 
 const schema = zod.object({
-	email: zod.string().min(1, { message: "Correo es obligatorio" }).email(),
+	name: zod.string().min(1, { message: "El nombre es obligatorio" }),
+	documentType: zod.enum(["CC", "CE", "TE"], {
+		errorMap: () => ({ message: "Debes elegir un tipo de documento" }),
+	}),
+	document: zod.string().min(1, { message: "El documento es obligatorio" }),
+	address: zod.string().min(1, { message: "La dirección es obligatoria" }),
+	email: zod.string().min(1, { message: "El correo es obligatorio" }).email(),
+	phone: zod.string().min(1, { message: "El teléfono es obligatorio" }),
 });
 
 export function SidebarRight({
@@ -82,24 +90,23 @@ export function SidebarRight({
 function SidebarContent({ currentThreadId, threads, contacts }) {
 	const { setOpenDesktopSidebarRight } = React.useContext(ChatContext);
 
+	const router = useRouter();
+
 	const {
 		control,
 		handleSubmit,
-		setError,
 		formState: { errors },
-	} = useForm({ resolver: zodResolver(schema) });
-
-	const [formData, setFormData] = React.useState({
-		id: "",
-		name: "",
-		phone: "",
-		email: "",
-		document: "",
-		address: "",
-		totalLoanAmount: "",
-		status: "",
-		createdAt: "",
-		updatedAt: "",
+		reset,
+	} = useForm({
+		resolver: zodResolver(schema),
+		defaultValues: {
+			name: "",
+			documentType: "",
+			document: "",
+			address: "",
+			email: "",
+			phone: "",
+		},
 	});
 
 	const [threadFound, setThreadFound] = React.useState({
@@ -114,6 +121,7 @@ function SidebarContent({ currentThreadId, threads, contacts }) {
 		phone: "",
 		email: null,
 		document: null,
+		documentType: null,
 		address: null,
 		totalLoanAmount: null,
 		status: "",
@@ -139,48 +147,36 @@ function SidebarContent({ currentThreadId, threads, contacts }) {
 		if (threadFound && threadFound.participants?.[1]) {
 			const contact = contacts.find((c) => c.id === threadFound.participants[1].id);
 			if (contact) {
-				setContactFound(contact);
+				setContactFound({ ...contactFound, ...contact });
 			}
 		}
 	}, [threadFound, contacts]);
 
-	// Cuando cambia contactFound, actualiza formData
+	// Cuando cambia contactFound, actualiza hace el reset
 	React.useEffect(() => {
 		if (contactFound?.id) {
-			setFormData(contactFound);
+			reset({
+				name: contactFound.name || "",
+				documentType: contactFound.documentType || "",
+				document: contactFound.document || "",
+				address: contactFound.address || "",
+				email: contactFound.email || "",
+				phone: contactFound.phone || "",
+			});
 		}
 	}, [contactFound]);
 
-	const handleChange = (e) => {
-		const { name, value } = e.target;
-		setFormData((prev) => ({
-			...prev,
-			[name]: value,
-		}));
-	};
-
-	// const handleSubmit = async (e) => {
-	// 	e.preventDefault();
-	// 	const response = await updateCustomer(formData);
-	// 	if (response.status == 200) setOpenAlert(true);
-	// };
 	const onSubmit = React.useCallback(
-		async (values) => {
+		async (dataForm) => {
 			setIsPending(true);
-			// const { data, error } = await signInWithPassword(values);
-			// if (error) {
-			// 	setError("root", { type: "server", message: error });
-			// 	setIsPending(false);
-			// 	return;
-			// }
-			// // Update the user in the auth context so client components that depend on it can re-render.
-			// auth.setUser(data.user);
-			// // On router refresh the sign-in page component will automatically redirect to the dashboard.
-			// router.refresh();
+
+			const response = await updateCustomer(dataForm, contactFound.id);
+
+			if (response.status == 200) setOpenAlert(true);
+			router.refresh();
+			setIsPending(false);
 		},
-		[
-			// auth, router, setError
-		]
+		[contactFound]
 	);
 
 	return (
@@ -199,7 +195,7 @@ function SidebarContent({ currentThreadId, threads, contacts }) {
 					</IconButton>
 				</Stack>
 
-				<form onSubmit={handleSubmit(onSubmit)}>
+				<form onSubmit={handleSubmit(onSubmit)} style={{ height: "100%", overflowY: "auto" }}>
 					<Stack spacing={4} sx={{ p: 3 }}>
 						<Grid container spacing={3}>
 							<Grid
@@ -208,10 +204,17 @@ function SidebarContent({ currentThreadId, threads, contacts }) {
 									xs: 12,
 								}}
 							>
-								<FormControl fullWidth>
-									<InputLabel>Nombre Completo</InputLabel>
-									<OutlinedInput defaultValue={formData.name} id="name" name="name" onChange={handleChange} />
-								</FormControl>
+								<Controller
+									control={control}
+									name="name"
+									render={({ field }) => (
+										<FormControl required fullWidth error={Boolean(errors.name)}>
+											<InputLabel>Nombre Completo</InputLabel>
+											<OutlinedInput {...field} type="text" />
+											{errors.name ? <FormHelperText>{errors.name.message}</FormHelperText> : null}
+										</FormControl>
+									)}
+								/>
 							</Grid>
 							<Grid
 								size={{
@@ -219,14 +222,21 @@ function SidebarContent({ currentThreadId, threads, contacts }) {
 									xs: 12,
 								}}
 							>
-								<FormControl fullWidth>
-									<InputLabel>Tipo de Documento</InputLabel>
-									<Select displayEmpty={true} id="documentType" name="documentType" onChange={handleChange}>
-										<Option value="cc">Cedula de Ciudadania</Option>
-										<Option value="ce">Cedula de Extranjeria</Option>
-										<Option value="te">Tarjeta de extranjería</Option>
-									</Select>
-								</FormControl>
+								<Controller
+									control={control}
+									name="documentType"
+									render={({ field }) => (
+										<FormControl required fullWidth error={Boolean(errors.documentType)}>
+											<InputLabel id="document-type-label">Tipo de Documento</InputLabel>
+											<Select {...field} labelId="document-type-label">
+												<MenuItem value="CC">Cedula de Ciudadania</MenuItem>
+												<MenuItem value="CE">Cedula de Extranjeria</MenuItem>
+												<MenuItem value="TE">Tarjeta de extranjería</MenuItem>
+											</Select>
+											{errors.documentType ? <FormHelperText>{errors.documentType.message}</FormHelperText> : null}
+										</FormControl>
+									)}
+								/>
 							</Grid>
 							<Grid
 								size={{
@@ -234,15 +244,17 @@ function SidebarContent({ currentThreadId, threads, contacts }) {
 									xs: 12,
 								}}
 							>
-								<FormControl fullWidth>
-									<InputLabel>Cedula</InputLabel>
-									<OutlinedInput
-										defaultValue={formData.document}
-										id="document"
-										name="document"
-										onChange={handleChange}
-									/>
-								</FormControl>
+								<Controller
+									control={control}
+									name="document"
+									render={({ field }) => (
+										<FormControl required fullWidth error={Boolean(errors.document)}>
+											<InputLabel>Cedula</InputLabel>
+											<OutlinedInput {...field} type="text" />
+											{errors.document ? <FormHelperText>{errors.document.message}</FormHelperText> : null}
+										</FormControl>
+									)}
+								/>
 							</Grid>
 							<Grid
 								size={{
@@ -250,10 +262,17 @@ function SidebarContent({ currentThreadId, threads, contacts }) {
 									xs: 12,
 								}}
 							>
-								<FormControl fullWidth>
-									<InputLabel>Dirección</InputLabel>
-									<OutlinedInput defaultValue={formData.address} id="adress" name="address" onChange={handleChange} />
-								</FormControl>
+								<Controller
+									control={control}
+									name="address"
+									render={({ field }) => (
+										<FormControl required fullWidth error={Boolean(errors.address)}>
+											<InputLabel>Dirección</InputLabel>
+											<OutlinedInput {...field} type="text" />
+											{errors.address ? <FormHelperText>{errors.address.message}</FormHelperText> : null}
+										</FormControl>
+									)}
+								/>
 							</Grid>
 							<Grid
 								size={{
@@ -265,17 +284,13 @@ function SidebarContent({ currentThreadId, threads, contacts }) {
 									control={control}
 									name="email"
 									render={({ field }) => (
-										<FormControl error={Boolean(errors.email)}>
+										<FormControl required fullWidth error={Boolean(errors.email)}>
 											<InputLabel>Correo</InputLabel>
 											<OutlinedInput {...field} type="email" />
 											{errors.email ? <FormHelperText>{errors.email.message}</FormHelperText> : null}
 										</FormControl>
 									)}
 								/>
-								{/* <FormControl fullWidth>
-								<InputLabel>Correo</InputLabel>
-								<OutlinedInput defaultValue={formData.email} id="email" name="email" onChange={handleChange} />
-							</FormControl> */}
 							</Grid>
 							<Grid
 								size={{
@@ -283,10 +298,17 @@ function SidebarContent({ currentThreadId, threads, contacts }) {
 									xs: 12,
 								}}
 							>
-								<FormControl fullWidth>
-									<InputLabel>Numero Celular</InputLabel>
-									<OutlinedInput defaultValue={formData.phone} id="phone" name="phone" onChange={handleChange} />
-								</FormControl>
+								<Controller
+									control={control}
+									name="phone"
+									render={({ field }) => (
+										<FormControl required fullWidth error={Boolean(errors.phone)}>
+											<InputLabel>Numero Celular</InputLabel>
+											<OutlinedInput {...field} type="phone" />
+											{errors.phone ? <FormHelperText>{errors.phone.message}</FormHelperText> : null}
+										</FormControl>
+									)}
+								/>
 							</Grid>
 						</Grid>
 
@@ -296,9 +318,18 @@ function SidebarContent({ currentThreadId, threads, contacts }) {
 								xs: 12,
 							}}
 						>
-							<Button disabled={isPending} variant="contained" type="submit">
+							<Button variant="contained" type="submit" disabled={isPending}>
 								Guardar
 							</Button>
+						</Grid>
+
+						<Grid
+							size={{
+								md: 6,
+								xs: 12,
+							}}
+						>
+							<LoanSimulation contactFound={contactFound} />
 						</Grid>
 					</Stack>
 				</form>
@@ -308,7 +339,7 @@ function SidebarContent({ currentThreadId, threads, contacts }) {
 				openAlert={openAlert}
 				onClose={() => setOpenAlert(false)}
 				msg={"Perfil actualizado!"}
-				autoHideDuration={3000}
+				autoHideDuration={2000}
 				posHorizontal={"right"}
 				posVertical={"bottom"}
 			></NotificationAlert>

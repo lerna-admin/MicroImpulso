@@ -117,13 +117,6 @@ export const dashboardConfig = {
 					matcher: { type: "startsWith", href: "/dashboard/chat" },
 				},
 				{
-					key: "simulator",
-					title: "Simulador de credito",
-					href: paths.dashboard.simulator,
-					icon: "currency-circle-dollar",
-					matcher: { type: "startsWith", href: "/dashboard/simulator-credit" },
-				},
-				{
 					key: "clients",
 					title: "Clientes",
 					icon: "users",

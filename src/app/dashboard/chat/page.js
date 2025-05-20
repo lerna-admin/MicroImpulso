@@ -4,7 +4,7 @@ import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 
 import { appConfig } from "@/config/app";
-import { DocumentsModal } from "@/components/dashboard/documents/documents-modal";
+import { DocumentsModal } from "@/components/dashboard/chat/documents-modal";
 
 export const metadata = { title: `Chat | Dashboard | ${appConfig.name}` };
 
