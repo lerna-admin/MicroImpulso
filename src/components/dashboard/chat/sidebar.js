@@ -167,6 +167,7 @@ function SidebarContent({
 							messages={messages.get(thread.id) ?? []}
 							onSelect={() => {
 								handleThreadSelect(thread.type, thread.id);
+								setOpenDesktopSidebarRight((prev) => (prev == false ? (prev = true) : null));
 							}}
 							thread={thread}
 						/>

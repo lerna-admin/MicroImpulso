@@ -7,8 +7,7 @@
  * @property {Date} createdAt
  * @property {Date} updatedAt
  */
-
-const BASE_URL = process.env.BASE_URL;
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 
 /**
  *
@@ -50,11 +49,9 @@ export async function createCustomer(data) {
 	return res.json();
 }
 
-export async function updateCustomer(data) {
-	console.log(data);
-	
-	const res = await fetch(`${BASE_URL}/clients/${data.id}`, {
-		method: "PUT",
+export async function updateCustomer(data, id) {
+	const res = await fetch(`${BASE_URL}/clients/${id}`, {
+		method: "PATCH",
 		headers: { "Content-Type": "application/json" },
 		body: JSON.stringify(data),
 	});
