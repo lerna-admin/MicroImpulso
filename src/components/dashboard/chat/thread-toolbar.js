@@ -78,7 +78,7 @@ export function ThreadToolbar({ thread }) {
 				<MenuItem
 					onClick={() => {
 						popover.handleClose();
-						router.push(paths.dashboard.chat.preview("1"));
+						router.push(paths.dashboard.chat.preview(recipients.id));
 					}}
 				>
 					<ListItemIcon>

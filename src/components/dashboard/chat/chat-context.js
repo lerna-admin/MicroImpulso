@@ -15,6 +15,7 @@ export const ChatContext = React.createContext({
 	createThread: noop,
 	markAsRead: noop,
 	createMessage: noop,
+	updateContact: noop,
 	openDesktopSidebar: true,
 	setOpenDesktopSidebar: noop,
 	openMobileSidebar: true,
@@ -200,6 +201,12 @@ export function ChatProvider({
 		[messages]
 	);
 
+	const handleUpdateContact = React.useCallback((updatedContact) => {
+		setContacts((prevContacts) =>
+			prevContacts.map((contact) => (contact.id === updatedContact.id ? { ...contact, ...updatedContact } : contact))
+		);
+	}, []);
+
 	return (
 		<ChatContext.Provider
 			value={{
@@ -209,6 +216,7 @@ export function ChatProvider({
 				createThread: handleCreateThread,
 				markAsRead: handleMarkAsRead,
 				createMessage: handleCreateMessage,
+				updateContact: handleUpdateContact,
 				openDesktopSidebar,
 				setOpenDesktopSidebar,
 				openMobileSidebar,
