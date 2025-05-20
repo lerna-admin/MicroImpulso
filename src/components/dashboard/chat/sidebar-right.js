@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { updateCustomer } from "@/app/dashboard/customers/hooks/use-customers";
+// import { updateCustomer } from "@/app/dashboard/customers/hooks/use-customers";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { FormHelperText, IconButton } from "@mui/material";
 import Box from "@mui/material/Box";
@@ -23,6 +23,7 @@ import { Option } from "@/components/core/option";
 import { NotificationAlert } from "@/components/widgets/notifications/notification-alert";
 
 import { ChatContext } from "./chat-context";
+import { LoanSimulation } from "./loan-simulation";
 
 const schema = zod.object({
 	email: zod.string().min(1, { message: "Correo es obligatorio" }).email(),
@@ -85,7 +86,7 @@ function SidebarContent({ currentThreadId, threads, contacts }) {
 	const {
 		control,
 		handleSubmit,
-		setError,
+		// setError,
 		formState: { errors },
 	} = useForm({ resolver: zodResolver(schema) });
 
@@ -166,6 +167,8 @@ function SidebarContent({ currentThreadId, threads, contacts }) {
 	// };
 	const onSubmit = React.useCallback(
 		async (values) => {
+			console.log(values);
+
 			setIsPending(true);
 			// const { data, error } = await signInWithPassword(values);
 			// if (error) {
@@ -199,7 +202,7 @@ function SidebarContent({ currentThreadId, threads, contacts }) {
 					</IconButton>
 				</Stack>
 
-				<form onSubmit={handleSubmit(onSubmit)}>
+				<form onSubmit={handleSubmit(onSubmit)} style={{ height: "100%", overflowY: "auto" }}>
 					<Stack spacing={4} sx={{ p: 3 }}>
 						<Grid container spacing={3}>
 							<Grid
@@ -296,9 +299,18 @@ function SidebarContent({ currentThreadId, threads, contacts }) {
 								xs: 12,
 							}}
 						>
-							<Button disabled={isPending} variant="contained" type="submit">
+							<Button disabled={!isPending} variant="contained" type="submit">
 								Guardar
 							</Button>
+						</Grid>
+
+						<Grid
+							size={{
+								md: 6,
+								xs: 12,
+							}}
+						>
+							<LoanSimulation />
 						</Grid>
 					</Stack>
 				</form>

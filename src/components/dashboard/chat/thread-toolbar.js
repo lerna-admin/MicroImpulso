@@ -11,8 +11,8 @@ import MenuItem from "@mui/material/MenuItem";
 import Stack from "@mui/material/Stack";
 import Tooltip from "@mui/material/Tooltip";
 import Typography from "@mui/material/Typography";
+import { FileDoc as FileDocIcon, User as UserIcon } from "@phosphor-icons/react/dist/ssr";
 import { DotsThree as DotsThreeIcon } from "@phosphor-icons/react/dist/ssr/DotsThree";
-import { Eye as EyeIcon } from "@phosphor-icons/react/dist/ssr/Eye";
 
 import { paths } from "@/paths";
 import { usePopover } from "@/hooks/use-popover";
@@ -82,7 +82,7 @@ export function ThreadToolbar({ thread }) {
 					}}
 				>
 					<ListItemIcon>
-						<EyeIcon />
+						<FileDocIcon />
 					</ListItemIcon>
 					<Typography>Ver documentos</Typography>
 				</MenuItem>
@@ -93,7 +93,7 @@ export function ThreadToolbar({ thread }) {
 					}}
 				>
 					<ListItemIcon>
-						<EyeIcon />
+						<UserIcon />
 					</ListItemIcon>
 					<Typography>Ver perfil</Typography>
 				</MenuItem>
