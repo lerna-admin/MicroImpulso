@@ -81,7 +81,7 @@ function SidebarContent({
 	const [searchQuery, setSearchQuery] = React.useState("");
 	const [searchResults, setSearchResults] = React.useState([]);
 
-	const { setOpenDesktopSidebarRight } = React.useContext(ChatContext);
+	const { setOpenDesktopSidebarRight, openDesktopSidebarRight } = React.useContext(ChatContext);
 
 	const handleSearchChange = React.useCallback(
 		async (event) => {
@@ -167,7 +167,9 @@ function SidebarContent({
 							messages={messages.get(thread.id) ?? []}
 							onSelect={() => {
 								handleThreadSelect(thread.type, thread.id);
-								setOpenDesktopSidebarRight((prev) => (prev == false ? (prev = true) : null));
+								if (openDesktopSidebarRight === true) {
+									setOpenDesktopSidebarRight((prev) => !prev);
+								}
 							}}
 							thread={thread}
 						/>

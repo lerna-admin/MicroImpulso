@@ -6,10 +6,18 @@ import Typography from "@mui/material/Typography";
 import { appConfig } from "@/config/app";
 import { DocumentsModal } from "@/components/dashboard/chat/documents-modal";
 
+import { getCustomerById } from "../customers/hooks/use-customers";
+import { getDocumentsByClientId } from "../documents/hooks/use-documents";
+
 export const metadata = { title: `Chat | Dashboard | ${appConfig.name}` };
 
 export default async function Page({ searchParams }) {
 	const { previewId } = await searchParams;
+
+	if (!previewId) return;
+	const { client } = await getCustomerById(previewId);
+	const { documents } = await getDocumentsByClientId(previewId);
+
 	return (
 		<React.Fragment>
 			<Box
@@ -30,7 +38,7 @@ export default async function Page({ searchParams }) {
 					</Typography>
 				</Stack>
 			</Box>
-			<DocumentsModal open={Boolean(previewId)} clientId={previewId} />
+			<DocumentsModal open={Boolean(previewId)} customer={client} documents={documents} />
 		</React.Fragment>
 	);
 }
