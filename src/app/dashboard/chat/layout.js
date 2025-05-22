@@ -45,9 +45,6 @@ export default async function Layout({ children }) {
 		],
 	}));
 
-	return (
-		<ChatProvider contacts={contacts} messages={messages} threads={threads}>
-			<ChatView>{children}</ChatView>
-		</ChatProvider>
-	);
+	  return <ChatLoader agentId={user.id}>{children}</ChatLoader>;
+
 }
