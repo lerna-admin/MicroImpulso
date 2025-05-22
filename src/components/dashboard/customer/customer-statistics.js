@@ -12,11 +12,11 @@ import {
 } from "@phosphor-icons/react/dist/ssr";
 
 const filterButtonsAndStatistics = [
-	{ action: false, label: "NP:", icon: <ThumbsDownIcon />, value: "66" },
-	{ action: false, label: "M > 15:", icon: <WarningIcon />, value: "67" },
-	{ action: false, label: "CR:", icon: <ReceiptXIcon />, value: "0" },
-	{ action: false, label: "", icon: <UserCircleIcon />, value: "451" },
-	{ action: false, label: "", icon: <MoneyIcon />, value: "88480" },
+	{ action: false, label: "NP:", icon: <ThumbsDownIcon />, value: "" },
+	{ action: false, label: "M > 15:", icon: <WarningIcon />, value: "" },
+	{ action: false, label: "CR:", icon: <ReceiptXIcon />, value: "" },
+	{ action: false, label: "", icon: <UserCircleIcon />, value: "" },
+	{ action: false, label: "", icon: <MoneyIcon />, value: "" },
 	{ divider: true },
 	{ action: true, label: "Bisemanal", icon: <CalendarDotsIcon />, value: "" },
 	{ action: true, label: "5-20", icon: <CalendarDotsIcon />, value: "" },
@@ -31,9 +31,6 @@ export function CustomerStatistics() {
 
 	return (
 		<Box sx={{ flexGrow: 1 }}>
-			{/* <Box sx={{ flexGrow: 1, px: 1 }}> */}
-			{/* <Grid2 container spacing={{ xs: 1, md: 1 }} columns={{ xs: 4, sm: 8, md: 12 }} alignItems="center"> */}
-
 			<Grid2 container spacing={1} columns={{ xs: 4, sm: 8, md: 12 }} alignItems="center">
 				{filterButtonsAndStatistics.map((item, index) => {
 					if (item.divider) {
