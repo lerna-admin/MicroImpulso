@@ -28,6 +28,6 @@
     ".next/types/**/*.ts",
     "**/*.ts",
     "**/*.tsx"
-, "src/app/pdf/invoices/[invoiceId]/pdfViewer.tsx"  ],
+, "src/components/dashboard/documents/pdfViewer.tsx", "src/components/dashboard/documents/pdf-viewer.js"  ],
   "exclude": ["node_modules"]
 }

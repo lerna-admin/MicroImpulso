@@ -1,7 +1,7 @@
 {
-  "name": "@devias-kit-pro/nextjs-template",
-  "author": "Devias IO",
-  "version": "8.0.1",
+  "name": "@tyche",
+  "author": "LernaSoft",
+  "version": "0.1.1",
   "private": true,
   "scripts": {
     "dev": "next dev",
