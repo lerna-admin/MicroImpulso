@@ -3,6 +3,7 @@ import * as React from "react";
 import { getUser } from "@/lib/custom-auth/server";
 import { ChatProvider } from "@/components/dashboard/chat/chat-context";
 import { ChatView } from "@/components/dashboard/chat/chat-view";
+import { ChatDataLoader } from "@/components/dashboard/chat/chat-data-loader"; // nuevo archivo
 
 import { getAllConversationsByAgent } from "./hooks/use-conversations";
 
@@ -44,10 +45,15 @@ export default async function Layout({ children }) {
 			{ id: client.id, name: client.name },
 		],
 	}));
-
+/** 
 	return (
 		<ChatProvider contacts={contacts} messages={messages} threads={threads}>
 			<ChatView>{children}</ChatView>
 		</ChatProvider>
-	);
+	);*/
+	return (
+    <ChatDataLoader agentId={user.id}>
+      <ChatView>{children}</ChatView>
+    </ChatDataLoader>
+  );
 }
