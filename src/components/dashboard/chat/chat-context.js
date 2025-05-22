@@ -129,7 +129,7 @@ export function ChatProvider({
   React.useEffect(() => {
     if (!user?.id) return;
     fetchMessages(); // First load
-    const interval = setInterval(fetchMessages, 20000); // Every 20s
+    const interval = setInterval(fetchMessages, 5000); // Every 20s
     return () => clearInterval(interval);
   }, [fetchMessages, user?.id]);
 
