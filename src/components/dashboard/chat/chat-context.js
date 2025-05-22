@@ -1,6 +1,8 @@
 "use client";
 
 import * as React from "react";
+import { sendMessageToClient } from "@/app/dashboard/chat/hooks/use-conversations";
+
 import { useAuth } from "@/components/auth/custom/auth-context";
 
 function noop() {
@@ -203,14 +205,7 @@ export function ChatProvider({
     async (params) => {
       const { participants } = threads.find((thread) => thread.id === params.threadId);
 
-      await fetch("/dashboard/chat/send", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          clientId: participants[1].id,
-          message: params.content,
-        }),
-      });
+			const resp = await sendMessageToClient(params.content, participants[1].id);
 
       const newMsg = {
         id: `MSG-${Date.now()}`,

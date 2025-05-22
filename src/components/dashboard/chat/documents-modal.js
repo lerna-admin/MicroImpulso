@@ -122,7 +122,7 @@ export function DocumentsModal({ open, customer, documents }) {
 			onClose={handleClose}
 			open={open}
 			sx={{
-				"& .MuiDialog-container": { justifyContent: "flex-end" },
+				"& .MuiDialog-container": { justifyContent: "center" },
 				"& .MuiDialog-paper": { height: "80%", width: "100%" },
 			}}
 		>

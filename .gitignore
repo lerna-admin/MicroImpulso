@@ -38,3 +38,6 @@ next-env.d.ts
 # backend
 backend/database.sqlite
 backend/dist
+
+# env
+.env
