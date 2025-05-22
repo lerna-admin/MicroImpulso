@@ -66,74 +66,89 @@ export function ChatProvider({
     );
   }, [initialMessages]);
 
-  // 🔁 Polling function to refresh messages every 20 seconds
-  const fetchMessages = React.useCallback(async () => {
-    try {
-      const res = await fetch(`/api/chat/agent/${user.id}/conversations`, {
-        cache: "no-store",
-      });
+function areMessagesEqual(mapA, mapB) {
+  if (mapA.size !== mapB.size) return false;
 
-      const data = await res.json();
-      let threadCounter = 1;
+  for (const [key, msgsA] of mapA.entries()) {
+    const msgsB = mapB.get(key);
+    if (!msgsB || msgsA.length !== msgsB.length) return false;
 
-      // Update contacts
-      setContacts(data.map(({ client }) => client));
-
-      // Generate new threads
-      const newThreads = data.map(({ client }, index) => ({
-        id: `TRD-${String(index + 1).padStart(3, "0")}`,
-        type: "direct",
-        participants: [
-          { id: user.id, name: user.name },
-          { id: client.id, name: client.name },
-        ],
-      }));
-      setThreads(newThreads);
-
-      // Generate new messages
-      const flatMessages = data.flatMap((entry) => {
-        const threadId = `TRD-${String(threadCounter++).padStart(3, "0")}`;
-        const client = entry.client;
-
-        return (entry.messages || []).map((msg) => {
-          const safeClient = msg.client ?? client;
-
-          return {
-            id: msg.id,
-            threadId,
-            type: "text",
-            content: msg.content ?? "[Empty message]",
-            direction: msg.direction,
-            author: {
-              id: msg.direction === "INCOMING" ? `USR-${safeClient?.id ?? "?"}` : user.id,
-              name: msg.direction === "INCOMING" ? safeClient?.name ?? "Client" : user.name,
-            },
-            createdAt: new Date(msg.createdAt),
-          };
-        });
-      });
-
-      // Update message map
-      const newMessageMap = flatMessages.reduce((acc, curr) => {
-        const byThread = acc.get(curr.threadId) ?? [];
-        byThread.unshift(curr);
-        acc.set(curr.threadId, byThread);
-        return acc;
-      }, new Map());
-
-      setMessages(newMessageMap);
-    } catch (err) {
-      console.error("❌ Error fetching chat data:", err);
+    for (let i = 0; i < msgsA.length; i++) {
+      if (msgsA[i].id !== msgsB[i].id) return false;
     }
-  }, [user.id]);
+  }
 
-  // Start polling on mount
-  React.useEffect(() => {
-    if (!user?.id) return;
-    fetchMessages(); // First load
-    const interval = setInterval(fetchMessages, 5000); // Every 20s
-    return () => clearInterval(interval);
-  }, [fetchMessages, user?.id]);
+  return true;
+}
+
+const fetchMessages = React.useCallback(async () => {
+  try {
+    const res = await fetch(`/api/chat/agent/${user.id}/conversations`, {
+      cache: "no-store",
+    });
+    const data = await res.json();
+
+    const newContacts = data.map(({ client }) => client);
+
+    const newThreads = data.map(({ client }) => ({
+      id: `TRD-${client.id}`,
+      type: "direct",
+      participants: [
+        { id: user.id, name: user.name },
+        { id: client.id, name: client.name },
+      ],
+    }));
+
+    const flatMessages = data.flatMap((entry) => {
+      const client = entry.client;
+      const threadId = `TRD-${client.id}`;
+      return (entry.messages || []).map((msg) => {
+        const safeClient = msg.client ?? client;
+        return {
+          id: msg.id,
+          threadId,
+          type: "text",
+          content: msg.content ?? "[Empty message]",
+          direction: msg.direction,
+          author: {
+            id: msg.direction === "INCOMING" ? `USR-${safeClient.id}` : user.id,
+            name: msg.direction === "INCOMING" ? safeClient.name ?? "Client" : user.name,
+          },
+          createdAt: new Date(msg.createdAt),
+        };
+      });
+    });
+
+    const newMessageMap = flatMessages.reduce((acc, curr) => {
+      const byThread = acc.get(curr.threadId) ?? [];
+      byThread.unshift(curr);
+      acc.set(curr.threadId, byThread);
+      return acc;
+    }, new Map());
+
+    // Apply updates only if data changed
+    setContacts((prev) =>
+      JSON.stringify(prev) === JSON.stringify(newContacts) ? prev : newContacts
+    );
+    setThreads((prev) =>
+      JSON.stringify(prev) === JSON.stringify(newThreads) ? prev : newThreads
+    );
+    setMessages((prev) =>
+      areMessagesEqual(prev, newMessageMap) ? prev : newMessageMap
+    );
+  } catch (err) {
+    console.error("❌ Error fetching chat data:", err);
+  }
+}, [user.id, user.name]);
+
+
+React.useEffect(() => {
+  if (!user?.id) return;
+  fetchMessages(); // First load
+  const interval = setInterval(fetchMessages, 5000);
+  return () => clearInterval(interval);
+}, [fetchMessages, user?.id]);
+
 
   // Create a new thread or return existing one
   const handleCreateThread = React.useCallback(

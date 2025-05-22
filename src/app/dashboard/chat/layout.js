@@ -15,29 +15,31 @@ export default async function Layout({ children }) {
 
 	const contacts = resp.map(({ client }) => client);
 
-	let threadCounter = 1;
-
+	// Thread ID now depends on client.id — stable and URL-friendly
 	const messages = resp.flatMap((entry) => {
-		const threadId = `TRD-${String(threadCounter++).padStart(3, "0")}`;
+		const client = entry.client;
+		const threadId = `TRD-${client.id}`;
 
-		return entry.messages.map((msg) => {
+		return (entry.messages || []).map((msg) => {
+			const safeClient = msg.client ?? client;
+
 			return {
 				id: msg.id,
-				threadId: threadId,
+				threadId,
 				type: "text",
-				content: msg.content,
+				content: msg.content ?? "[Empty message]",
 				direction: msg.direction,
 				author: {
-					id: msg.direction === "INCOMING" ? `USR-${msg.client.id}` : user.id,
-					name: msg.direction === "INCOMING" ? msg.client.name || "Sin nombre" : user.name,
+					id: msg.direction === "INCOMING" ? `USR-${safeClient.id}` : user.id,
+					name: msg.direction === "INCOMING" ? safeClient.name ?? "Cliente" : user.name,
 				},
 				createdAt: new Date(msg.createdAt),
 			};
 		});
 	});
 
-	const threads = resp.map(({ client }, index) => ({
-		id: `TRD-00${index + 1}`,
+	const threads = resp.map(({ client }) => ({
+		id: `TRD-${client.id}`,
 		type: "direct",
 		participants: [
 			{ id: user.id, name: user.name },
