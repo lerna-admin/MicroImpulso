@@ -12,6 +12,8 @@ import { useMediaQuery } from "@/hooks/use-media-query";
 import { ChatContext } from "./chat-context";
 import { Sidebar } from "./sidebar";
 import { SidebarRight } from "./sidebar-right";
+import { useAutoRefresh } from "@/app/dashboard/chat/hooks/use-auto-refresh"
+
 
 export function ChatView({ children }) {
 	const {
@@ -53,6 +55,7 @@ export function ChatView({ children }) {
 		},
 		[router]
 	);
+	useAutoRefresh(5000)
 
 	return (
 		<Box sx={{ display: "flex", flex: "1 1 0", minHeight: 0 }}>

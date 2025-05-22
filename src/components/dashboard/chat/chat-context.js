@@ -3,7 +3,6 @@
 import * as React from "react";
 
 import { useAuth } from "@/components/auth/custom/auth-context";
-import { useAutoRefresh } from "@/app/dashboard/chat/hooks/use-auto-refresh"
 
 function noop() {
 	// No operation
@@ -207,7 +206,7 @@ export function ChatProvider({
 			prevContacts.map((contact) => (contact.id === updatedContact.id ? { ...contact, ...updatedContact } : contact))
 		);
 	}, []);
-	useAutoRefresh(10000)
+	
 
 	return (
 		<ChatContext.Provider
