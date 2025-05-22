@@ -34,9 +34,9 @@ const columns = [
 	{ formatter: (row) => <p>{row.client.document}</p>, name: "Identificación", width: "100px" },
 	{
 		formatter(row) {
-			return new Intl.NumberFormat("en-US", { style: "currency", currency: "COP" }).format(row.amount);
+			return new Intl.NumberFormat("en-US", { style: "currency", currency: "COP" }).format(row.requestedAmount);
 		},
-		name: "Monto",
+		name: "Monto solicitado",
 		width: "70px",
 	},
 	{
@@ -83,7 +83,7 @@ const columns = [
 	{
 		formatter: (row) => <ActionsCell row={row} />,
 		name: "Acciones",
-		hideName: false,
+		hideName: true,
 		width: "70px",
 		align: "right",
 	},

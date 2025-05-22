@@ -50,9 +50,9 @@ export async function createRequest(data) {
 	return res.json();
 }
 
-export async function updateRequest(data) {
-	const res = await fetch(`${BASE_URL}/loan-request/${data.id}`, {
-		method: "PUT",
+export async function updateRequest(data, id) {
+	const res = await fetch(`${BASE_URL}/loan-request/${id}`, {
+		method: "PATCH",
 		headers: { "Content-Type": "application/json" },
 		body: JSON.stringify(data),
 	});
