@@ -11,7 +11,7 @@ export function ChatDataLoader({ agentId, children }) {
     let threadCounter = 1;
 
     const load = async () => {
-      const res = await fetch(`/api/chat/conversations?agentId=${agentId}`, {
+      const res = await fetch(`/api/chat/agent/${agentId}/conversations`, {
         cache: "no-store",
       });
 
