@@ -12,8 +12,6 @@ export function parseUrl(url) {
 }
 
 export function parseUrlFile(url) {
-	console.log(BASE_URL);
-
 	return `${BASE_URL}/documents/${url}/file`;
 }
 
@@ -21,4 +19,14 @@ export async function getDocumentsByClientId(id) {
 	const res = await fetch(`${BASE_URL}/documents/client/${id}`);
 	if (!res.ok) throw new Error("Documentos no encontrados");
 	return res.json();
+}
+
+export async function updatedClassificationDocumentById(data, id) {
+	const res = await fetch(`${BASE_URL}/documents/${id}/classify`, {
+		method: "PATCH",
+		headers: { "Content-Type": "application/json" },
+		body: JSON.stringify(data),
+	});
+	if (!res.ok) throw new Error("Error al actualizar clasificación de documento");
+	return { data: res.json(), status: res.status };
 }

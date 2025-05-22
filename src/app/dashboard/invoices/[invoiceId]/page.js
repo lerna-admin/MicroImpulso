@@ -17,7 +17,7 @@ import { DynamicLogo } from "@/components/core/logo";
 import { InvoicePDFLink } from "@/components/dashboard/invoice/invoice-pdf-link";
 import { LineItemsTable } from "@/components/dashboard/invoice/line-items-table";
 export const metadata = { title: `Details | Invoices | Dashboard | ${appConfig.name}` };
-import PdfViewer from "@/app/pdf/invoices/[invoiceId]/pdfViewer";
+import PdfViewer from "@/components/dashboard/documents/pdf-viewer";
 const lineItems = [
 	{ id: "LI-001", name: "Pro Subscription", quantity: 1, currency: "USD", unitAmount: 14.99, totalAmount: 14.99 },
 ];
