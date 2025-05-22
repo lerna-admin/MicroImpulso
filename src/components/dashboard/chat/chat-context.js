@@ -1,234 +1,264 @@
 "use client";
 
 import * as React from "react";
-
 import { useAuth } from "@/components/auth/custom/auth-context";
 
 function noop() {
-	// No operation
+  // No operation placeholder
 }
 
+// Initial context shape
 export const ChatContext = React.createContext({
-	contacts: [],
-	threads: [],
-	messages: new Map(),
-	createThread: noop,
-	markAsRead: noop,
-	createMessage: noop,
-	updateContact: noop,
-	openDesktopSidebar: true,
-	setOpenDesktopSidebar: noop,
-	openMobileSidebar: true,
-	setOpenMobileSidebar: noop,
-	openDesktopSidebarRight: true,
-	setOpenDesktopSidebarRight: noop,
-	openMobileSidebarRight: true,
-	setOpenMobileSidebarRight: noop,
+  contacts: [],
+  threads: [],
+  messages: new Map(),
+  createThread: noop,
+  markAsRead: noop,
+  createMessage: noop,
+  updateContact: noop,
+  openDesktopSidebar: true,
+  setOpenDesktopSidebar: noop,
+  openMobileSidebar: true,
+  setOpenMobileSidebar: noop,
+  openDesktopSidebarRight: true,
+  setOpenDesktopSidebarRight: noop,
+  openMobileSidebarRight: true,
+  setOpenMobileSidebarRight: noop,
 });
 
 export function ChatProvider({
-	children,
-	contacts: initialContacts = [],
-	threads: initialLabels = [],
-	messages: initialMessages = [],
+  children,
+  contacts: initialContacts = [],
+  threads: initialLabels = [],
+  messages: initialMessages = [],
 }) {
-	const { user } = useAuth();
-	const [contacts, setContacts] = React.useState([]);
-	const [threads, setThreads] = React.useState([]);
-	const [messages, setMessages] = React.useState(new Map());
-	const [openDesktopSidebar, setOpenDesktopSidebar] = React.useState(true);
-	const [openMobileSidebar, setOpenMobileSidebar] = React.useState(false);
-	const [openDesktopSidebarRight, setOpenDesktopSidebarRight] = React.useState(false);
-	const [openMobileSidebarRight, setOpenMobileSidebarRight] = React.useState(false);
+  const { user } = useAuth();
 
-	React.useEffect(() => {
-		setContacts(initialContacts);
-	}, [initialContacts]);
+  const [contacts, setContacts] = React.useState([]);
+  const [threads, setThreads] = React.useState([]);
+  const [messages, setMessages] = React.useState(new Map());
 
-	React.useEffect(() => {
-		setThreads(initialLabels);
-	}, [initialLabels]);
+  const [openDesktopSidebar, setOpenDesktopSidebar] = React.useState(true);
+  const [openMobileSidebar, setOpenMobileSidebar] = React.useState(false);
+  const [openDesktopSidebarRight, setOpenDesktopSidebarRight] = React.useState(false);
+  const [openMobileSidebarRight, setOpenMobileSidebarRight] = React.useState(false);
 
-	React.useEffect(() => {
-		setMessages(
-			initialMessages.reduce((acc, curr) => {
-				const byThread = acc.get(curr.threadId) ?? [];
-				// We unshift the message to ensure the messages are sorted by date
-				byThread.unshift(curr);
-				acc.set(curr.threadId, byThread);
-				return acc;
-			}, new Map())
-		);
-	}, [initialMessages]);
+  // Initialize from props
+  React.useEffect(() => {
+    setContacts(initialContacts);
+  }, [initialContacts]);
 
-	const handleCreateThread = React.useCallback(
-		(params) => {
-			// Authenticated user
-			const userId = "USR-001";
+  React.useEffect(() => {
+    setThreads(initialLabels);
+  }, [initialLabels]);
 
-			// Check if the thread already exists
-			let thread = threads.find((thread) => {
-				if (params.type === "direct") {
-					if (thread.type !== "direct") {
-						return false;
-					}
+  React.useEffect(() => {
+    // Convert flat message array to Map<threadId, Message[]>
+    setMessages(
+      initialMessages.reduce((acc, curr) => {
+        const byThread = acc.get(curr.threadId) ?? [];
+        byThread.unshift(curr);
+        acc.set(curr.threadId, byThread);
+        return acc;
+      }, new Map())
+    );
+  }, [initialMessages]);
 
-					return thread.participants
-						.filter((participant) => participant.id !== userId)
-						.find((participant) => participant.id === params.recipientId);
-				}
+  // 🔁 Polling function to refresh messages every 20 seconds
+  const fetchMessages = React.useCallback(async () => {
+    try {
+      const res = await fetch(`/api/chat/agent/${user.id}/conversations`, {
+        cache: "no-store",
+      });
 
-				if (thread.type !== "group") {
-					return false;
-				}
+      const data = await res.json();
+      let threadCounter = 1;
 
-				const recipientIds = thread.participants
-					.filter((participant) => participant.id !== userId)
-					.map((participant) => participant.id);
+      // Update contacts
+      setContacts(data.map(({ client }) => client));
 
-				if (params.recipientIds.length !== recipientIds.length) {
-					return false;
-				}
+      // Generate new threads
+      const newThreads = data.map(({ client }, index) => ({
+        id: `TRD-${String(index + 1).padStart(3, "0")}`,
+        type: "direct",
+        participants: [
+          { id: user.id, name: user.name },
+          { id: client.id, name: client.name },
+        ],
+      }));
+      setThreads(newThreads);
 
-				return params.recipientIds.every((recipientId) => recipientIds.includes(recipientId));
-			});
+      // Generate new messages
+      const flatMessages = data.flatMap((entry) => {
+        const threadId = `TRD-${String(threadCounter++).padStart(3, "0")}`;
+        const client = entry.client;
 
-			if (thread) {
-				return thread.id;
-			}
+        return (entry.messages || []).map((msg) => {
+          const safeClient = msg.client ?? client;
 
-			// Create a new thread
+          return {
+            id: msg.id,
+            threadId,
+            type: "text",
+            content: msg.content ?? "[Empty message]",
+            direction: msg.direction,
+            author: {
+              id: msg.direction === "INCOMING" ? `USR-${safeClient?.id ?? "?"}` : user.id,
+              name: msg.direction === "INCOMING" ? safeClient?.name ?? "Client" : user.name,
+            },
+            createdAt: new Date(msg.createdAt),
+          };
+        });
+      });
 
-			const participants = [{ id: "USR-000", name: "Sofia Rivers", avatar: "/assets/avatar.png" }];
+      // Update message map
+      const newMessageMap = flatMessages.reduce((acc, curr) => {
+        const byThread = acc.get(curr.threadId) ?? [];
+        byThread.unshift(curr);
+        acc.set(curr.threadId, byThread);
+        return acc;
+      }, new Map());
 
-			if (params.type === "direct") {
-				const contact = contacts.find((contact) => contact.id === params.recipientId);
+      setMessages(newMessageMap);
+    } catch (err) {
+      console.error("❌ Error fetching chat data:", err);
+    }
+  }, [user.id]);
 
-				if (!contact) {
-					throw new Error(`Contact with id "${params.recipientId}" not found`);
-				}
+  // Start polling on mount
+  React.useEffect(() => {
+    if (!user?.id) return;
+    fetchMessages(); // First load
+    const interval = setInterval(fetchMessages, 20000); // Every 20s
+    return () => clearInterval(interval);
+  }, [fetchMessages, user?.id]);
 
-				participants.push({ id: contact.id, name: contact.name, avatar: contact.avatar });
-			} else {
-				for (const recipientId of params.recipientIds) {
-					const contact = contacts.find((contact) => contact.id === recipientId);
+  // Create a new thread or return existing one
+  const handleCreateThread = React.useCallback(
+    (params) => {
+      const userId = user.id;
 
-					if (!contact) {
-						throw new Error(`Contact with id "${recipientId}" not found`);
-					}
+      let thread = threads.find((thread) => {
+        if (params.type === "direct") {
+          if (thread.type !== "direct") return false;
+          return thread.participants
+            .filter((p) => p.id !== userId)
+            .some((p) => p.id === params.recipientId);
+        }
 
-					participants.push({ id: contact.id, name: contact.name, avatar: contact.avatar });
-				}
-			}
+        if (thread.type !== "group") return false;
 
-			thread = { id: `TRD-${Date.now()}`, type: params.type, participants, unreadCount: 0 };
+        const recipientIds = thread.participants
+          .filter((p) => p.id !== userId)
+          .map((p) => p.id);
 
-			// Add it to the threads
-			const updatedThreads = [thread, ...threads];
+        return (
+          params.recipientIds.length === recipientIds.length &&
+          params.recipientIds.every((id) => recipientIds.includes(id))
+        );
+      });
 
-			// Dispatch threads update
-			setThreads(updatedThreads);
+      if (thread) return thread.id;
 
-			return thread.id;
-		},
-		[contacts, threads]
-	);
+      const participants = [{ id: user.id, name: user.name }];
 
-	const handleMarkAsRead = React.useCallback(
-		(threadId) => {
-			const thread = threads.find((thread) => thread.id === threadId);
+      if (params.type === "direct") {
+        const contact = contacts.find((c) => c.id === params.recipientId);
+        if (!contact) throw new Error(`Contact not found: ${params.recipientId}`);
+        participants.push({ id: contact.id, name: contact.name });
+      } else {
+        for (const id of params.recipientIds) {
+          const contact = contacts.find((c) => c.id === id);
+          if (!contact) throw new Error(`Contact not found: ${id}`);
+          participants.push({ id: contact.id, name: contact.name });
+        }
+      }
 
-			if (!thread) {
-				// Thread might no longer exist
-				return;
-			}
+      thread = {
+        id: `TRD-${Date.now()}`,
+        type: params.type,
+        participants,
+        unreadCount: 0,
+      };
 
-			const updatedThreads = threads.map((threadToUpdate) => {
-				if (threadToUpdate.id !== threadId) {
-					return threadToUpdate;
-				}
+      setThreads((prev) => [thread, ...prev]);
+      return thread.id;
+    },
+    [contacts, threads, user]
+  );
 
-				return { ...threadToUpdate, unreadCount: 0 };
-			});
+  // Mark thread as read
+  const handleMarkAsRead = React.useCallback(
+    (threadId) => {
+      const updatedThreads = threads.map((thread) =>
+        thread.id === threadId ? { ...thread, unreadCount: 0 } : thread
+      );
+      setThreads(updatedThreads);
+    },
+    [threads]
+  );
 
-			// Dispatch threads update
-			setThreads(updatedThreads);
-		},
-		[threads]
-	);
+  // Send a message to backend and add it to UI
+  const handleCreateMessage = React.useCallback(
+    async (params) => {
+      const { participants } = threads.find((thread) => thread.id === params.threadId);
 
-	const handleCreateMessage = React.useCallback(
-		async (params) => {
-			const { participants } = threads.find((thread) => thread.id === params.threadId);
+      await fetch("/dashboard/chat/send", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          clientId: participants[1].id,
+          message: params.content,
+        }),
+      });
 
-			const resp = await fetch("/dashboard/chat/send", {
-				method: "POST",
-				headers: {
-					"Content-Type": "application/json",
-				},
-				body: JSON.stringify({
-					clientId: participants[1].id,
-					message: params.content,
-				}),
-			});
+      const newMsg = {
+        id: `MSG-${Date.now()}`,
+        threadId: params.threadId,
+        type: params.type,
+        author: { id: user.id, name: user.name },
+        content: params.content,
+        direction: "OUTGOING",
+        createdAt: new Date(),
+      };
 
-			if (resp.sucess === false) {
-				console.error("Ocurrio un error");
-			} else {
-				const message = {
-					id: `MSG-${Date.now()}`,
-					threadId: params.threadId,
-					type: params.type,
-					author: { id: user.id, name: user.name },
-					content: params.content,
-					direction: "OUTGOING",
-					createdAt: new Date(),
-				};
+      setMessages((prev) => {
+        const updated = new Map(prev);
+        const threadMsgs = updated.get(params.threadId) ?? [];
+        updated.set(params.threadId, [...threadMsgs, newMsg]);
+        return updated;
+      });
+    },
+    [threads, user]
+  );
 
-				const updatedMessages = new Map(messages);
+  const handleUpdateContact = React.useCallback((updatedContact) => {
+    setContacts((prevContacts) =>
+      prevContacts.map((c) => (c.id === updatedContact.id ? { ...c, ...updatedContact } : c))
+    );
+  }, []);
 
-				// Add it to the messages
-				if (updatedMessages.has(params.threadId)) {
-					updatedMessages.set(params.threadId, [...updatedMessages.get(params.threadId), message]);
-				} else {
-					updatedMessages.set(params.threadId, [message]);
-				}
-
-				// Dispatch messages update
-				setMessages(updatedMessages);
-			}
-		},
-		[messages]
-	);
-
-	const handleUpdateContact = React.useCallback((updatedContact) => {
-		setContacts((prevContacts) =>
-			prevContacts.map((contact) => (contact.id === updatedContact.id ? { ...contact, ...updatedContact } : contact))
-		);
-	}, []);
-	
-
-	return (
-		<ChatContext.Provider
-			value={{
-				contacts,
-				threads,
-				messages,
-				createThread: handleCreateThread,
-				markAsRead: handleMarkAsRead,
-				createMessage: handleCreateMessage,
-				updateContact: handleUpdateContact,
-				openDesktopSidebar,
-				setOpenDesktopSidebar,
-				openMobileSidebar,
-				setOpenMobileSidebar,
-				openDesktopSidebarRight,
-				setOpenDesktopSidebarRight,
-				openMobileSidebarRight,
-				setOpenMobileSidebarRight,
-			}}
-		>
-			{children}
-		</ChatContext.Provider>
-	);
+  return (
+    <ChatContext.Provider
+      value={{
+        contacts,
+        threads,
+        messages,
+        createThread: handleCreateThread,
+        markAsRead: handleMarkAsRead,
+        createMessage: handleCreateMessage,
+        updateContact: handleUpdateContact,
+        openDesktopSidebar,
+        setOpenDesktopSidebar,
+        openMobileSidebar,
+        setOpenMobileSidebar,
+        openDesktopSidebarRight,
+        setOpenDesktopSidebarRight,
+        openMobileSidebarRight,
+        setOpenMobileSidebarRight,
+      }}
+    >
+      {children}
+    </ChatContext.Provider>
+  );
 }
