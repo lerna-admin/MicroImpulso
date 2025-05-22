@@ -8,7 +8,8 @@ export function useAutoRefresh(intervalMs = 20000) {
 
   useEffect(() => {
     const id = setInterval(() => {
-      router.replace(window.location.href); // Reemplaza la ruta actual sin recargar la app
+      //router.replace(window.location.href); // Reemplaza la ruta actual sin recargar la app
+      window.location.reload();
     }, intervalMs);
 
     return () => clearInterval(id);
