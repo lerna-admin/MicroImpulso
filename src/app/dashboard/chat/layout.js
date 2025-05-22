@@ -3,7 +3,7 @@ import * as React from "react";
 import { getUser } from "@/lib/custom-auth/server";
 import { ChatProvider } from "@/components/dashboard/chat/chat-context";
 import { ChatView } from "@/components/dashboard/chat/chat-view";
-
+import { ChatLoader } from "@/components/dashboard/chat/chat-loader";
 import { getAllConversationsByAgent } from "./hooks/use-conversations";
 
 export default async function Layout({ children }) {
