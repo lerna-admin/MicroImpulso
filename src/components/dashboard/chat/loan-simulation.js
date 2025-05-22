@@ -3,7 +3,7 @@
 import * as React from "react";
 import { useRouter } from "next/navigation";
 import { sendSimulation } from "@/app/dashboard/chat/hooks/use-conversations";
-import { updateRequest } from "@/app/dashboard/requests/hooks/use-requests";
+import { getRequestsByAgent, updateRequest } from "@/app/dashboard/requests/hooks/use-requests";
 import { Box, Button, Stack, TextField, Typography } from "@mui/material";
 import Grid from "@mui/material/Grid2";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
@@ -11,6 +11,7 @@ import html2canvas from "html2canvas";
 import { QRCodeSVG } from "qrcode.react";
 
 import { dayjs } from "@/lib/dayjs";
+import { useAuth } from "@/components/auth/custom/auth-context";
 
 const parseCurrency = (value) => {
 	// Elimina cualquier carácter que no sea número
@@ -23,6 +24,7 @@ export function LoanSimulation({ contactFound }) {
 	const [days, setDays] = React.useState(0);
 	const previewRef = React.useRef();
 	const router = useRouter();
+	const { user } = useAuth();
 
 	const EA = 0.261;
 	const ED = Math.pow(1 + EA, 1 / 365) - 1;
@@ -40,10 +42,19 @@ export function LoanSimulation({ contactFound }) {
 		formData.append("clientId", contactFound.id);
 
 		await sendSimulation(formData);
-		router.refresh();
 
-		// Actualiza el amount
-		// await updateRequest({});
+		const requestId = await getIdRequest(user.id);
+
+		// Actualiza el amount de la solicitud
+		await updateRequest({ requestedAmount: capital }, requestId);
+
+		router.refresh();
+	};
+
+	const getIdRequest = async (userId) => {
+		const requestsByAgent = await getRequestsByAgent(userId);
+		const requestClient = requestsByAgent.find((request) => request.client.id === contactFound.id);
+		return requestClient.id;
 	};
 
 	const handleDateChange = (newValue) => {
