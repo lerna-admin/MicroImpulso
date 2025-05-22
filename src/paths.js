@@ -59,9 +59,7 @@ export const paths = {
 		fileStorage: "/dashboard/file-storage",
 		i18n: "/dashboard/i18n",
 		documents: {
-			create: "/dashboard/documents/create",
 			details: (documentId) => `/dashboard/documents/${documentId}`,
-			list: "/dashboard/documents",
 		},
 		jobs: {
 			browse: "/dashboard/jobs",
