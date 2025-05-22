@@ -207,7 +207,7 @@ export function ChatProvider({
 			prevContacts.map((contact) => (contact.id === updatedContact.id ? { ...contact, ...updatedContact } : contact))
 		);
 	}, []);
-	useAutoRefresh(20000)
+	useAutoRefresh(10000)
 
 	return (
 		<ChatContext.Provider
