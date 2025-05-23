@@ -4,7 +4,19 @@ import * as React from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { updatedClassificationDocumentById } from "@/app/dashboard/documents/hooks/use-documents";
-import { Card, CardHeader, Chip, Divider, MenuItem, Select } from "@mui/material";
+import {
+	Button,
+	Card,
+	CardHeader,
+	Chip,
+	DialogActions,
+	DialogContentText,
+	DialogTitle,
+	Divider,
+	Menu,
+	MenuItem,
+	Select,
+} from "@mui/material";
 import Box from "@mui/material/Box";
 import Dialog from "@mui/material/Dialog";
 import DialogContent from "@mui/material/DialogContent";
@@ -13,10 +25,12 @@ import IconButton from "@mui/material/IconButton";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 import { FloppyDisk, PencilSimple } from "@phosphor-icons/react/dist/ssr";
+import { DotsThree as DotsThreeIcon } from "@phosphor-icons/react/dist/ssr/DotsThree";
 import { X as XIcon } from "@phosphor-icons/react/dist/ssr/X";
 
 import { paths } from "@/paths";
 import { dayjs } from "@/lib/dayjs";
+import { usePopover } from "@/hooks/use-popover";
 import { DataTable } from "@/components/core/data-table";
 import { PropertyItem } from "@/components/core/property-item";
 import { PropertyList } from "@/components/core/property-list";
@@ -92,6 +106,8 @@ export function DocumentsModal({ open, customer, documents }) {
 	];
 
 	const router = useRouter();
+	const popover = usePopover();
+
 	const [rows, setRows] = React.useState(documents);
 	const [editRowId, setEditRowId] = React.useState(null);
 	const [editedValue, setEditedValue] = React.useState("");
@@ -167,7 +183,14 @@ export function DocumentsModal({ open, customer, documents }) {
 						}}
 					>
 						<Card>
-							<CardHeader title="Listado de documentos" />
+							<CardHeader
+								title="Listado de documentos"
+								action={
+									<IconButton onClick={popover.handleOpen} ref={popover.anchorRef}>
+										<DotsThreeIcon weight="bold" />
+									</IconButton>
+								}
+							/>
 							<Divider />
 							<Box sx={{ overflowX: "auto" }}>
 								<DataTable columns={columns} rows={rows} />
@@ -181,6 +204,15 @@ export function DocumentsModal({ open, customer, documents }) {
 							</Box>
 						</Card>
 					</Grid>
+					<Menu anchorEl={popover.anchorRef.current} onClose={popover.handleClose} open={popover.open}>
+						<MenuItem onClick={popoverStatus.handleOpen}>
+							<Typography>Pasar solicitud a revisión</Typography>
+						</MenuItem>
+						<MenuItem onClick={popoverContract.handleClose()}>
+							<Typography>Enviar contrato</Typography>
+						</MenuItem>
+					</Menu>
+
 					<NotificationAlert
 						openAlert={openAlert}
 						onClose={() => setOpenAlert(false)}
@@ -191,6 +223,87 @@ export function DocumentsModal({ open, customer, documents }) {
 					></NotificationAlert>
 				</Grid>
 			</DialogContent>
+		</Dialog>
+	);
+}
+
+function ModalConfirmSendContract(customerName) {
+	const popover = usePopover();
+	return (
+		<Dialog
+			fullWidth
+			maxWidth={"xs"}
+			open={popover.open}
+			onClose={popover.handleClose}
+			aria-labelledby="alert-dialog-title"
+			aria-describedby="alert-dialog-description"
+		>
+			<DialogTitle id="alert-dialog-title">{"Confirmación"}</DialogTitle>
+			<DialogContent>
+				<DialogContentText id="alert-dialog-description">
+					{`¿Desea enviar el contrato a ${customerName}?`}
+				</DialogContentText>
+			</DialogContent>
+			<DialogActions sx={{ padding: 3 }}>
+				<Button
+					variant="contained"
+					onClick={() => {
+						popover.handleClose();
+					}}
+					autoFocus
+				>
+					Aceptar
+				</Button>
+				<Button
+					variant="outlined"
+					onClick={() => {
+						popover.handleClose();
+					}}
+				>
+					Cancelar
+				</Button>
+			</DialogActions>
+		</Dialog>
+	);
+}
+
+function ModalConfirmStatusRequest(customerName) {
+	const popover = usePopover();
+
+	return (
+		<Dialog
+			fullWidth
+			maxWidth={"xs"}
+			open={popover.open}
+			onClose={popover.handleClose}
+			aria-labelledby="alert-dialog-title"
+			aria-describedby="alert-dialog-description"
+		>
+			<DialogTitle id="alert-dialog-title">{"Confirmación"}</DialogTitle>
+			<DialogContent>
+				<DialogContentText id="alert-dialog-description">
+					{`¿Desea cambiar el estado de la solicitud del cliente ${customerName} a bajo revisión?`}
+				</DialogContentText>
+			</DialogContent>
+			<DialogActions sx={{ padding: 3 }}>
+				<Button
+					variant="contained"
+					onClick={() => {
+						popover.handleClose();
+					}}
+					autoFocus
+				>
+					Aceptar
+				</Button>
+				<Button
+					variant="outlined"
+					onClick={() => {
+						popover.handleClose();
+					}}
+				>
+					Cancelar
+				</Button>
+			</DialogActions>
 		</Dialog>
 	);
 }
