@@ -78,7 +78,7 @@ export function CustomersTable({ rows }) {
 		},
 		{
 			formatter(row) {
-				return row.loanRequest.type.toUpperCase();
+				return row.loanRequest.type?.toUpperCase();
 			},
 			name: "Tipo Pago",
 			align: "center",

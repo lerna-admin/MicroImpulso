@@ -3,47 +3,38 @@
 import * as React from "react";
 import RouterLink from "next/link";
 import { useRouter } from "next/navigation";
-import Avatar from "@mui/material/Avatar";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import Card from "@mui/material/Card";
-import Chip from "@mui/material/Chip";
 import Dialog from "@mui/material/Dialog";
 import DialogContent from "@mui/material/DialogContent";
 import Divider from "@mui/material/Divider";
 import IconButton from "@mui/material/IconButton";
-import Link from "@mui/material/Link";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 import { Plus as PlusIcon } from "@phosphor-icons/react/dist/ssr";
-import { CheckCircle as CheckCircleIcon } from "@phosphor-icons/react/dist/ssr/CheckCircle";
 import { X as XIcon } from "@phosphor-icons/react/dist/ssr/X";
 
 import { paths } from "@/paths";
-import { dayjs } from "@/lib/dayjs";
-import { PropertyItem } from "@/components/core/property-item";
-import { PropertyList } from "@/components/core/property-list";
 
-import { LineItemsTable } from "./line-items-table";
-
-const lineItems = [
-	{
-		id: "001",
-		creditDate: "2025-02-07T14:37:00",
-		expirationDate: "2025-02-20",
-		paymentDate: "2025-02-19T13:15:00",
-		currency: "USD",
-		payment: 24,
-	},
-	{
-		id: "002",
-		creditDate: "2025-02-07T14:37:00",
-		expirationDate: "2025-02-20",
-		paymentDate: "2025-02-24T16:15:00",
-		currency: "USD",
-		payment: 35,
-	},
-];
+// const lineItems = [
+// 	{
+// 		id: "001",
+// 		creditDate: "2025-02-07T14:37:00",
+// 		expirationDate: "2025-02-20",
+// 		paymentDate: "2025-02-19T13:15:00",
+// 		currency: "USD",
+// 		payment: 24,
+// 	},
+// 	{
+// 		id: "002",
+// 		creditDate: "2025-02-07T14:37:00",
+// 		expirationDate: "2025-02-20",
+// 		paymentDate: "2025-02-24T16:15:00",
+// 		currency: "USD",
+// 		payment: 35,
+// 	},
+// ];
 
 export function RequestModal({ open }) {
 	const router = useRouter();
@@ -148,7 +139,7 @@ export function RequestModal({ open }) {
 						{/* <Typography variant="h6">Line items</Typography> */}
 						<Card sx={{ borderRadius: 1 }} variant="outlined">
 							<Box sx={{ overflowX: "auto" }}>
-								<LineItemsTable rows={lineItems} />
+								{/* <LineItemsTable rows={lineItems} /> */}
 							</Box>
 							<Divider />
 							<Box sx={{ display: "flex", justifyContent: "flex-end", p: 3 }}>

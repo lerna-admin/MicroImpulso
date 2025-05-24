@@ -13,6 +13,7 @@ import { DatePicker } from "@mui/x-date-pickers";
 
 import { paths } from "@/paths";
 import { dayjs } from "@/lib/dayjs";
+import { usePopover } from "@/hooks/use-popover";
 import { NotificationAlert } from "@/components/widgets/notifications/notification-alert";
 
 export function CustomerEditForm({ customerToEdit }) {
@@ -29,8 +30,7 @@ export function CustomerEditForm({ customerToEdit }) {
 		updatedAt: "",
 	});
 
-	const [openAlert, setOpenAlert] = React.useState(false);
-
+	const popover = usePopover();
 	const router = useRouter();
 
 	React.useEffect(() => {
@@ -50,7 +50,7 @@ export function CustomerEditForm({ customerToEdit }) {
 	const handleSubmit = async (e) => {
 		e.preventDefault();
 		const response = await updateCustomer(formData);
-		if (response.status == 200) setOpenAlert(true);
+		if (response.status == 200) popover.handleOpen();
 		setTimeout(() => {
 			router.push(paths.dashboard.customers.list);
 		}, 1500);
@@ -213,8 +213,8 @@ export function CustomerEditForm({ customerToEdit }) {
 			</form>
 
 			<NotificationAlert
-				openAlert={openAlert}
-				onClose={() => setOpenAlert(false)}
+				openAlert={popover}
+				onClose={popover.handleClose}
 				msg={"Perfil actualizado!"}
 				autoHideDuration={3000}
 				posHorizontal={"right"}

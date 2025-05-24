@@ -4,7 +4,19 @@ import * as React from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { updatedClassificationDocumentById } from "@/app/dashboard/documents/hooks/use-documents";
-import { Card, CardHeader, Chip, Divider, MenuItem, Select } from "@mui/material";
+import {
+	Button,
+	Card,
+	CardHeader,
+	Chip,
+	DialogActions,
+	DialogContentText,
+	DialogTitle,
+	Divider,
+	Menu,
+	MenuItem,
+	Select,
+} from "@mui/material";
 import Box from "@mui/material/Box";
 import Dialog from "@mui/material/Dialog";
 import DialogContent from "@mui/material/DialogContent";
@@ -13,10 +25,12 @@ import IconButton from "@mui/material/IconButton";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 import { FloppyDisk, PencilSimple } from "@phosphor-icons/react/dist/ssr";
+import { DotsThree as DotsThreeIcon } from "@phosphor-icons/react/dist/ssr/DotsThree";
 import { X as XIcon } from "@phosphor-icons/react/dist/ssr/X";
 
 import { paths } from "@/paths";
 import { dayjs } from "@/lib/dayjs";
+import { usePopover } from "@/hooks/use-popover";
 import { DataTable } from "@/components/core/data-table";
 import { PropertyItem } from "@/components/core/property-item";
 import { PropertyList } from "@/components/core/property-list";
@@ -92,6 +106,10 @@ export function DocumentsModal({ open, customer, documents }) {
 	];
 
 	const router = useRouter();
+	const popover = usePopover();
+	const popoverChangeStatus = usePopover();
+	const popoverSendContract = usePopover();
+
 	const [rows, setRows] = React.useState(documents);
 	const [editRowId, setEditRowId] = React.useState(null);
 	const [editedValue, setEditedValue] = React.useState("");
@@ -112,85 +130,173 @@ export function DocumentsModal({ open, customer, documents }) {
 		setEditRowId(null);
 
 		const response = await updatedClassificationDocumentById({ classification: editedValue }, id);
-
 		if (response.status == 200) setOpenAlert(true);
 	};
 
-	return (
-		<Dialog
-			maxWidth="lg"
-			onClose={handleClose}
-			open={open}
-			sx={{
-				"& .MuiDialog-container": { justifyContent: "center" },
-				"& .MuiDialog-paper": { height: "80%", width: "100%" },
-			}}
-		>
-			<DialogContent sx={{ display: "flex", flexDirection: "column", gap: 5, minHeight: 0 }}>
-				<Stack direction="row" spacing={2} sx={{ alignItems: "center", flex: "0 0 auto", p: 1 }}>
-					<Typography sx={{ flex: "1 1 auto" }} variant="h5">
-						Documentos
-					</Typography>
-					<IconButton onClick={handleClose}>
-						<XIcon />
-					</IconButton>
-				</Stack>
+	const handleChangeStatusRequest = () => {
+		popoverChangeStatus.handleClose();
+		console.log(customer);
+		// const response = await updateRequest({ status: "approved" }, row.id);
+		// 	if (response.status === 200) popoverAlert.handleOpen();
+	};
 
-				<Grid container spacing={4} sx={{ alignItems: "flex-start" }}>
-					<Grid
-						size={{
-							md: 4,
-							xs: 12,
-						}}
-					>
-						<Card>
-							<CardHeader title="Cliente" />
-							<Divider />
-							<PropertyList divider={<Divider />} sx={{ "--PropertyItem-padding": "16px 24px" }}>
-								{[
-									{ key: "Nombre completo", value: customer?.name },
-									{ key: "Tipo documento", value: customer?.documentType },
-									{ key: "Documento", value: customer?.document },
-									{ key: "Dirección", value: customer?.address },
-									{ key: "Correo", value: customer?.email },
-									{ key: "Celular", value: customer?.phone },
-								].map((item) => (
-									<PropertyItem key={item.key} name={item.key} value={item.value} />
-								))}
-							</PropertyList>
-						</Card>
+	const handleSendContract = () => {
+		popoverSendContract.handleClose();
+	};
+
+	return (
+		<React.Fragment>
+			<Dialog
+				maxWidth="lg"
+				onClose={handleClose}
+				open={open}
+				sx={{
+					"& .MuiDialog-container": { justifyContent: "center" },
+					"& .MuiDialog-paper": { height: "80%", width: "100%" },
+				}}
+			>
+				<DialogContent sx={{ display: "flex", flexDirection: "column", gap: 5, minHeight: 0 }}>
+					<Stack direction="row" spacing={2} sx={{ alignItems: "center", flex: "0 0 auto", p: 1 }}>
+						<Typography sx={{ flex: "1 1 auto" }} variant="h5">
+							Documentos
+						</Typography>
+						<IconButton onClick={handleClose}>
+							<XIcon />
+						</IconButton>
+					</Stack>
+
+					<Grid container spacing={4} sx={{ alignItems: "flex-start" }}>
+						<Grid
+							size={{
+								md: 4,
+								xs: 12,
+							}}
+						>
+							<Card>
+								<CardHeader title="Cliente" />
+								<Divider />
+								<PropertyList divider={<Divider />} sx={{ "--PropertyItem-padding": "16px 24px" }}>
+									{[
+										{ key: "Nombre completo", value: customer?.name },
+										{ key: "Tipo documento", value: customer?.documentType },
+										{ key: "Documento", value: customer?.document },
+										{ key: "Dirección", value: customer?.address },
+										{ key: "Correo", value: customer?.email },
+										{ key: "Celular", value: customer?.phone },
+									].map((item) => (
+										<PropertyItem key={item.key} name={item.key} value={item.value} />
+									))}
+								</PropertyList>
+							</Card>
+						</Grid>
+						<Grid
+							size={{
+								md: 8,
+								xs: 12,
+							}}
+						>
+							<Card>
+								<CardHeader
+									title="Listado de documentos"
+									action={
+										<IconButton onClick={popover.handleOpen} ref={popover.anchorRef}>
+											<DotsThreeIcon weight="bold" />
+										</IconButton>
+									}
+								/>
+								<Divider />
+								<Box sx={{ overflowX: "auto" }}>
+									<DataTable columns={columns} rows={rows} />
+									{rows.length === 0 ? (
+										<Box sx={{ p: 3 }}>
+											<Typography color="text.secondary" sx={{ textAlign: "center" }} variant="body2">
+												No se encontraron documentos
+											</Typography>
+										</Box>
+									) : null}
+								</Box>
+							</Card>
+						</Grid>
+						<Menu anchorEl={popover.anchorRef.current} onClose={popover.handleClose} open={popover.open}>
+							<MenuItem
+								onClick={() => {
+									popoverChangeStatus.handleOpen();
+									popover.handleClose();
+								}}
+							>
+								<Typography>En revisión</Typography>
+							</MenuItem>
+							<MenuItem
+								onClick={() => {
+									popoverSendContract.handleOpen();
+									popover.handleClose();
+								}}
+							>
+								<Typography>Enviar contrato</Typography>
+							</MenuItem>
+						</Menu>
+
+						<NotificationAlert
+							openAlert={openAlert}
+							onClose={() => setOpenAlert(false)}
+							msg={"Clasificación actualizada!"}
+							autoHideDuration={2000}
+							posHorizontal={"right"}
+							posVertical={"bottom"}
+						></NotificationAlert>
 					</Grid>
-					<Grid
-						size={{
-							md: 8,
-							xs: 12,
-						}}
-					>
-						<Card>
-							<CardHeader title="Listado de documentos" />
-							<Divider />
-							<Box sx={{ overflowX: "auto" }}>
-								<DataTable columns={columns} rows={rows} />
-								{rows.length === 0 ? (
-									<Box sx={{ p: 3 }}>
-										<Typography color="text.secondary" sx={{ textAlign: "center" }} variant="body2">
-											No se encontraron documentos
-										</Typography>
-									</Box>
-								) : null}
-							</Box>
-						</Card>
-					</Grid>
-					<NotificationAlert
-						openAlert={openAlert}
-						onClose={() => setOpenAlert(false)}
-						msg={"Clasificación actualizada!"}
-						autoHideDuration={2000}
-						posHorizontal={"right"}
-						posVertical={"bottom"}
-					></NotificationAlert>
-				</Grid>
-			</DialogContent>
-		</Dialog>
+				</DialogContent>
+			</Dialog>
+
+			{/* Modal de pasar solicitud a revision */}
+			<Dialog
+				fullWidth
+				maxWidth={"xs"}
+				open={popoverChangeStatus.open}
+				onClose={popoverChangeStatus.handleClose}
+				aria-labelledby="alert-dialog-title"
+				aria-describedby="alert-dialog-description"
+			>
+				<DialogTitle id="alert-dialog-title">{"Confirmación"}</DialogTitle>
+				<DialogContent>
+					<DialogContentText id="alert-dialog-description">
+						{`¿Desea cambiar el estado de la solicitud del cliente ${customer.name} a en revisión?`}
+					</DialogContentText>
+				</DialogContent>
+				<DialogActions sx={{ padding: 3 }}>
+					<Button variant="contained" onClick={handleChangeStatusRequest} autoFocus>
+						Aceptar
+					</Button>
+					<Button variant="outlined" onClick={popoverChangeStatus.handleClose}>
+						Cancelar
+					</Button>
+				</DialogActions>
+			</Dialog>
+
+			{/* Modal de confirmacion enviar contrato */}
+			<Dialog
+				fullWidth
+				maxWidth={"xs"}
+				open={popoverSendContract.open}
+				onClose={popoverSendContract.handleClose}
+				aria-labelledby="alert-dialog-title"
+				aria-describedby="alert-dialog-description"
+			>
+				<DialogTitle id="alert-dialog-title">{"Confirmación"}</DialogTitle>
+				<DialogContent>
+					<DialogContentText id="alert-dialog-description">
+						{`¿Desea enviar el contrato a ${customer.name}?`}
+					</DialogContentText>
+				</DialogContent>
+				<DialogActions sx={{ padding: 3 }}>
+					<Button variant="contained" onClick={handleSendContract} autoFocus>
+						Aceptar
+					</Button>
+					<Button variant="outlined" onClick={popoverSendContract.handleClose}>
+						Cancelar
+					</Button>
+				</DialogActions>
+			</Dialog>
+		</React.Fragment>
 	);
 }
