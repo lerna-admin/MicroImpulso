@@ -136,7 +136,8 @@ export function DocumentsModal({ open, customer, documents }) {
 	const handleChangeStatusRequest = () => {
 		popoverChangeStatus.handleClose();
 		console.log(customer);
-		
+		// const response = await updateRequest({ status: "approved" }, row.id);
+		// 	if (response.status === 200) popoverAlert.handleOpen();
 	};
 
 	const handleSendContract = () => {
@@ -223,7 +224,7 @@ export function DocumentsModal({ open, customer, documents }) {
 									popover.handleClose();
 								}}
 							>
-								<Typography>Pasar solicitud a revisión</Typography>
+								<Typography>En revisión</Typography>
 							</MenuItem>
 							<MenuItem
 								onClick={() => {
@@ -259,7 +260,7 @@ export function DocumentsModal({ open, customer, documents }) {
 				<DialogTitle id="alert-dialog-title">{"Confirmación"}</DialogTitle>
 				<DialogContent>
 					<DialogContentText id="alert-dialog-description">
-						{`¿Desea cambiar el estado de la solicitud del cliente ${customer.name} a bajo revisión?`}
+						{`¿Desea cambiar el estado de la solicitud del cliente ${customer.name} a en revisión?`}
 					</DialogContentText>
 				</DialogContent>
 				<DialogActions sx={{ padding: 3 }}>

@@ -1,12 +1,25 @@
 "use client";
 
 import * as React from "react";
+import RouterLink from "next/link";
 import { useRouter } from "next/navigation";
-import { Menu, MenuItem, Tooltip } from "@mui/material";
+import { updateRequest } from "@/app/dashboard/requests/hooks/use-requests";
+import { createTransaction } from "@/app/dashboard/transactions/hooks/use-transactions";
+import {
+	Button,
+	Dialog,
+	DialogActions,
+	DialogContent,
+	DialogContentText,
+	DialogTitle,
+	Link,
+	Menu,
+	MenuItem,
+	Tooltip,
+} from "@mui/material";
 import Box from "@mui/material/Box";
 import Chip from "@mui/material/Chip";
 import IconButton from "@mui/material/IconButton";
-import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 import {
 	DotsThree as DotsThreeIcon,
@@ -20,13 +33,20 @@ import { paths } from "@/paths";
 import { dayjs } from "@/lib/dayjs";
 import { usePopover } from "@/hooks/use-popover";
 import { DataTable } from "@/components/core/data-table";
+import { NotificationAlert } from "@/components/widgets/notifications/notification-alert";
 
 const columns = [
 	{
 		formatter: (row) => (
-			<Stack direction="row" spacing={2} sx={{ alignItems: "center" }}>
-				<Typography variant="subtitle2">{row.client.name}</Typography>
-			</Stack>
+			<Link
+				color="inherit"
+				component={RouterLink}
+				href={paths.dashboard.requests.details(row.id)}
+				sx={{ whiteSpace: "nowrap" }}
+				variant="subtitle2"
+			>
+				{row.client.name}
+			</Link>
 		),
 		name: "Nombre completo",
 		width: "150px",
@@ -67,6 +87,14 @@ const columns = [
 				},
 				approved: {
 					label: "Aprobada",
+					icon: <CheckCircleIcon color="var(--mui-palette-info-main)" weight="fill" />,
+				},
+				funded: {
+					label: "Desembolsado",
+					icon: <CheckCircleIcon color="var(--mui-palette-warning-main)" weight="fill" />,
+				},
+				completed: {
+					label: "Completada",
 					icon: <CheckCircleIcon color="var(--mui-palette-success-main)" weight="fill" />,
 				},
 				rejected: { label: "Rechazada", icon: <XCircleIcon color="var(--mui-palette-error-main)" weight="fill" /> },
@@ -81,7 +109,7 @@ const columns = [
 	},
 
 	{
-		formatter: (row) => <ActionsCell row={row} />,
+		formatter: (row) => <ActionsCell row={row} disabled={row.status === "funded"} />,
 		name: "Acciones",
 		hideName: true,
 		width: "70px",
@@ -96,7 +124,7 @@ export function RequestsTable({ rows }) {
 			{rows.length === 0 ? (
 				<Box sx={{ p: 3 }}>
 					<Typography color="text.secondary" sx={{ textAlign: "center" }} variant="body2">
-						No requests found
+						No se encontraron solicitudes
 					</Typography>
 				</Box>
 			) : null}
@@ -104,9 +132,12 @@ export function RequestsTable({ rows }) {
 	);
 }
 
-export function ActionsCell({ row }) {
+export function ActionsCell({ row }, disabled) {
 	const router = useRouter();
 	const popover = usePopover();
+	const popoverAlert = usePopover();
+	const popoverModalApproved = usePopover();
+	const popoverModalFunded = usePopover();
 	const [anchorEl, setAnchorEl] = React.useState(null);
 
 	const handleOptions = (event) => {
@@ -114,15 +145,32 @@ export function ActionsCell({ row }) {
 		popover.handleOpen();
 	};
 
-	const handleViewLoanRequest = () => {
-		popover.handleClose();
-		router.push(paths.dashboard.requests.details(row.id));
+	const handleApproveLoanRequest = async () => {
+		const response = await updateRequest({ status: "approved" }, row.id);
+		if (response.status === 200) popoverAlert.handleOpen();
+		router.refresh();
+		popoverModalApproved.handleClose();
+	};
+
+	const handleFundedLoanRequest = async () => {
+		const data = {
+			loanRequestId: row.id,
+			transactionType: "disbursement",
+			amount: row.requestedAmount,
+			reference: "Abono cliente",
+		};
+
+		const response = await createTransaction(data);
+		console.log(response);
+
+		router.refresh();
+		popoverModalFunded.handleClose();
 	};
 
 	return (
-		<>
+		<React.Fragment>
 			<Tooltip title="Más opciones">
-				<IconButton onClick={handleOptions}>
+				<IconButton disabled={disabled} onClick={handleOptions}>
 					<DotsThreeIcon weight="bold" />
 				</IconButton>
 			</Tooltip>
@@ -132,40 +180,106 @@ export function ActionsCell({ row }) {
 				onClose={popover.handleClose}
 				slotProps={{ paper: { elevation: 0 } }}
 			>
-				<MenuItem>
-					<Typography>Abono Interes</Typography>
+				<MenuItem
+					onClick={() => {
+						popover.handleClose();
+						popoverModalApproved.handleOpen();
+					}}
+				>
+					<Typography>Aprobar</Typography>
 				</MenuItem>
-				<MenuItem>
-					<Typography>Aumento</Typography>
-				</MenuItem>
-				<MenuItem>
-					<Typography>Fallida</Typography>
-				</MenuItem>
-				<MenuItem>
-					<Typography>Abonar</Typography>
-				</MenuItem>
-				<MenuItem>
-					<Typography>Renovar</Typography>
-				</MenuItem>
-				<MenuItem>
-					<Typography>Historico</Typography>
-				</MenuItem>
-				<MenuItem>
-					<Typography>Mensajeria</Typography>
-				</MenuItem>
-				<MenuItem>
-					<Typography>Comunicación</Typography>
-				</MenuItem>
-				<MenuItem>
-					<Typography>Sacar</Typography>
-				</MenuItem>
-				<MenuItem>
-					<Typography>Novedad</Typography>
-				</MenuItem>
-				<MenuItem onClick={handleViewLoanRequest}>
-					<Typography>Ver solicitud</Typography>
+				<MenuItem
+					onClick={() => {
+						popover.handleClose();
+						popoverModalFunded.handleOpen();
+					}}
+				>
+					<Typography>Desembolsar</Typography>
 				</MenuItem>
 			</Menu>
-		</>
+
+			{/* Modal para aprobar solicitud*/}
+			<Dialog
+				fullWidth
+				maxWidth={"xs"}
+				open={popoverModalApproved.open}
+				onClose={popoverModalApproved.handleClose}
+				aria-labelledby="alert-dialog-title"
+				aria-describedby="alert-dialog-description"
+			>
+				<DialogTitle id="alert-dialog-title">{"Confirmación"}</DialogTitle>
+
+				<DialogContent>
+					<DialogContentText id="alert-dialog-description" textAlign={"center"}>
+						{`¿Desea cambiar el estado de la solicitud a Aprobada para el cliente ${row.client.name}?`}
+					</DialogContentText>
+				</DialogContent>
+				<DialogActions sx={{ padding: 3 }}>
+					<Button variant="contained" onClick={handleApproveLoanRequest} autoFocus>
+						Aceptar
+					</Button>
+					<Button
+						variant="outlined"
+						onClick={() => {
+							popover.handleClose();
+							popoverModalApproved.handleClose();
+						}}
+					>
+						Cancelar
+					</Button>
+				</DialogActions>
+			</Dialog>
+
+			{/* Modal para desembolsar solicitud*/}
+			<Dialog
+				fullWidth
+				maxWidth={"sm"}
+				open={popoverModalFunded.open}
+				onClose={popoverModalFunded.handleClose}
+				aria-labelledby="alert-dialog-title"
+				aria-describedby="alert-dialog-description"
+			>
+				<DialogTitle id="alert-dialog-title" textAlign={"center"}>
+					{"Confirmación"}
+				</DialogTitle>
+
+				<DialogContent>
+					<DialogContentText id="alert-dialog-description" textAlign={"justify"}>
+						{`Esta acción no realiza el desembolso automáticamente.
+						Al aceptar, se notificará al cliente ${row.client.name} que su préstamo de ${Number.parseInt(
+							row.requestedAmount
+						).toLocaleString("es-CO", {
+							style: "currency",
+							currency: "COP",
+							minimumFractionDigits: 0,
+						})} fue desembolsado.
+						Asegúrese de haber realizado el desembolso de forma manual antes de continuar.`}
+					</DialogContentText>
+				</DialogContent>
+				<DialogActions sx={{ padding: 3 }}>
+					<Button variant="contained" onClick={handleFundedLoanRequest} autoFocus>
+						Aceptar
+					</Button>
+					<Button
+						variant="outlined"
+						onClick={() => {
+							popover.handleClose();
+							popoverModalFunded.handleClose();
+						}}
+					>
+						Cancelar
+					</Button>
+				</DialogActions>
+			</Dialog>
+
+			<NotificationAlert
+				openAlert={popoverAlert.open}
+				onClose={popoverAlert.handleClose}
+				msg={"Solicitud actualizada!"}
+				autoHideDuration={2000}
+				posHorizontal={"right"}
+				posVertical={"bottom"}
+			></NotificationAlert>
+		</React.Fragment>
 	);
 }

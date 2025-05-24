@@ -46,7 +46,7 @@ export function LoanSimulation({ contactFound }) {
 		const requestId = await getIdRequest(user.id);
 
 		// Actualiza el amount de la solicitud
-		await updateRequest({ requestedAmount: capital }, requestId);
+		await updateRequest({ requestedAmount: capital, endDateAt: selectedDate.utc(true), amount: totalToPay }, requestId);
 
 		router.refresh();
 	};
