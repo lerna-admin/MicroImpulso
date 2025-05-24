@@ -109,7 +109,7 @@ const columns = [
 	},
 
 	{
-		formatter: (row) => <ActionsCell row={row} disabled={row.status === "funded"} />,
+		formatter: (row) => <ActionsCell row={row} />,
 		name: "Acciones",
 		hideName: true,
 		width: "70px",
@@ -132,7 +132,7 @@ export function RequestsTable({ rows }) {
 	);
 }
 
-export function ActionsCell({ row }, disabled) {
+export function ActionsCell({ row }) {
 	const router = useRouter();
 	const popover = usePopover();
 	const popoverAlert = usePopover();
@@ -160,8 +160,7 @@ export function ActionsCell({ row }, disabled) {
 			reference: "Abono cliente",
 		};
 
-		const response = await createTransaction(data);
-		console.log(response);
+		await createTransaction(data);
 
 		router.refresh();
 		popoverModalFunded.handleClose();
@@ -170,7 +169,7 @@ export function ActionsCell({ row }, disabled) {
 	return (
 		<React.Fragment>
 			<Tooltip title="Más opciones">
-				<IconButton disabled={disabled} onClick={handleOptions}>
+				<IconButton disabled={row.status === "funded"} onClick={handleOptions}>
 					<DotsThreeIcon weight="bold" />
 				</IconButton>
 			</Tooltip>
