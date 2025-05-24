@@ -4,6 +4,7 @@ import * as React from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { updatedClassificationDocumentById } from "@/app/dashboard/documents/hooks/use-documents";
+import { sendContract, updateRequest } from "@/app/dashboard/requests/hooks/use-requests";
 import {
 	Button,
 	Card,
@@ -109,6 +110,7 @@ export function DocumentsModal({ open, customer, documents }) {
 	const popover = usePopover();
 	const popoverChangeStatus = usePopover();
 	const popoverSendContract = usePopover();
+	const popoverAlert = usePopover();
 
 	const [rows, setRows] = React.useState(documents);
 	const [editRowId, setEditRowId] = React.useState(null);
@@ -133,15 +135,16 @@ export function DocumentsModal({ open, customer, documents }) {
 		if (response.status == 200) setOpenAlert(true);
 	};
 
-	const handleChangeStatusRequest = () => {
+	const handleChangeStatusRequest = async () => {
 		popoverChangeStatus.handleClose();
-		console.log(customer);
-		// const response = await updateRequest({ status: "approved" }, row.id);
-		// 	if (response.status === 200) popoverAlert.handleOpen();
+		const response = await updateRequest({ status: "under_review" }, customer.loanRequests[0].id);
+		if (response.status === 200) popoverAlert.handleOpen();
 	};
 
-	const handleSendContract = () => {
+	const handleSendContract = async () => {
 		popoverSendContract.handleClose();
+		await sendContract(customer.loanRequests[0].id);
+		// TODO alert para que informe que ya se envio
 	};
 
 	return (
@@ -297,6 +300,15 @@ export function DocumentsModal({ open, customer, documents }) {
 					</Button>
 				</DialogActions>
 			</Dialog>
+
+			<NotificationAlert
+				openAlert={popoverAlert.open}
+				onClose={popoverAlert.handleClose}
+				msg={"Solicitud actualizada!"}
+				autoHideDuration={2000}
+				posHorizontal={"right"}
+				posVertical={"bottom"}
+			></NotificationAlert>
 		</React.Fragment>
 	);
 }

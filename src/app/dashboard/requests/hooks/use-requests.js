@@ -59,3 +59,12 @@ export async function updateRequest(data, id) {
 	if (!res.ok) throw new Error("Error al actualizar solicitud");
 	return { data: res.json(), status: res.status };
 }
+
+export async function sendContract(loanRequestId) {
+	const res = await fetch(`${BASE_URL}/loan-request/${loanRequestId}/send-contract`, {
+		method: "POST",
+		headers: { "Content-Type": "application/json" },
+	});
+	if (!res.ok) throw new Error("Error al enviar contrato");
+	return res.json();
+}
