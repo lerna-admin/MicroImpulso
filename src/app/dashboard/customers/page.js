@@ -28,7 +28,7 @@ export default async function Page({ searchParams }) {
 	const { email, phone, sortDir, status, document } = await searchParams;
 
 	// const sortedCustomers = applySort(customers, sortDir);
-	const filteredCustomers = applyFilters(customers, { email, phone, status, document });
+	const filteredCustomers = applyFilters(customers, { status });
 
 	return (
 		<Box
@@ -48,11 +48,7 @@ export default async function Page({ searchParams }) {
 				</Stack>
 				<CustomersSelectionProvider customers={filteredCustomers}>
 					<Card>
-						<CustomersFilters
-							filters={{ email, phone, status, document }}
-							sortDir={sortDir}
-							count={filteredCustomers.length}
-						/>
+						<CustomersFilters filters={{ status }} sortDir={sortDir} count={filteredCustomers.length} />
 						<Divider />
 						<Box sx={{ overflowX: "auto" }}>
 							<CustomersTable rows={filteredCustomers} />
@@ -78,18 +74,8 @@ export default async function Page({ searchParams }) {
 // 	});
 // }
 
-function applyFilters(row, { email, phone, status, document }) {
+function applyFilters(row, { status }) {
 	return row.filter((item) => {
-		if (document && !item.document?.toLowerCase().includes(document.toLowerCase())) {
-			return false;
-		}
-		if (email && !item.email?.toLowerCase().includes(email.toLowerCase())) {
-			return false;
-		}
-
-		if (phone && !item.phone?.toLowerCase().includes(phone.toLowerCase())) {
-			return false;
-		}
 		if (status && item.status !== status) {
 			return false;
 		}

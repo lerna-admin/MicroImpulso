@@ -17,7 +17,19 @@ function totalToPayAllCustomers(array) {
 }
 
 function totalCustomers(array) {
-	return array.filter(({ client }) => client.status.toUpperCase() === "ACTIVE").length;
+	return array.filter(({ status }) => status.toUpperCase() === "ACTIVE").length;
+}
+
+function totalMoraGreatherThanFifteen(array) {
+	return array.reduce((sum, { diasMora }) => sum + (diasMora > 15 ? 1 : 0), 0);
+}
+
+function totalCreditsRejected(array) {
+	return array.reduce((sum, { loanRequest: { status } }) => sum + (status === "rejected" ? 1 : 0), 0);
+}
+
+function totalNoPayments(array) {
+	return array.filter(({ loanRequest: { transactions } }) => transactions.Transactiontype === "repayment").length;
 }
 
 const handleClick = () => {
@@ -47,6 +59,9 @@ export function CustomerStatistics({ customers }) {
 	React.useEffect(() => {
 		updateValuesByIcons(5, totalToPayAllCustomers(customers));
 		updateValuesByIcons(4, totalCustomers(customers));
+		updateValuesByIcons(2, totalMoraGreatherThanFifteen(customers));
+		updateValuesByIcons(3, totalCreditsRejected(customers));
+		updateValuesByIcons(1, totalNoPayments(customers));
 	}, [customers]);
 
 	return (

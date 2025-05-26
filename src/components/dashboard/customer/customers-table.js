@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import RouterLink from "next/link";
-// import { useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { formatPhoneNumber } from "@/helpers/phone-mask";
 import { Menu, MenuItem, Tooltip } from "@mui/material";
 import Box from "@mui/material/Box";
@@ -156,12 +156,11 @@ export function CustomersTable({ rows }) {
 }
 
 function ActionsCell({ row }) {
-	// const router = useRouter();
+	const router = useRouter();
 	const popover = usePopover();
 	const [anchorEl, setAnchorEl] = React.useState(null);
 
 	const handleOptions = (event) => {
-		console.log(row);
 		setAnchorEl(event.currentTarget);
 		popover.handleOpen();
 	};
@@ -170,6 +169,11 @@ function ActionsCell({ row }) {
 	// 	popover.handleClose();
 	// 	router.push(paths.dashboard.customers.details(row.id));
 	// };
+
+	const handlePayment = () => {
+		popover.handleClose();
+		router.push(paths.dashboard.requests.details(row.loanRequest.id));
+	};
 
 	// const handleLoanRequests = () => {
 	// 	popover.handleClose();
@@ -201,7 +205,7 @@ function ActionsCell({ row }) {
 					</ListItemIcon>
 					<Typography>Ver solicitudes</Typography>
 				</MenuItem> */}
-				<MenuItem>
+				<MenuItem onClick={handlePayment}>
 					<Typography>Abonar</Typography>
 				</MenuItem>
 			</Menu>
