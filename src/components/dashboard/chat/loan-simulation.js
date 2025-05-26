@@ -4,7 +4,7 @@ import * as React from "react";
 import { useRouter } from "next/navigation";
 import { sendSimulation } from "@/app/dashboard/chat/hooks/use-conversations";
 import { getRequestsByAgent, updateRequest } from "@/app/dashboard/requests/hooks/use-requests";
-import { Box, Button, Stack, TextField, Typography } from "@mui/material";
+import { Box, Button, InputLabel, MenuItem, Select, Stack, TextField, Typography } from "@mui/material";
 import Grid from "@mui/material/Grid2";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import html2canvas from "html2canvas";
@@ -20,6 +20,8 @@ const parseCurrency = (value) => {
 
 export function LoanSimulation({ contactFound }) {
 	const [capital, setCapital] = React.useState(0);
+	const [typePayment, setTypePayment] = React.useState("");
+	const [datePayment, setDatePayment] = React.useState("");
 	const [selectedDate, setSelectedDate] = React.useState(dayjs());
 	const [days, setDays] = React.useState(0);
 	const previewRef = React.useRef();
@@ -46,7 +48,16 @@ export function LoanSimulation({ contactFound }) {
 		const requestId = await getIdRequest(user.id);
 
 		// Actualiza el amount de la solicitud
-		await updateRequest({ requestedAmount: capital, endDateAt: selectedDate.utc(true), amount: totalToPay }, requestId);
+		await updateRequest(
+			{
+				requestedAmount: capital,
+				endDateAt: selectedDate.utc(true),
+				amount: totalToPay,
+				paymentDay: datePayment,
+				type: typePayment,
+			},
+			requestId
+		);
 
 		router.refresh();
 	};
@@ -184,13 +195,38 @@ export function LoanSimulation({ contactFound }) {
 				</Grid>
 				<Grid
 					size={{
+						md: 6,
+						xs: 12,
+					}}
+				>
+					<InputLabel id="type-payment">Tipo de pago</InputLabel>
+					<Select fullWidth labelId="type-payment" value={typePayment} onChange={(e) => setTypePayment(e.target.value)}>
+						<MenuItem value="QUINCENAL">Quincenal</MenuItem>
+						<MenuItem value="MENSUAL">Mensual</MenuItem>
+					</Select>
+				</Grid>
+				<Grid
+					size={{
+						md: 6,
+						xs: 12,
+					}}
+				>
+					<InputLabel id="date-payment">Fecha de pago</InputLabel>
+					<Select fullWidth labelId="date-payment" value={datePayment} onChange={(e) => setDatePayment(e.target.value)}>
+						<MenuItem value="15-30">15 - 30</MenuItem>
+						<MenuItem value="5-20">5 - 20</MenuItem>
+						<MenuItem value="10-25">10 - 25</MenuItem>
+					</Select>
+				</Grid>
+				<Grid
+					size={{
 						md: 12,
 						xs: 12,
 					}}
 				>
 					<DatePicker
 						sx={{ width: "100%" }}
-						label="Días para pagar"
+						label="Día a pagar"
 						value={selectedDate}
 						onChange={handleDateChange}
 						minDate={dayjs()}
