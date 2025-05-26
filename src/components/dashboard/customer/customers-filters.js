@@ -113,7 +113,7 @@ export function CustomersFilters({ filters = {}, sortDir = "desc", count }) {
 			<Divider />
 			<Stack direction="row" spacing={2} sx={{ alignItems: "center", flexWrap: "wrap", px: 3, py: 2 }}>
 				<Stack direction="row" spacing={2} sx={{ alignItems: "center", flex: "1 1 auto", flexWrap: "wrap" }}>
-					<FilterButton
+					{/* <FilterButton
 						displayValue={document}
 						label="N. Documento"
 						onFilterApply={(value) => {
@@ -148,7 +148,7 @@ export function CustomersFilters({ filters = {}, sortDir = "desc", count }) {
 						}}
 						popover={<PhoneFilterPopover />}
 						value={phone}
-					/>
+					/> */}
 					{hasFilters ? <Button onClick={handleClearFilters}>Borrar filtros</Button> : null}
 				</Stack>
 			</Stack>

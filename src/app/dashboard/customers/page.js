@@ -44,7 +44,7 @@ export default async function Page({ searchParams }) {
 					<Box sx={{ flex: "1 1 auto" }}>
 						<Typography variant="h4">Clientes</Typography>
 					</Box>
-					<CustomerStatistics />
+					<CustomerStatistics customers={customers} />
 				</Stack>
 				<CustomersSelectionProvider customers={filteredCustomers}>
 					<Card>
