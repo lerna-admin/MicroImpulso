@@ -23,7 +23,9 @@ export default async function Page({ searchParams }) {
 		data: { user },
 	} = await getUser();
 
-	const customers = user.role === ROLES.AGENTE ? await getCustomersByAgent(user.id) : await getAllCustomers();
+	const { data } = user.role === ROLES.AGENTE ? await getCustomersByAgent(user.id) : await getAllCustomers();
+
+	const customers = data;
 
 	const { email, phone, sortDir, status, document } = await searchParams;
 
