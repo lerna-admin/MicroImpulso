@@ -185,28 +185,15 @@ function ActionsCell({ row }) {
 	const popover = usePopover();
 	const [anchorEl, setAnchorEl] = React.useState(null);
 
-	console.log(formatPhoneNumber(row.client.phone));
-	
-
 	const handleOptions = (event) => {
 		setAnchorEl(event.currentTarget);
 		popover.handleOpen();
 	};
 
-	// const handleEditProfile = () => {
-	// 	popover.handleClose();
-	// 	router.push(paths.dashboard.customers.details(row.id));
-	// };
-
 	const handlePayment = () => {
 		popover.handleClose();
 		router.push(paths.dashboard.requests.details(row.loanRequest.id));
 	};
-
-	// const handleLoanRequests = () => {
-	// 	popover.handleClose();
-	// 	router.push(`${paths.dashboard.requests.list}?document=${row.document}`);
-	// };
 
 	return (
 		<>
@@ -221,18 +208,6 @@ function ActionsCell({ row }) {
 				onClose={popover.handleClose}
 				slotProps={{ paper: { elevation: 0 } }}
 			>
-				{/* <MenuItem onClick={handleEditProfile}>
-					<ListItemIcon>
-						<PencilSimpleIcon />
-					</ListItemIcon>
-					<Typography>Editar perfil</Typography>
-				</MenuItem> */}
-				{/* <MenuItem onClick={handleLoanRequests}>
-					<ListItemIcon>
-						<CardsThreeIcon />
-					</ListItemIcon>
-					<Typography>Ver solicitudes</Typography>
-				</MenuItem> */}
 				<MenuItem onClick={handlePayment}>
 					<Typography>Abonar</Typography>
 				</MenuItem>

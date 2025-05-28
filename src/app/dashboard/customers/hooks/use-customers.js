@@ -13,8 +13,10 @@ const BASE_URL = process.env.NEXT_PUBLIC_API_URL;
  *
  * @returns {Client[]}
  */
-export async function getAllCustomers() {
-	const res = await fetch(`${BASE_URL}/clients`);
+export async function getAllCustomers({ page = 1, limit = 10 }) {
+	console.log(`${BASE_URL}/clients?page=${page}&limit=${limit}`);
+
+	const res = await fetch(`${BASE_URL}/clients?page=${page}&limit=${limit}`);
 	if (!res.ok) throw new Error("Error al obtener clientes");
 	return res.json();
 }

@@ -19,18 +19,16 @@ import { getAllCustomers, getCustomersByAgent } from "./hooks/use-customers";
 export const metadata = { title: `Clientes | Dashboard | ${appConfig.name}` };
 
 export default async function Page({ searchParams }) {
+	const { status, sortDir, page, limit } = await searchParams;
+
 	const {
 		data: { user },
 	} = await getUser();
 
-	const { data } = user.role === ROLES.AGENTE ? await getCustomersByAgent(user.id) : await getAllCustomers();
+	const { data: customers } =
+		user.role === ROLES.AGENTE ? await getCustomersByAgent(user.id) : await getAllCustomers({ page, limit });
 
-	const customers = data;
-
-	const { email, phone, sortDir, status, document } = await searchParams;
-
-	// const sortedCustomers = applySort(customers, sortDir);
-	const filteredCustomers = applyFilters(customers, { status });
+	console.log(customers);
 
 	return (
 		<Box
@@ -48,40 +46,18 @@ export default async function Page({ searchParams }) {
 					</Box>
 					<CustomerStatistics customers={customers} />
 				</Stack>
-				<CustomersSelectionProvider customers={filteredCustomers}>
+				<CustomersSelectionProvider customers={customers}>
 					<Card>
-						<CustomersFilters filters={{ status }} sortDir={sortDir} count={filteredCustomers.length} />
+						<CustomersFilters filters={{ status }} sortDir={sortDir} count={customers.length} />
 						<Divider />
 						<Box sx={{ overflowX: "auto" }}>
-							<CustomersTable rows={filteredCustomers} />
+							<CustomersTable rows={customers} />
 						</Box>
 						<Divider />
-						<CustomersPagination totalItems={filteredCustomers.length} />
+						<CustomersPagination count={customers.length} page={page} />
 					</Card>
 				</CustomersSelectionProvider>
 			</Stack>
 		</Box>
 	);
-}
-
-// Sorting and filtering has to be done on the server.
-
-// function applySort(row, sortDir) {
-// 	return row.sort((a, b) => {
-// 		if (sortDir === "asc") {
-// 			return dayjs.utc(a.createdAt) - dayjs.utc(b.createdAt);
-// 		}
-
-// 		return dayjs.utc(b.createdAt) - dayjs.utc(a.createdAt);
-// 	});
-// }
-
-function applyFilters(row, { status }) {
-	return row.filter((item) => {
-		if (status && item.status !== status) {
-			return false;
-		}
-
-		return true;
-	});
 }
