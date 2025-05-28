@@ -19,16 +19,33 @@ import { getAllCustomers, getCustomersByAgent } from "./hooks/use-customers";
 export const metadata = { title: `Clientes | Dashboard | ${appConfig.name}` };
 
 export default async function Page({ searchParams }) {
-	const { status, sortDir, page, limit } = await searchParams;
+	const { status, page, limit } = await searchParams;
 
 	const {
 		data: { user },
 	} = await getUser();
 
-	const { data: customers } =
-		user.role === ROLES.AGENTE ? await getCustomersByAgent(user.id) : await getAllCustomers({ page, limit });
+	const {
+		data: customers,
+		page: customersPage,
+		limit: customerLimit,
+		totalItems: customerTotalItems,
+		totalActiveAmountBorrowed,
+		totalActiveRepayment,
+		activeClientsCount,
+		mora15,
+		critical20,
+		noPayment30,
+	} = user.role === ROLES.AGENTE ? await getCustomersByAgent(user.id) : await getAllCustomers({ page, limit, status });
 
-	console.log(customers);
+	const statistics = {
+		totalActiveAmountBorrowed,
+		totalActiveRepayment,
+		activeClientsCount,
+		mora15,
+		critical20,
+		noPayment30,
+	};
 
 	return (
 		<Box
@@ -44,17 +61,22 @@ export default async function Page({ searchParams }) {
 					<Box sx={{ flex: "1 1 auto" }}>
 						<Typography variant="h4">Clientes</Typography>
 					</Box>
-					<CustomerStatistics customers={customers} />
+					<CustomerStatistics statistics={statistics} />
 				</Stack>
 				<CustomersSelectionProvider customers={customers}>
 					<Card>
-						<CustomersFilters filters={{ status }} sortDir={sortDir} count={customers.length} />
+						<CustomersFilters filters={{ status, page, limit }} count={customers.length} />
 						<Divider />
 						<Box sx={{ overflowX: "auto" }}>
 							<CustomersTable rows={customers} />
 						</Box>
 						<Divider />
-						<CustomersPagination count={customers.length} page={page} />
+						<CustomersPagination
+							filters={{ status }}
+							customerTotalItems={customerTotalItems}
+							customersPage={customersPage}
+							customerLimit={customerLimit}
+						/>
 					</Card>
 				</CustomersSelectionProvider>
 			</Stack>

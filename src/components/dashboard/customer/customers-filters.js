@@ -2,7 +2,6 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
-import Chip from "@mui/material/Chip";
 import Tab from "@mui/material/Tab";
 import Tabs from "@mui/material/Tabs";
 
@@ -15,20 +14,22 @@ const tabs = [
 	{ label: "Rechazados", value: "rejected" },
 ];
 
-export function CustomersFilters({ filters = {}, sortDir = "desc" }) {
+export function CustomersFilters({ filters = {} }) {
 	const router = useRouter();
-	const { status } = filters;
+	const { status, limit } = filters;
 
 	const updateSearchParams = React.useCallback(
-		(newFilters, newSortDir) => {
+		(newFilters) => {
 			const searchParams = new URLSearchParams();
-
-			if (newSortDir === "asc") {
-				searchParams.set("sortDir", newSortDir);
-			}
 
 			if (newFilters.status) {
 				searchParams.set("status", newFilters.status);
+			}
+			if (newFilters.page) {
+				searchParams.set("page", newFilters.page);
+			}
+			if (newFilters.limit) {
+				searchParams.set("limit", newFilters.limit);
 			}
 
 			router.push(`${paths.dashboard.customers.list}?${searchParams.toString()}`);
@@ -38,9 +39,9 @@ export function CustomersFilters({ filters = {}, sortDir = "desc" }) {
 
 	const handleStatusChange = React.useCallback(
 		(_, value) => {
-			updateSearchParams({ ...filters, status: value }, sortDir);
+			updateSearchParams({ ...filters, status: value, page: 1, limit: limit });
 		},
-		[updateSearchParams, filters, sortDir]
+		[updateSearchParams, filters]
 	);
 
 	return (
@@ -48,7 +49,6 @@ export function CustomersFilters({ filters = {}, sortDir = "desc" }) {
 			<Tabs onChange={handleStatusChange} sx={{ px: 3 }} value={status ?? ""} variant="scrollable">
 				{tabs.map((tab) => (
 					<Tab
-						icon={tab.value === status && <Chip label={tab.count} size="small" variant="soft" />}
 						iconPosition="end"
 						key={tab.value}
 						label={tab.label}
