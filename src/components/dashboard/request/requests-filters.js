@@ -19,10 +19,12 @@ import { Option } from "@/components/core/option";
 export function RequestsFilters({ filters = {}, sortDir = "desc", count }) {
 	const [tabs, setTabs] = React.useState([
 		{ label: "Todos", value: "", count: 0 },
-		{ label: "Nueva", value: "new", count: 0 },
+		{ label: "Nuevas", value: "new", count: 0 },
 		{ label: "En estudio", value: "under_review", count: 0 },
-		{ label: "Aprobada", value: "approved", count: 0 },
-		{ label: "Rechazada", value: "rejected", count: 0 },
+		{ label: "Aprobadas", value: "approved", count: 0 },
+		{ label: "Rechazadas", value: "rejected", count: 0 },
+		{ label: "Completadas", value: "completed", count: 0 },
+		{ label: "Desembolsadas", value: "funded", count: 0 },
 	]);
 
 	const { name, document, status } = filters;

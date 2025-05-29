@@ -10,19 +10,30 @@ import IconButton from "@mui/material/IconButton";
 import Link from "@mui/material/Link";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
-import { DotsThree as DotsThreeIcon } from "@phosphor-icons/react/dist/ssr";
+import { BellRinging as BellRingingIcon, DotsThree as DotsThreeIcon } from "@phosphor-icons/react/dist/ssr";
 
 import { paths } from "@/paths";
 import { dayjs } from "@/lib/dayjs";
 import { usePopover } from "@/hooks/use-popover";
 import { DataTable } from "@/components/core/data-table";
 
+const getColorByDaysLeft = (daysLeft) => {
+	if (daysLeft <= 3) return "#FF0000"; // Rojo;
+	if (daysLeft <= 8) return "#FF7F50"; // Naranja;
+	if (daysLeft <= 12) return "#FFD700"; // Amarillo
+};
+
 export function CustomersTable({ rows }) {
 	const columns = [
 		{
-			formatter(row) {
-				return row.client.id;
-			},
+			formatter: (row) => (
+				<Stack direction="column" spacing={1} sx={{ alignItems: "center" }}>
+					<Typography color="text.secondary" variant="body2">
+						{row.client.id}
+					</Typography>
+					<ShowAlert endDateLoanRequest={row.loanRequest.endDateAt} />
+				</Stack>
+			),
 			name: "#",
 			align: "center",
 			width: "50px",
@@ -155,6 +166,20 @@ export function CustomersTable({ rows }) {
 	);
 }
 
+function ShowAlert({ endDateLoanRequest }) {
+	const today = dayjs().startOf("day");
+	const endDate = dayjs(endDateLoanRequest).utc().startOf("day");
+	const daysLeft = endDate.diff(today, "day") + 1;
+	const [color, setColor] = React.useState("");
+
+	React.useEffect(() => {
+		const color = getColorByDaysLeft(daysLeft);
+		setColor(color);
+	}, [daysLeft]);
+
+	return daysLeft < 13 ? <BellRingingIcon size={18} weight="fill" color={color} /> : null;
+}
+
 function ActionsCell({ row }) {
 	const router = useRouter();
 	const popover = usePopover();
@@ -165,20 +190,10 @@ function ActionsCell({ row }) {
 		popover.handleOpen();
 	};
 
-	// const handleEditProfile = () => {
-	// 	popover.handleClose();
-	// 	router.push(paths.dashboard.customers.details(row.id));
-	// };
-
 	const handlePayment = () => {
 		popover.handleClose();
 		router.push(paths.dashboard.requests.details(row.loanRequest.id));
 	};
-
-	// const handleLoanRequests = () => {
-	// 	popover.handleClose();
-	// 	router.push(`${paths.dashboard.requests.list}?document=${row.document}`);
-	// };
 
 	return (
 		<>
@@ -193,18 +208,6 @@ function ActionsCell({ row }) {
 				onClose={popover.handleClose}
 				slotProps={{ paper: { elevation: 0 } }}
 			>
-				{/* <MenuItem onClick={handleEditProfile}>
-					<ListItemIcon>
-						<PencilSimpleIcon />
-					</ListItemIcon>
-					<Typography>Editar perfil</Typography>
-				</MenuItem> */}
-				{/* <MenuItem onClick={handleLoanRequests}>
-					<ListItemIcon>
-						<CardsThreeIcon />
-					</ListItemIcon>
-					<Typography>Ver solicitudes</Typography>
-				</MenuItem> */}
 				<MenuItem onClick={handlePayment}>
 					<Typography>Abonar</Typography>
 				</MenuItem>

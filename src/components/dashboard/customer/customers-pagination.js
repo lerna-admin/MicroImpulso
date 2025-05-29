@@ -1,35 +1,49 @@
 "use client";
 
 import * as React from "react";
+import { useRouter } from "next/navigation";
 import TablePagination from "@mui/material/TablePagination";
 
-export function CustomersPagination({ totalItems, onPage, onRowPerPage }) {
-	// You should implement the pagination using a similar logic as the filters.
-	// Note that when page change, you should keep the filter search params.
+import { paths } from "@/paths";
 
-	const [page, setPage] = React.useState(0);
-	const [rowsPerPage, setRowsPerPage] = React.useState(10);
+export function CustomersPagination({ filters, customerTotalItems, customersPage, customerLimit }) {
+	const { status } = filters;
+	const router = useRouter();
+	const [row, setRow] = React.useState(customerLimit || 5);
+	const [page, setPage] = React.useState(customersPage - 1 || 0);
 
-	const handleChangePage = (event, newPage) => {
-		setPage(newPage);
-		onPage(page);
+	React.useEffect(() => {
+		setPage(0);
+	}, [customerTotalItems]);
+
+	const handleRowsPerPageChange = ({ target }) => {
+		const newLimit = target.value;
+		setRow(newLimit);
+		const searchParams = new URLSearchParams();
+		searchParams.set("status", status || "");
+		searchParams.set("page", 1);
+		searchParams.set("limit", newLimit);
+		router.push(`${paths.dashboard.customers.list}?${searchParams.toString()}`);
 	};
 
-	const handleChangeRowsPerPage = (event) => {
-		const rowXPage = Number.parseInt(event.target.value, 10);
-		setRowsPerPage(rowXPage);
-		setPage(0);
-		onRowPerPage(rowsPerPage);
+	const handlePageChange = (event, newPage) => {
+		setPage(newPage);
+		const searchParams = new URLSearchParams();
+		searchParams.set("status", status || "");
+		searchParams.set("page", (newPage + 1).toString());
+		searchParams.set("limit", row.toString());
+		router.push(`${paths.dashboard.customers.list}?${searchParams.toString()}`);
 	};
 
 	return (
 		<TablePagination
 			component="div"
-			count={totalItems}
+			count={customerTotalItems}
 			page={page}
-			onPageChange={handleChangePage}
-			onRowsPerPageChange={handleChangeRowsPerPage}
-			rowsPerPage={rowsPerPage}
+			onPageChange={handlePageChange}
+			onRowsPerPageChange={handleRowsPerPageChange}
+			rowsPerPage={row}
+			rowsPerPageOptions={[5, 10, 25, 50]}
 			labelRowsPerPage={"Filas"}
 		/>
 	);

@@ -19,16 +19,33 @@ import { getAllCustomers, getCustomersByAgent } from "./hooks/use-customers";
 export const metadata = { title: `Clientes | Dashboard | ${appConfig.name}` };
 
 export default async function Page({ searchParams }) {
+	const { status, page, limit } = await searchParams;
+
 	const {
 		data: { user },
 	} = await getUser();
 
-	const customers = user.role === ROLES.AGENTE ? await getCustomersByAgent(user.id) : await getAllCustomers();
+	const {
+		data: customers,
+		page: customersPage,
+		limit: customerLimit,
+		totalItems: customerTotalItems,
+		totalActiveAmountBorrowed,
+		totalActiveRepayment,
+		activeClientsCount,
+		mora15,
+		critical20,
+		noPayment30,
+	} = user.role === ROLES.AGENTE ? await getCustomersByAgent(user.id) : await getAllCustomers({ page, limit, status });
 
-	const { email, phone, sortDir, status, document } = await searchParams;
-
-	// const sortedCustomers = applySort(customers, sortDir);
-	const filteredCustomers = applyFilters(customers, { status });
+	const statistics = {
+		totalActiveAmountBorrowed,
+		totalActiveRepayment,
+		activeClientsCount,
+		mora15,
+		critical20,
+		noPayment30,
+	};
 
 	return (
 		<Box
@@ -44,42 +61,25 @@ export default async function Page({ searchParams }) {
 					<Box sx={{ flex: "1 1 auto" }}>
 						<Typography variant="h4">Clientes</Typography>
 					</Box>
-					<CustomerStatistics customers={customers} />
+					<CustomerStatistics statistics={statistics} />
 				</Stack>
-				<CustomersSelectionProvider customers={filteredCustomers}>
+				<CustomersSelectionProvider customers={customers}>
 					<Card>
-						<CustomersFilters filters={{ status }} sortDir={sortDir} count={filteredCustomers.length} />
+						<CustomersFilters filters={{ status, page, limit }} count={customers.length} />
 						<Divider />
 						<Box sx={{ overflowX: "auto" }}>
-							<CustomersTable rows={filteredCustomers} />
+							<CustomersTable rows={customers} />
 						</Box>
 						<Divider />
-						<CustomersPagination totalItems={filteredCustomers.length} />
+						<CustomersPagination
+							filters={{ status }}
+							customerTotalItems={customerTotalItems}
+							customersPage={customersPage}
+							customerLimit={customerLimit}
+						/>
 					</Card>
 				</CustomersSelectionProvider>
 			</Stack>
 		</Box>
 	);
-}
-
-// Sorting and filtering has to be done on the server.
-
-// function applySort(row, sortDir) {
-// 	return row.sort((a, b) => {
-// 		if (sortDir === "asc") {
-// 			return dayjs.utc(a.createdAt) - dayjs.utc(b.createdAt);
-// 		}
-
-// 		return dayjs.utc(b.createdAt) - dayjs.utc(a.createdAt);
-// 	});
-// }
-
-function applyFilters(row, { status }) {
-	return row.filter((item) => {
-		if (status && item.status !== status) {
-			return false;
-		}
-
-		return true;
-	});
 }
