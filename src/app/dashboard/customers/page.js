@@ -19,7 +19,7 @@ import { getAllCustomers, getCustomersByAgent } from "./hooks/use-customers";
 export const metadata = { title: `Clientes | Dashboard | ${appConfig.name}` };
 
 export default async function Page({ searchParams }) {
-	const { status, page, limit } = await searchParams;
+	const { status, page, limit, type, paymentDay } = await searchParams;
 
 	const {
 		data: { user },
@@ -36,7 +36,9 @@ export default async function Page({ searchParams }) {
 		mora15,
 		critical20,
 		noPayment30,
-	} = user.role === ROLES.AGENTE ? await getCustomersByAgent(user.id) : await getAllCustomers({ page, limit, status });
+	} = user.role === ROLES.AGENTE
+		? await getCustomersByAgent(user.id, { page, limit, status, type, paymentDay })
+		: await getAllCustomers({ page, limit, status, type, paymentDay });
 
 	const statistics = {
 		totalActiveAmountBorrowed,
@@ -61,20 +63,20 @@ export default async function Page({ searchParams }) {
 					<Box sx={{ flex: "1 1 auto" }}>
 						<Typography variant="h4">Clientes</Typography>
 					</Box>
-					<CustomerStatistics statistics={statistics} />
+					<CustomerStatistics statistics={statistics} filters={{ status, page, limit, type, paymentDay }} />
 				</Stack>
 				<CustomersSelectionProvider customers={customers}>
 					<Card>
-						<CustomersFilters filters={{ status, page, limit }} count={customers.length} />
+						<CustomersFilters filters={{ status, page, limit, type, paymentDay }} count={customers.length} />
 						<Divider />
 						<Box sx={{ overflowX: "auto" }}>
 							<CustomersTable rows={customers} />
 						</Box>
 						<Divider />
 						<CustomersPagination
-							filters={{ status }}
+							filters={{ status, page, limit, type, paymentDay }}
 							customerTotalItems={customerTotalItems}
-							customersPage={customersPage}
+							customersPage={customersPage - 1}
 							customerLimit={customerLimit}
 						/>
 					</Card>

@@ -16,7 +16,7 @@ const tabs = [
 
 export function CustomersFilters({ filters = {} }) {
 	const router = useRouter();
-	const { status, limit } = filters;
+	const { status, limit, type, paymentDay } = filters;
 
 	const updateSearchParams = React.useCallback(
 		(newFilters) => {
@@ -31,6 +31,12 @@ export function CustomersFilters({ filters = {} }) {
 			if (newFilters.limit) {
 				searchParams.set("limit", newFilters.limit);
 			}
+			if (newFilters.type) {
+				searchParams.set("type", newFilters.type);
+			}
+			if (newFilters.paymentDay) {
+				searchParams.set("paymentDay", newFilters.paymentDay);
+			}
 
 			router.push(`${paths.dashboard.customers.list}?${searchParams.toString()}`);
 		},
@@ -39,7 +45,7 @@ export function CustomersFilters({ filters = {} }) {
 
 	const handleStatusChange = React.useCallback(
 		(_, value) => {
-			updateSearchParams({ ...filters, status: value, page: 1, limit: limit });
+			updateSearchParams({ ...filters, status: value, page: 1, limit: limit, type: type, paymentDay: paymentDay });
 		},
 		[updateSearchParams, filters]
 	);
