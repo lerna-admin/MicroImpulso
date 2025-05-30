@@ -329,7 +329,7 @@ function SidebarContent({ currentThreadId, threads, contacts }) {
 								xs: 12,
 							}}
 						>
-							<LoanSimulation contactFound={contactFound} />
+							<LoanSimulation contact={contactFound} />
 						</Grid>
 					</Stack>
 				</form>

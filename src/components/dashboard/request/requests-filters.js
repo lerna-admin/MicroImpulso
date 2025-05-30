@@ -2,57 +2,37 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
-import Button from "@mui/material/Button";
-import Chip from "@mui/material/Chip";
-import Divider from "@mui/material/Divider";
-import FormControl from "@mui/material/FormControl";
-import OutlinedInput from "@mui/material/OutlinedInput";
-import Select from "@mui/material/Select";
-import Stack from "@mui/material/Stack";
 import Tab from "@mui/material/Tab";
 import Tabs from "@mui/material/Tabs";
 
 import { paths } from "@/paths";
-import { FilterButton, FilterPopover, useFilterContext } from "@/components/core/filter-button";
-import { Option } from "@/components/core/option";
 
-export function RequestsFilters({ filters = {}, sortDir = "desc", count }) {
-	const [tabs, setTabs] = React.useState([
-		{ label: "Todos", value: "", count: 0 },
-		{ label: "Nuevas", value: "new", count: 0 },
-		{ label: "En estudio", value: "under_review", count: 0 },
-		{ label: "Aprobadas", value: "approved", count: 0 },
-		{ label: "Rechazadas", value: "rejected", count: 0 },
-		{ label: "Completadas", value: "completed", count: 0 },
-		{ label: "Desembolsadas", value: "funded", count: 0 },
-	]);
+const tabs = [
+	{ label: "Todos", value: "" },
+	{ label: "Nuevas", value: "new" },
+	{ label: "En estudio", value: "under_review" },
+	{ label: "Aprobadas", value: "approved" },
+	{ label: "Rechazadas", value: "rejected" },
+	{ label: "Completadas", value: "completed" },
+	{ label: "Desembolsadas", value: "funded" },
+];
 
-	const { name, document, status } = filters;
-
-	React.useEffect(() => {
-		setTabs((tabs) => tabs.map((tab) => (tab.value === status ? { ...tab, count: count } : tab)));
-	}, [count, status]);
-
+export function RequestsFilters({ filters = {} }) {
 	const router = useRouter();
+	const { status, limit } = filters;
 
 	const updateSearchParams = React.useCallback(
-		(newFilters, newSortDir) => {
+		(newFilters) => {
 			const searchParams = new URLSearchParams();
-
-			if (newSortDir === "asc") {
-				searchParams.set("sortDir", newSortDir);
-			}
 
 			if (newFilters.status) {
 				searchParams.set("status", newFilters.status);
 			}
-
-			if (newFilters.document) {
-				searchParams.set("document", newFilters.document);
+			if (newFilters.page) {
+				searchParams.set("page", newFilters.page);
 			}
-
-			if (newFilters.name) {
-				searchParams.set("name", newFilters.name);
+			if (newFilters.limit) {
+				searchParams.set("limit", newFilters.limit);
 			}
 
 			router.push(`${paths.dashboard.requests.list}?${searchParams.toString()}`);
@@ -60,46 +40,18 @@ export function RequestsFilters({ filters = {}, sortDir = "desc", count }) {
 		[router]
 	);
 
-	const handleClearFilters = React.useCallback(() => {
-		updateSearchParams({}, sortDir);
-	}, [updateSearchParams, sortDir]);
-
 	const handleStatusChange = React.useCallback(
 		(_, value) => {
-			updateSearchParams({ ...filters, status: value }, sortDir);
-		},
-		[updateSearchParams, filters, sortDir]
-	);
-
-	const handleNameChange = React.useCallback(
-		(value) => {
-			updateSearchParams({ ...filters, name: value }, sortDir);
-		},
-		[updateSearchParams, filters, sortDir]
-	);
-
-	const handleIdChange = React.useCallback(
-		(value) => {
-			updateSearchParams({ ...filters, document: value }, sortDir);
-		},
-		[updateSearchParams, filters, sortDir]
-	);
-
-	const handleSortChange = React.useCallback(
-		(event) => {
-			updateSearchParams(filters, event.target.value);
+			updateSearchParams({ ...filters, status: value, page: 1, limit: limit });
 		},
 		[updateSearchParams, filters]
 	);
-
-	const hasFilters = status || document || name;
 
 	return (
 		<div>
 			<Tabs onChange={handleStatusChange} sx={{ px: 3 }} value={status ?? ""} variant="scrollable">
 				{tabs.map((tab) => (
 					<Tab
-						icon={tab.value === status && <Chip label={tab.count} size="small" variant="soft" />}
 						iconPosition="end"
 						key={tab.value}
 						label={tab.label}
@@ -109,111 +61,6 @@ export function RequestsFilters({ filters = {}, sortDir = "desc", count }) {
 					/>
 				))}
 			</Tabs>
-			<Divider />
-			<Stack direction="row" spacing={2} sx={{ alignItems: "center", flexWrap: "wrap", p: 2 }}>
-				<Stack direction="row" spacing={2} sx={{ alignItems: "center", flex: "1 1 auto", flexWrap: "wrap" }}>
-					<FilterButton
-						displayValue={name}
-						label="Nombres"
-						onFilterApply={(value) => {
-							handleNameChange(value);
-						}}
-						onFilterDelete={() => {
-							handleNameChange();
-						}}
-						popover={<NameFilterPopover />}
-						value={name}
-					/>
-					<FilterButton
-						displayValue={document}
-						label="Identificación"
-						onFilterApply={(value) => {
-							handleIdChange(value);
-						}}
-						onFilterDelete={() => {
-							handleIdChange();
-						}}
-						popover={<DocumentFilterPopover />}
-						value={document}
-					/>
-					{hasFilters ? <Button onClick={handleClearFilters}>Borrar filtros</Button> : null}
-				</Stack>
-
-				<Select name="sort" onChange={handleSortChange} sx={{ maxWidth: "100%", width: "170px" }} value={sortDir}>
-					<Option value="desc">Más reciente</Option>
-					<Option value="asc">Menos reciente</Option>
-				</Select>
-			</Stack>
 		</div>
-	);
-}
-
-function NameFilterPopover() {
-	const { anchorEl, onApply, onClose, open, value: initialValue } = useFilterContext();
-	const [value, setValue] = React.useState("");
-
-	React.useEffect(() => {
-		setValue(initialValue ?? "");
-	}, [initialValue]);
-
-	return (
-		<FilterPopover anchorEl={anchorEl} onClose={onClose} open={open} title="Filtrar por nombres">
-			<FormControl>
-				<OutlinedInput
-					onChange={(event) => {
-						setValue(event.target.value);
-					}}
-					onKeyUp={(event) => {
-						if (event.key === "Enter") {
-							onApply(value);
-						}
-					}}
-					value={value}
-				/>
-			</FormControl>
-			<Button
-				onClick={() => {
-					onApply(value);
-				}}
-				variant="contained"
-			>
-				Aplicar
-			</Button>
-		</FilterPopover>
-	);
-}
-
-function DocumentFilterPopover() {
-	const { anchorEl, onApply, onClose, open, value: initialValue } = useFilterContext();
-	const [value, setValue] = React.useState("");
-
-	React.useEffect(() => {
-		setValue(initialValue ?? "");
-	}, [initialValue]);
-
-	return (
-		<FilterPopover anchorEl={anchorEl} onClose={onClose} open={open} title="Filtrar por identificación">
-			<FormControl>
-				<OutlinedInput
-					onChange={(event) => {
-						setValue(event.target.value);
-					}}
-					onKeyUp={(event) => {
-						if (event.key === "Enter") {
-							onApply(value);
-						}
-					}}
-					value={value}
-				/>
-			</FormControl>
-			<Button
-				onClick={() => {
-					onApply(value);
-				}}
-				variant="contained"
-			>
-				Aplicar
-			</Button>
-		</FilterPopover>
 	);
 }

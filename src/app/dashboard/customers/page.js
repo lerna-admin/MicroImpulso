@@ -67,7 +67,7 @@ export default async function Page({ searchParams }) {
 				</Stack>
 				<CustomersSelectionProvider customers={customers}>
 					<Card>
-						<CustomersFilters filters={{ status, page, limit, type, paymentDay }} count={customers.length} />
+						<CustomersFilters filters={{ status, page, limit, type, paymentDay }} />
 						<Divider />
 						<Box sx={{ overflowX: "auto" }}>
 							<CustomersTable rows={customers} />
