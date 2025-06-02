@@ -16,11 +16,14 @@ import { getAllUsers } from "./hooks/use-users";
 export const metadata = { title: `Agentes | Dashboard | ${appConfig.name}` };
 
 export default async function Page({ searchParams }) {
-	const users = await getAllUsers();
-
 	const { name, document, page, limit } = await searchParams;
 
-	// TODO Cuando henry entregue la API actualizada realizar paginacion y filtrado
+	const {
+		data: users,
+		total: userTotalItems,
+		page: usersPage,
+		limit: userLimit,
+	} = await getAllUsers({ page, limit, name, document });
 
 	return (
 		<Box
@@ -39,13 +42,18 @@ export default async function Page({ searchParams }) {
 				</Stack>
 				<UsersSelectionProvider users={users}>
 					<Card>
-						<UsersFilters filters={{ name, document }} />
+						<UsersFilters filters={{ name, document, page, limit }} />
 						<Divider />
 						<Box sx={{ overflowX: "auto" }}>
 							<UsersTable rows={users} />
 						</Box>
 						<Divider />
-						<UsersPagination filters={{ page, limit }} />
+						<UsersPagination
+							filters={{ page, limit }}
+							userTotalItems={userTotalItems}
+							usersPage={usersPage - 1}
+							userLimit={userLimit}
+						/>
 					</Card>
 				</UsersSelectionProvider>
 			</Stack>

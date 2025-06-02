@@ -9,9 +9,10 @@ import { Warning as WarningIcon } from "@phosphor-icons/react/dist/ssr/Warning";
 
 import { appConfig } from "@/config/app";
 import { dayjs } from "@/lib/dayjs";
+import { LoanRequestsByBranches } from "@/components/dashboard/analytics/loan-requests-by-branches";
 import { AppChat } from "@/components/dashboard/overview/app-chat";
 import { AppLimits } from "@/components/dashboard/overview/app-limits";
-import { AppUsage } from "@/components/dashboard/overview/app-usage";
+import { LoanRequestsByYear } from "@/components/dashboard/overview/loan-requests-by-year";
 import { Events } from "@/components/dashboard/overview/events";
 import { Subscriptions } from "@/components/dashboard/overview/subscriptions";
 import { Summary } from "@/components/dashboard/overview/summary";
@@ -61,14 +62,30 @@ export default function Page() {
 					</Grid>
 					<Grid
 						size={{
-							md: 8,
+							md: 6,
 							xs: 12,
 						}}
 					>
-						<AppUsage
+						<LoanRequestsByBranches
+							data={[
+								{ name: "us", v1: 600, v2: 560 },
+								{ name: "uk", v1: 540, v2: 500 },
+								{ name: "ru", v1: 490, v2: 450 },
+								{ name: "ca", v1: 440, v2: 380 },
+								{ name: "de", v1: 320, v2: 280 },
+							]}
+						/>
+					</Grid>
+					<Grid
+						size={{
+							md: 6,
+							xs: 12,
+						}}
+					>
+						<LoanRequestsByYear
 							data={[
 								{ name: "Ene", v1: 36, v2: 19 },
-								{ name: "Feb", v1: 45, v2: 23 },
+								{ name: "Feb", v1: 20, v2: 23 },
 								{ name: "Mar", v1: 26, v2: 12 },
 								{ name: "Abr", v1: 39, v2: 20 },
 								{ name: "May", v1: 26, v2: 12 },
@@ -78,10 +95,11 @@ export default function Page() {
 								{ name: "Sep", v1: 37, v2: 18 },
 								{ name: "Oct", v1: 41, v2: 22 },
 								{ name: "Nov", v1: 45, v2: 24 },
-								{ name: "Dec", v1: 23, v2: 17 },
+								{ name: "Dec", v1: 50, v2: 45 },
 							]}
 						/>
 					</Grid>
+
 					<Grid
 						size={{
 							md: 4,

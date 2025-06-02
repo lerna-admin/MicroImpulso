@@ -17,20 +17,20 @@ import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxi
 
 import { NoSsr } from "@/components/core/no-ssr";
 
-const countries = {
-	ca: { name: "Canada", flag: "/assets/flag-ca.svg" },
-	de: { name: "Germany", flag: "/assets/flag-de.svg" },
-	ru: { name: "Russia", flag: "/assets/flag-ru.svg" },
-	uk: { name: "United Kingdom", flag: "/assets/flag-uk.svg" },
-	us: { name: "United States", flag: "/assets/flag-us.svg" },
+const branches = {
+	ca: { name: "Granada" },
+	de: { name: "Ciudad Jardin" },
+	ru: { name: "Pance" },
+	uk: { name: "Arboleda" },
+	us: { name: "Normandía" },
 };
 
 const bars = [
-	{ name: "Sessions", dataKey: "v1", color: "var(--mui-palette-primary-main)" },
-	{ name: "Bounce rate", dataKey: "v2", color: "var(--mui-palette-primary-100)" },
+	{ name: "Este mes", dataKey: "v1", color: "var(--mui-palette-primary-main)" },
+	{ name: "Ultimo mes", dataKey: "v2", color: "var(--mui-palette-primary-100)" },
 ];
 
-export function CountrySessionsVsBounce({ data }) {
+export function LoanRequestsByBranches({ data }) {
 	const chartHeight = 300;
 
 	return (
@@ -46,7 +46,7 @@ export function CountrySessionsVsBounce({ data }) {
 						<ChartPieIcon fontSize="var(--Icon-fontSize)" />
 					</Avatar>
 				}
-				title="Sessions vs bounce rate by country"
+				title="Solicitudes desembolsadas por sede"
 			/>
 			<CardContent>
 				<Stack divider={<Divider />} spacing={3}>
@@ -79,14 +79,11 @@ export function CountrySessionsVsBounce({ data }) {
 }
 
 function Tick({ height, payload, width, x, y }) {
-	const { name, flag } = countries[payload?.value] ?? { name: "Unknown", flag: "" };
+	const { name } = branches[payload?.value] ?? { name: "Unknown" };
 
 	return (
 		<foreignObject height={width} width={height} x={(x ?? 0) - 150} y={(y ?? 0) - 16}>
 			<Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
-				<Box sx={{ height: "1rem", width: "1rem", display: "flex", alignItems: "center", justifyContent: "center" }}>
-					<Box alt={name} component="img" src={flag} sx={{ height: "auto", width: "100%" }} />
-				</Box>
 				<Typography noWrap variant="body2">
 					{name}
 				</Typography>

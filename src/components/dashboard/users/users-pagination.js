@@ -35,7 +35,7 @@ export function UsersPagination({ filters, userTotalItems, usersPage, userLimit 
 				searchParams.set("document", newFilters.document);
 			}
 
-			router.push(`${paths.dashboard.customers.list}?${searchParams.toString()}`);
+			router.push(`${paths.dashboard.users}?${searchParams.toString()}`);
 		},
 		[router]
 	);

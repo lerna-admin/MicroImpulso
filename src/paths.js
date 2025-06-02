@@ -33,7 +33,6 @@ export const paths = {
 	},
 	dashboard: {
 		academy: { browse: "/dashboard/academy", details: (courseId) => `/dashboard/academy/courses/${courseId}` },
-		analytics: "/dashboard/analytics",
 		blank: "/dashboard/blank",
 		blog: {
 			create: "/dashboard/blog/create",

@@ -18,12 +18,12 @@ const bars = [
 	{ name: "Ultimo año", dataKey: "v2", color: "var(--mui-palette-primary-600)" },
 ];
 
-export function AppUsage({ data }) {
+export function LoanRequestsByYear({ data }) {
 	const chartHeight = 300;
 
 	return (
 		<Card>
-			<CardHeader title="Solicitudes creadas" />
+			<CardHeader title="Solicitudes desembolsadas por año" />
 			<CardContent>
 				<Stack direction={{ xs: "column", sm: "row" }} spacing={3}>
 					<Stack spacing={3} sx={{ flex: "0 0 auto", justifyContent: "space-between", width: "240px" }}>

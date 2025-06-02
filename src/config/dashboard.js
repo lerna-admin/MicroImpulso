@@ -15,15 +15,8 @@ export const dashboardConfig = {
 					key: "overview",
 					title: "Resumen",
 					href: paths.dashboard.overview,
-					icon: "house",
-					matcher: { type: "startsWith", href: "/dashboard/overview" },
-				},
-				{
-					key: "analytics",
-					title: "Analiticas",
-					href: paths.dashboard.analytics,
 					icon: "chart-pie",
-					matcher: { type: "startsWith", href: "/dashboard/analytics" },
+					matcher: { type: "startsWith", href: "/dashboard/overview" },
 				},
 				{
 					key: "reports",
