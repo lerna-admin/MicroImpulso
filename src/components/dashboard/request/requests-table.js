@@ -195,6 +195,14 @@ export function ActionsCell({ row }) {
 				>
 					<Typography>Desembolsar</Typography>
 				</MenuItem>
+				<MenuItem
+					onClick={() => {
+						popover.handleClose();
+						router.push(paths.dashboard.requests.details(row.id));
+					}}
+				>
+					<Typography>Abonar</Typography>
+				</MenuItem>
 			</Menu>
 
 			{/* Modal para aprobar solicitud*/}

@@ -12,14 +12,87 @@ import { dayjs } from "@/lib/dayjs";
 import { LoanRequestsByBranches } from "@/components/dashboard/analytics/loan-requests-by-branches";
 import { AppChat } from "@/components/dashboard/overview/app-chat";
 import { AppLimits } from "@/components/dashboard/overview/app-limits";
-import { LoanRequestsByYear } from "@/components/dashboard/overview/loan-requests-by-year";
 import { Events } from "@/components/dashboard/overview/events";
+import { LoanRequestsByYear } from "@/components/dashboard/overview/loan-requests-by-year";
 import { Subscriptions } from "@/components/dashboard/overview/subscriptions";
 import { Summary } from "@/components/dashboard/overview/summary";
 
+import { getRequestsStatsBranchesCurrentMonth, getRequestsStatsBranchesMonthlyHistory } from "./hooks/use-stats";
+
 export const metadata = { title: `Resumen | Dashboard | ${appConfig.name}` };
 
-export default function Page() {
+const generateMonthlyOverview = (data) => {
+	const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+	const currentYear = new Date().getFullYear().toString();
+	const previousYear = (new Date().getFullYear() - 1).toString();
+
+	const result = monthNames.map((monthName, index) => {
+		const monthNumber = (index + 1).toString().padStart(2, "0");
+
+		const dataPrevYear = data.find((d) => d.month === `${previousYear}-${monthNumber}`);
+		const dataCurrYear = data.find((d) => d.month === `${currentYear}-${monthNumber}`);
+
+		const fundedCurrentYear = dataCurrYear?.data?.reduce((sum, item) => sum + (item.statusCounts?.funded || 0), 0) || 0;
+		const fundedPreviousYear =
+			dataPrevYear?.data?.reduce((sum, item) => sum + (item.statusCounts?.funded || 0), 0) || 0;
+
+		return {
+			name: monthName,
+			v1: fundedCurrentYear,
+			v2: fundedPreviousYear,
+		};
+	});
+
+	return result;
+};
+
+const calculateFundedGrowth = (data) => {
+	let totalPreviousYear = 0;
+	let totalCurrentYear = 0;
+
+	for (const month of data) {
+		const year = month.month.split("-")[0];
+		const fundedThisMonth = month.data.reduce((sum, item) => sum + (item.statusCounts?.funded || 0), 0);
+
+		if (year === "2024") {
+			totalPreviousYear += fundedThisMonth;
+		} else if (year === "2025") {
+			totalCurrentYear += fundedThisMonth;
+		}
+	}
+
+	const difference = totalCurrentYear - totalPreviousYear;
+
+	let growth = 0;
+	if (totalPreviousYear > 0) {
+		growth = (difference / totalPreviousYear) * 100;
+	} else if (totalCurrentYear > 0) {
+		growth = 100;
+	}
+
+	return {
+		difference,
+		growth: Math.round(growth),
+	};
+};
+
+export default async function Page() {
+	const resp = await getRequestsStatsBranchesCurrentMonth();
+	const resp2 = await getRequestsStatsBranchesMonthlyHistory();
+
+	const requestsByBranches = resp.map((branch) => {
+		return {
+			name: branch.branchName,
+			v1: branch.totalRequests,
+			v2: branch.statusCounts.funded === undefined ? 0 : branch.statusCounts["funded"],
+		};
+	});
+
+	const requestsByYear = generateMonthlyOverview(resp2);
+
+	const { growth, difference } = calculateFundedGrowth(resp2);
+
 	return (
 		<Box
 			sx={{
@@ -66,15 +139,7 @@ export default function Page() {
 							xs: 12,
 						}}
 					>
-						<LoanRequestsByBranches
-							data={[
-								{ name: "us", v1: 600, v2: 560 },
-								{ name: "uk", v1: 540, v2: 500 },
-								{ name: "ru", v1: 490, v2: 450 },
-								{ name: "ca", v1: 440, v2: 380 },
-								{ name: "de", v1: 320, v2: 280 },
-							]}
-						/>
+						<LoanRequestsByBranches data={requestsByBranches} />
 					</Grid>
 					<Grid
 						size={{
@@ -82,22 +147,7 @@ export default function Page() {
 							xs: 12,
 						}}
 					>
-						<LoanRequestsByYear
-							data={[
-								{ name: "Ene", v1: 36, v2: 19 },
-								{ name: "Feb", v1: 20, v2: 23 },
-								{ name: "Mar", v1: 26, v2: 12 },
-								{ name: "Abr", v1: 39, v2: 20 },
-								{ name: "May", v1: 26, v2: 12 },
-								{ name: "Jun", v1: 42, v2: 31 },
-								{ name: "Jul", v1: 38, v2: 19 },
-								{ name: "Ago", v1: 39, v2: 20 },
-								{ name: "Sep", v1: 37, v2: 18 },
-								{ name: "Oct", v1: 41, v2: 22 },
-								{ name: "Nov", v1: 45, v2: 24 },
-								{ name: "Dec", v1: 50, v2: 45 },
-							]}
-						/>
+						<LoanRequestsByYear data={requestsByYear} growth={growth} difference={difference} />
 					</Grid>
 
 					<Grid

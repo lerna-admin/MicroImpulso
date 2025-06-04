@@ -39,6 +39,7 @@ export const paths = {
 			details: (postId) => `/dashboard/blog/${postId}`,
 			list: "/dashboard/blog",
 		},
+		balance: "/dashboard/balance",
 		cash_flow: "/dashboard/cash_flow",
 		calendar: "/dashboard/calendar",
 		chat: {

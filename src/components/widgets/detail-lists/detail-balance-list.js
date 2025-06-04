@@ -11,16 +11,27 @@ import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 import { ArrowRight as ArrowRightIcon } from "@phosphor-icons/react/dist/ssr/ArrowRight";
 
+import { dayjs } from "@/lib/dayjs";
+
+dayjs.locale("es");
+
 const assets = [
-	{ name: "US Dollars", value: 21_500, color: "#6C76C4" },
-	{ name: "Bitcoin", value: 15_300, color: "#33BB78" },
-	{ name: "XRP Ripple", value: 1076.81, color: "#FF4081" },
+	{ name: "Cartera ($)", value: 21_500 },
+	{ name: "Cobrado ($)", value: 15_300 },
+	{ name: "Clientes (#)", value: 2076 },
+	{ name: "Renovados $ (#)", value: 2076 },
+	{ name: "Nuevos $ (#)", value: 2076 },
 ];
 
-export function DetailList1() {
+export function DetailBalanceList() {
 	const totalAmount = assets.reduce((acc, asset) => {
 		return acc + asset.value;
 	}, 0);
+
+	const totalRequests = 10;
+
+	const today = dayjs();
+	const formattedDate = `${today.format("DD")} ${today.format("MMMM").toUpperCase()} ${today.format("YYYY, hh:mm A")}`;
 
 	return (
 		<Box sx={{ bgcolor: "var(--mui-palette-background-level1)", p: 3 }}>
@@ -28,38 +39,41 @@ export function DetailList1() {
 				<Card>
 					<CardContent>
 						<Stack divider={<Divider />} spacing={2}>
-							<div>
-								<Typography variant="overline">Total balance</Typography>
-								<Typography variant="h4">
-									{new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(totalAmount)}
-								</Typography>
-							</div>
-							<Stack spacing={2}>
+							<Box display={"flex"} justifyContent={"space-between"}>
 								<Typography color="text.secondary" variant="overline">
-									Available currency
+									Cuadre de ruta
 								</Typography>
+								<Typography color="text.secondary" variant="caption">
+									{formattedDate}
+								</Typography>
+							</Box>
+							<Stack spacing={2}>
 								<List disablePadding>
 									{assets.map((asset) => (
 										<ListItem disableGutters key={asset.name} sx={{ py: 1.5 }}>
 											<Stack direction="row" spacing={1} sx={{ alignItems: "center", flex: "1 1 auto" }}>
-												<Box sx={{ bgcolor: asset.color, height: "8px", width: "8px", borderRadius: "50%" }} />
 												<Typography variant="subtitle2">{asset.name}</Typography>
 											</Stack>
 											<Typography color="text.secondary" variant="subtitle2">
-												{new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(asset.value)}
+												{new Intl.NumberFormat("es-CO", {
+													currency: "COP",
+													minimumFractionDigits: 0,
+												}).format(asset.value)}
 											</Typography>
 										</ListItem>
 									))}
 								</List>
 							</Stack>
-							<Stack spacing={1} sx={{ alignItems: "flex-start" }}>
-								<Button color="secondary" endIcon={<ArrowRightIcon />}>
-									Add money
-								</Button>
-								<Button color="secondary" endIcon={<ArrowRightIcon />}>
-									Withdraw funds
-								</Button>
-							</Stack>
+
+							<div>
+								<Typography variant="overline">{`Total $ (#)`}</Typography>
+								<Typography variant="h5">
+									{new Intl.NumberFormat("es-CO", {
+										currency: "COP",
+										minimumFractionDigits: 0,
+									}).format(totalAmount) + ` (${totalRequests})`}
+								</Typography>
+							</div>
 						</Stack>
 					</CardContent>
 				</Card>

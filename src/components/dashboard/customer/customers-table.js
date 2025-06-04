@@ -17,6 +17,8 @@ import { dayjs } from "@/lib/dayjs";
 import { usePopover } from "@/hooks/use-popover";
 import { DataTable } from "@/components/core/data-table";
 
+dayjs.locale("es");
+
 const getColorByDaysLeft = (daysLeft) => {
 	if (daysLeft <= 3) return "#FF0000"; // Rojo;
 	if (daysLeft <= 8) return "#FF7F50"; // Naranja;

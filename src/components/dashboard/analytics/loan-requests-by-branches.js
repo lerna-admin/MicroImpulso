@@ -7,28 +7,22 @@ import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
 import CardHeader from "@mui/material/CardHeader";
 import Divider from "@mui/material/Divider";
-import IconButton from "@mui/material/IconButton";
 import Paper from "@mui/material/Paper";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 import { ChartPie as ChartPieIcon } from "@phosphor-icons/react/dist/ssr/ChartPie";
-import { DotsThree as DotsThreeIcon } from "@phosphor-icons/react/dist/ssr/DotsThree";
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 
+import { dayjs } from "@/lib/dayjs";
 import { NoSsr } from "@/components/core/no-ssr";
 
-const branches = {
-	ca: { name: "Granada" },
-	de: { name: "Ciudad Jardin" },
-	ru: { name: "Pance" },
-	uk: { name: "Arboleda" },
-	us: { name: "Normandía" },
-};
-
 const bars = [
-	{ name: "Este mes", dataKey: "v1", color: "var(--mui-palette-primary-main)" },
-	{ name: "Ultimo mes", dataKey: "v2", color: "var(--mui-palette-primary-100)" },
+	{ name: "Solicitudes del mes", dataKey: "v1", color: "var(--mui-palette-primary-main)" },
+	{ name: "Desembolsadas", dataKey: "v2", color: "var(--mui-palette-primary-100)" },
 ];
+
+dayjs.locale("es");
+const nombreMes = dayjs().format("MMMM");
 
 export function LoanRequestsByBranches({ data }) {
 	const chartHeight = 300;
@@ -36,17 +30,12 @@ export function LoanRequestsByBranches({ data }) {
 	return (
 		<Card>
 			<CardHeader
-				action={
-					<IconButton>
-						<DotsThreeIcon weight="bold" />
-					</IconButton>
-				}
 				avatar={
 					<Avatar>
 						<ChartPieIcon fontSize="var(--Icon-fontSize)" />
 					</Avatar>
 				}
-				title="Solicitudes desembolsadas por sede"
+				title={`Solicitudes por sede del mes de ${nombreMes}`}
 			/>
 			<CardContent>
 				<Stack divider={<Divider />} spacing={3}>
@@ -79,13 +68,11 @@ export function LoanRequestsByBranches({ data }) {
 }
 
 function Tick({ height, payload, width, x, y }) {
-	const { name } = branches[payload?.value] ?? { name: "Unknown" };
-
 	return (
 		<foreignObject height={width} width={height} x={(x ?? 0) - 150} y={(y ?? 0) - 16}>
 			<Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
 				<Typography noWrap variant="body2">
-					{name}
+					{payload.value}
 				</Typography>
 			</Stack>
 		</foreignObject>

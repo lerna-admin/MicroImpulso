@@ -18,7 +18,7 @@ const bars = [
 	{ name: "Ultimo año", dataKey: "v2", color: "var(--mui-palette-primary-600)" },
 ];
 
-export function LoanRequestsByYear({ data }) {
+export function LoanRequestsByYear({ data, growth, difference }) {
 	const chartHeight = 300;
 
 	return (
@@ -29,14 +29,14 @@ export function LoanRequestsByYear({ data }) {
 					<Stack spacing={3} sx={{ flex: "0 0 auto", justifyContent: "space-between", width: "240px" }}>
 						<Stack spacing={2}>
 							<Typography color="success.main" variant="h2">
-								+28%
+								{`+${growth}%`}
 							</Typography>
 							<Typography color="text.secondary">
 								de aumento con{" "}
 								<Typography color="text.primary" component="span">
-									6,521
+									{difference}
 								</Typography>{" "}
-								nuevas solicitudes
+								nuevas solicitudes desembolsadas
 							</Typography>
 						</Stack>
 						<div>
