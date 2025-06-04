@@ -7,46 +7,35 @@ import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
 import CardHeader from "@mui/material/CardHeader";
 import Divider from "@mui/material/Divider";
-import IconButton from "@mui/material/IconButton";
 import Paper from "@mui/material/Paper";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 import { ChartPie as ChartPieIcon } from "@phosphor-icons/react/dist/ssr/ChartPie";
-import { DotsThree as DotsThreeIcon } from "@phosphor-icons/react/dist/ssr/DotsThree";
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 
+import { dayjs } from "@/lib/dayjs";
 import { NoSsr } from "@/components/core/no-ssr";
 
-const countries = {
-	ca: { name: "Canada", flag: "/assets/flag-ca.svg" },
-	de: { name: "Germany", flag: "/assets/flag-de.svg" },
-	ru: { name: "Russia", flag: "/assets/flag-ru.svg" },
-	uk: { name: "United Kingdom", flag: "/assets/flag-uk.svg" },
-	us: { name: "United States", flag: "/assets/flag-us.svg" },
-};
-
 const bars = [
-	{ name: "Sessions", dataKey: "v1", color: "var(--mui-palette-primary-main)" },
-	{ name: "Bounce rate", dataKey: "v2", color: "var(--mui-palette-primary-100)" },
+	{ name: "Solicitudes del mes", dataKey: "v1", color: "var(--mui-palette-primary-main)" },
+	{ name: "Desembolsadas", dataKey: "v2", color: "var(--mui-palette-primary-100)" },
 ];
 
-export function CountrySessionsVsBounce({ data }) {
+dayjs.locale("es");
+const nombreMes = dayjs().format("MMMM");
+
+export function LoanRequestsByBranches({ data }) {
 	const chartHeight = 300;
 
 	return (
 		<Card>
 			<CardHeader
-				action={
-					<IconButton>
-						<DotsThreeIcon weight="bold" />
-					</IconButton>
-				}
 				avatar={
 					<Avatar>
 						<ChartPieIcon fontSize="var(--Icon-fontSize)" />
 					</Avatar>
 				}
-				title="Sessions vs bounce rate by country"
+				title={`Solicitudes por sede del mes de ${nombreMes}`}
 			/>
 			<CardContent>
 				<Stack divider={<Divider />} spacing={3}>
@@ -79,16 +68,11 @@ export function CountrySessionsVsBounce({ data }) {
 }
 
 function Tick({ height, payload, width, x, y }) {
-	const { name, flag } = countries[payload?.value] ?? { name: "Unknown", flag: "" };
-
 	return (
 		<foreignObject height={width} width={height} x={(x ?? 0) - 150} y={(y ?? 0) - 16}>
 			<Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
-				<Box sx={{ height: "1rem", width: "1rem", display: "flex", alignItems: "center", justifyContent: "center" }}>
-					<Box alt={name} component="img" src={flag} sx={{ height: "auto", width: "100%" }} />
-				</Box>
 				<Typography noWrap variant="body2">
-					{name}
+					{payload.value}
 				</Typography>
 			</Stack>
 		</foreignObject>

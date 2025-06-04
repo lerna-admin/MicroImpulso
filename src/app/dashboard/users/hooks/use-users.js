@@ -1,7 +1,7 @@
-const BASE_URL = process.env.BASE_URL;
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 
-export async function getAllUsers() {
-	const res = await fetch(`${BASE_URL}/users`);
+export async function getAllUsers({ page = 1, limit = 10, name = "", document = "" }) {
+	const res = await fetch(`${BASE_URL}/users?page=${page}&limit=${limit}&name=${name}&document=${document}`);
 	if (!res.ok) throw new Error("Error al obtener usuarios");
 	return res.json();
 }

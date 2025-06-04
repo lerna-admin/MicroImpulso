@@ -1,35 +1,73 @@
 "use client";
 
 import * as React from "react";
+import { useRouter } from "next/navigation";
 import TablePagination from "@mui/material/TablePagination";
 
-export function UsersPagination({ totalItems, onPage, onRowPerPage }) {
-	// You should implement the pagination using a similar logic as the filters.
-	// Note that when page change, you should keep the filter search params.
+import { paths } from "@/paths";
 
-	const [page, setPage] = React.useState(0);
-	const [rowsPerPage, setRowsPerPage] = React.useState(10);
+export function UsersPagination({ filters, userTotalItems, usersPage, userLimit }) {
+	const router = useRouter();
+	const [row, setRow] = React.useState(Number(userLimit) || 5);
+	const [page, setPage] = React.useState(Number(usersPage) || 0);
 
-	const handleChangePage = (event, newPage) => {
-		setPage(newPage);
-		onPage(page);
-	};
-
-	const handleChangeRowsPerPage = (event) => {
-		const rowXPage = Number.parseInt(event.target.value, 10);
-		setRowsPerPage(rowXPage);
+	React.useEffect(() => {
 		setPage(0);
-		onRowPerPage(rowsPerPage);
-	};
+	}, [userTotalItems]);
+
+	const updateSearchParams = React.useCallback(
+		(newFilters) => {
+			const searchParams = new URLSearchParams();
+
+			if (newFilters.status) {
+				searchParams.set("status", newFilters.status);
+			}
+			if (newFilters.page) {
+				searchParams.set("page", newFilters.page);
+			}
+			if (newFilters.limit) {
+				searchParams.set("limit", newFilters.limit);
+			}
+			if (newFilters.name) {
+				searchParams.set("name", newFilters.name);
+			}
+			if (newFilters.document) {
+				searchParams.set("document", newFilters.document);
+			}
+
+			router.push(`${paths.dashboard.users}?${searchParams.toString()}`);
+		},
+		[router]
+	);
+
+	const handleRowsPerPageChange = React.useCallback(
+		({ target }) => {
+			const newLimit = target.value;
+			const newPage = 1;
+			setRow(newLimit);
+			setPage(newPage - 1);
+			updateSearchParams({ ...filters, page: newPage, limit: newLimit });
+		},
+		[updateSearchParams, filters]
+	);
+
+	const handlePageChange = React.useCallback(
+		(event, newPage) => {
+			setPage(newPage);
+			updateSearchParams({ ...filters, page: (newPage + 1).toString(), limit: row.toString() });
+		},
+		[updateSearchParams, filters]
+	);
 
 	return (
 		<TablePagination
 			component="div"
-			count={totalItems}
+			count={userTotalItems}
 			page={page}
-			onPageChange={handleChangePage}
-			onRowsPerPageChange={handleChangeRowsPerPage}
-			rowsPerPage={rowsPerPage}
+			onPageChange={handlePageChange}
+			onRowsPerPageChange={handleRowsPerPageChange}
+			rowsPerPage={row}
+			rowsPerPageOptions={[5, 10, 25, 50]}
 			labelRowsPerPage={"Filas"}
 		/>
 	);

@@ -4,6 +4,7 @@ import {
 	CurrencyCircleDollar as CurrencyCircleDollarIcon,
 	EnvelopeSimpleOpen as EnvelopeSimpleOpenIcon,
 	IdentificationBadge as IdentificationBadgeIcon,
+	SealPercent as SealPercentIcon,
 	Timer as TimerIcon,
 } from "@phosphor-icons/react/dist/ssr";
 import { AddressBook as AddressBookIcon } from "@phosphor-icons/react/dist/ssr/AddressBook";
@@ -76,4 +77,5 @@ export const icons = {
 	"currency-circle-dollar": CurrencyCircleDollarIcon,
 	"cash-register": CashRegisterIcon,
 	timer: TimerIcon,
+	"seal-percent": SealPercentIcon,
 };

@@ -33,13 +33,13 @@ export const paths = {
 	},
 	dashboard: {
 		academy: { browse: "/dashboard/academy", details: (courseId) => `/dashboard/academy/courses/${courseId}` },
-		analytics: "/dashboard/analytics",
 		blank: "/dashboard/blank",
 		blog: {
 			create: "/dashboard/blog/create",
 			details: (postId) => `/dashboard/blog/${postId}`,
 			list: "/dashboard/blog",
 		},
+		balance: "/dashboard/balance",
 		cash_flow: "/dashboard/cash_flow",
 		calendar: "/dashboard/calendar",
 		chat: {

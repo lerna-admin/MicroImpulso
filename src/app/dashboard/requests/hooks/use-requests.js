@@ -14,8 +14,8 @@ const BASE_URL = process.env.NEXT_PUBLIC_API_URL;
  *
  * @returns {Request[]}
  */
-export async function getAllRequests() {
-	const res = await fetch(`${BASE_URL}/loan-request`);
+export async function getAllRequests({ page = 1, limit = 10, status = "" }) {
+	const res = await fetch(`${BASE_URL}/loan-request?page=${page}&limit=${limit}&status=${status}`);
 	if (!res.ok) throw new Error("Error al obtener solicitudes");
 	return res.json();
 }
@@ -24,9 +24,15 @@ export async function getAllRequests() {
  *
  * @returns {Request[]}
  */
-export async function getRequestsByAgent(id) {
-	const res = await fetch(`${BASE_URL}/loan-request/agent/${id}`);
+export async function getRequestsByAgent(id, { page = 1, limit = 10, status = "" }) {
+	const res = await fetch(`${BASE_URL}/loan-request/agent/${id}?page=${page}&limit=${limit}&status=${status}`);
 	if (!res.ok) throw new Error("Error al obtener solicitudes");
+	return res.json();
+}
+
+export async function getRequestsByCustomerId(id,) {
+	const res = await fetch(`${BASE_URL}/loan-request/client/${id}`);
+	if (!res.ok) throw new Error("Error al obtener solicitud por client id");
 	return res.json();
 }
 

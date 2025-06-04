@@ -3,30 +3,47 @@
 import * as React from "react";
 import { useRouter } from "next/navigation";
 import { sendSimulation } from "@/app/dashboard/chat/hooks/use-conversations";
-import { getRequestsByAgent, updateRequest } from "@/app/dashboard/requests/hooks/use-requests";
-import { Box, Button, InputLabel, MenuItem, Select, Stack, TextField, Typography } from "@mui/material";
+import { getRequestsByCustomerId, updateRequest } from "@/app/dashboard/requests/hooks/use-requests";
+import {
+	Box,
+	Button,
+	Dialog,
+	DialogActions,
+	DialogContent,
+	DialogContentText,
+	DialogTitle,
+	InputLabel,
+	MenuItem,
+	Select,
+	Stack,
+	TextField,
+	Typography,
+} from "@mui/material";
 import Grid from "@mui/material/Grid2";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import html2canvas from "html2canvas";
 import { QRCodeSVG } from "qrcode.react";
 
 import { dayjs } from "@/lib/dayjs";
-import { useAuth } from "@/components/auth/custom/auth-context";
+import { usePopover } from "@/hooks/use-popover";
+import { NotificationAlert } from "@/components/widgets/notifications/notification-alert";
 
 const parseCurrency = (value) => {
 	// Elimina cualquier carácter que no sea número
 	return Number(value.replaceAll(/[^0-9]/g, ""));
 };
 
-export function LoanSimulation({ contactFound }) {
+export function LoanSimulation({ contact }) {
 	const [capital, setCapital] = React.useState(0);
 	const [typePayment, setTypePayment] = React.useState("");
 	const [datePayment, setDatePayment] = React.useState("");
 	const [selectedDate, setSelectedDate] = React.useState(dayjs());
 	const [days, setDays] = React.useState(0);
 	const previewRef = React.useRef();
+
+	const popover = usePopover();
+	const popoverAlert = usePopover();
 	const router = useRouter();
-	const { user } = useAuth();
 
 	const EA = 0.261;
 	const ED = Math.pow(1 + EA, 1 / 365) - 1;
@@ -40,15 +57,18 @@ export function LoanSimulation({ contactFound }) {
 		const canvas = await html2canvas(previewRef.current);
 		const blob = await new Promise((resolve) => canvas.toBlob(resolve, "image/png"));
 		const formData = new FormData();
-		formData.append("file", blob, "simulacion.png");
-		formData.append("clientId", contactFound.id);
+		formData.append("file", blob, "SimulaciónDeCredito.png");
+		formData.append("clientId", contact.id);
 
+		popover.handleClose();
 		await sendSimulation(formData);
+	};
 
-		const requestId = await getIdRequest(user.id);
+	const handleSave = async () => {
+		const request = await getRequestsByCustomerId(contact.id);
 
 		// Actualiza el amount de la solicitud
-		await updateRequest(
+		const response = await updateRequest(
 			{
 				requestedAmount: capital,
 				endDateAt: selectedDate.utc(true),
@@ -56,16 +76,13 @@ export function LoanSimulation({ contactFound }) {
 				paymentDay: datePayment,
 				type: typePayment,
 			},
-			requestId
+			request.id
 		);
 
-		router.refresh();
-	};
+		if (response) popoverAlert.handleOpen();
 
-	const getIdRequest = async (userId) => {
-		const requestsByAgent = await getRequestsByAgent(userId);
-		const requestClient = requestsByAgent.find((request) => request.client.id === contactFound.id);
-		return requestClient.id;
+		//Probar sin el router refresh, ya que el cambio se veria al dirigirme a la pagina de solicitudes
+		router.refresh();
 	};
 
 	const handleDateChange = (newValue) => {
@@ -160,7 +177,7 @@ export function LoanSimulation({ contactFound }) {
 							<strong>Total a pagar:</strong> ${totalToPay.toLocaleString()}
 						</Typography>
 					</Grid>
-					<Grid
+					{/* <Grid
 						size={{
 							md: 12,
 							xs: 12,
@@ -169,7 +186,7 @@ export function LoanSimulation({ contactFound }) {
 						<Box sx={{ mt: 2, display: "flex", justifyContent: "center" }}>
 							<QRCodeSVG value="https://microimpulso.lernasoft.net" size={73} />
 						</Box>
-					</Grid>
+					</Grid> */}
 				</Grid>
 			)}
 
@@ -234,19 +251,81 @@ export function LoanSimulation({ contactFound }) {
 				</Grid>
 				<Grid
 					size={{
-						md: 12,
+						md: 4,
 						xs: 12,
 					}}
 				>
 					<Button
 						variant="contained"
-						disabled={capital === 0 || dayjs(selectedDate).isSame(dayjs(), "day")}
-						onClick={handleSend}
+						disabled={
+							capital === 0 || typePayment === "" || datePayment === "" || dayjs(selectedDate).isSame(dayjs(), "day")
+						}
+						onClick={handleSave}
+					>
+						Guardar
+					</Button>
+				</Grid>
+				<Grid
+					display={"flex"}
+					justifyContent={"end"}
+					size={{
+						md: 8,
+						xs: 12,
+					}}
+				>
+					<Button
+						variant="contained"
+						disabled={
+							capital === 0 || typePayment === "" || datePayment === "" || dayjs(selectedDate).isSame(dayjs(), "day")
+						}
+						onClick={popover.handleOpen}
 					>
 						Enviar Simulación al Cliente
 					</Button>
 				</Grid>
 			</Grid>
+
+			<NotificationAlert
+				openAlert={popoverAlert.open}
+				onClose={popoverAlert.handleClose}
+				msg={"¡Solicitud actualizada!"}
+				autoHideDuration={2000}
+				posHorizontal={"left"}
+				posVertical={"bottom"}
+			></NotificationAlert>
+
+			{/* Modal para enviar simulacion de credito*/}
+			<Dialog
+				fullWidth
+				maxWidth={"sm"}
+				open={popover.open}
+				onClose={popover.handleClose}
+				aria-labelledby="alert-dialog-title"
+				aria-describedby="alert-dialog-description"
+			>
+				<DialogTitle id="alert-dialog-title" textAlign={"center"}>
+					{"Confirmación"}
+				</DialogTitle>
+
+				<DialogContent>
+					<DialogContentText id="alert-dialog-description" textAlign={"justify"}>
+						{`¿ Desea enviarle una simulación de credito a ${contact.name}
+						 por un monto de ${Number.parseInt(capital).toLocaleString("es-CO", {
+								style: "currency",
+								currency: "COP",
+								minimumFractionDigits: 0,
+							})} ?`}
+					</DialogContentText>
+				</DialogContent>
+				<DialogActions sx={{ padding: 3 }}>
+					<Button variant="contained" onClick={handleSend} autoFocus>
+						Aceptar
+					</Button>
+					<Button variant="outlined" onClick={popover.handleClose}>
+						Cancelar
+					</Button>
+				</DialogActions>
+			</Dialog>
 		</Stack>
 	);
 }

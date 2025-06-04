@@ -13,10 +13,10 @@ const BASE_URL = process.env.NEXT_PUBLIC_API_URL;
  *
  * @returns {Client[]}
  */
-export async function getAllCustomers({ page = 1, limit = 10, status = "" }) {
-	console.log(`${BASE_URL}/clients?page=${page}&limit=${limit}&status=${status}`);
-
-	const res = await fetch(`${BASE_URL}/clients?page=${page}&limit=${limit}&status=${status}`);
+export async function getAllCustomers({ page = 1, limit = 10, status = "", type = "", paymentDay = "" }) {
+	const res = await fetch(
+		`${BASE_URL}/clients?page=${page}&limit=${limit}&status=${status}&type=${type}&paymentDay=${paymentDay}`
+	);
 	if (!res.ok) throw new Error("Error al obtener clientes");
 	return res.json();
 }
@@ -25,8 +25,10 @@ export async function getAllCustomers({ page = 1, limit = 10, status = "" }) {
  *
  * @returns {Client[]}
  */
-export async function getCustomersByAgent(id) {
-	const res = await fetch(`${BASE_URL}/clients/agent/${id}`);
+export async function getCustomersByAgent(id, { page = 1, limit = 10, status = "", type = "", paymentDay = "" }) {
+	const res = await fetch(
+		`${BASE_URL}/clients/agent/${id}?page=${page}&limit=${limit}&status=${status}&type=${type}&paymentDay=${paymentDay}`
+	);
 	if (!res.ok) throw new Error("Error al obtener clientes");
 	return res.json();
 }

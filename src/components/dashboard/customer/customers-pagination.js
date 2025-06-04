@@ -9,31 +9,56 @@ import { paths } from "@/paths";
 export function CustomersPagination({ filters, customerTotalItems, customersPage, customerLimit }) {
 	const { status } = filters;
 	const router = useRouter();
-	const [row, setRow] = React.useState(customerLimit || 5);
-	const [page, setPage] = React.useState(customersPage - 1 || 0);
+	const [row, setRow] = React.useState(Number(customerLimit) || 5);
+	const [page, setPage] = React.useState(Number(customersPage) || 0);
 
 	React.useEffect(() => {
 		setPage(0);
 	}, [customerTotalItems]);
 
-	const handleRowsPerPageChange = ({ target }) => {
-		const newLimit = target.value;
-		setRow(newLimit);
-		const searchParams = new URLSearchParams();
-		searchParams.set("status", status || "");
-		searchParams.set("page", 1);
-		searchParams.set("limit", newLimit);
-		router.push(`${paths.dashboard.customers.list}?${searchParams.toString()}`);
-	};
+	const updateSearchParams = React.useCallback(
+		(newFilters) => {
+			const searchParams = new URLSearchParams();
 
-	const handlePageChange = (event, newPage) => {
-		setPage(newPage);
-		const searchParams = new URLSearchParams();
-		searchParams.set("status", status || "");
-		searchParams.set("page", (newPage + 1).toString());
-		searchParams.set("limit", row.toString());
-		router.push(`${paths.dashboard.customers.list}?${searchParams.toString()}`);
-	};
+			if (newFilters.status) {
+				searchParams.set("status", newFilters.status);
+			}
+			if (newFilters.page) {
+				searchParams.set("page", newFilters.page);
+			}
+			if (newFilters.limit) {
+				searchParams.set("limit", newFilters.limit);
+			}
+			if (newFilters.type) {
+				searchParams.set("type", newFilters.type);
+			}
+			if (newFilters.paymentDay) {
+				searchParams.set("paymentDay", newFilters.paymentDay);
+			}
+
+			router.push(`${paths.dashboard.customers.list}?${searchParams.toString()}`);
+		},
+		[router]
+	);
+
+	const handleRowsPerPageChange = React.useCallback(
+		({ target }) => {
+			const newLimit = target.value;
+			const newPage = 1;
+			setRow(newLimit);
+			setPage(newPage - 1);
+			updateSearchParams({ ...filters, status: status || "", page: newPage, limit: newLimit });
+		},
+		[updateSearchParams, filters]
+	);
+
+	const handlePageChange = React.useCallback(
+		(event, newPage) => {
+			setPage(newPage);
+			updateSearchParams({ ...filters, status: status || "", page: (newPage + 1).toString(), limit: row.toString() });
+		},
+		[updateSearchParams, filters]
+	);
 
 	return (
 		<TablePagination
