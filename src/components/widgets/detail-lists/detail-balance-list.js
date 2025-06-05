@@ -43,9 +43,8 @@ export function DetailBalanceList({ data }) {
 		);
 	}, [data]);
 
-	const totalAmount = data.valorRenovados + data.valorNuevos
-
-	const totalRequests = data.renovados + data.nuevos
+	const totalAmount = data.valorRenovados + data.valorNuevos;
+	const totalRequests = data.renovados + data.nuevos;
 
 	const today = dayjs();
 	const formattedDate = `${today.format("DD")} ${today.format("MMMM").toUpperCase()} ${today.format("YYYY, hh:mm A")}`;
@@ -72,9 +71,9 @@ export function DetailBalanceList({ data }) {
 			<Box sx={{ bgcolor: "var(--mui-palette-background-level1)", p: 3 }}>
 				<Container maxWidth="sm">
 					<Card>
-						<CardHeader
-							subheader={
-								<Box display={"flex"} justifyContent={"space-between"}>
+						<CardContent>
+							<Stack divider={<Divider />} spacing={2}>
+								<Box display={"flex"} justifyContent={"space-between"} padding={1}>
 									<Typography color="text.secondary" variant="h6">
 										Cuadre de ruta
 									</Typography>
@@ -82,10 +81,6 @@ export function DetailBalanceList({ data }) {
 										{formattedDate}
 									</Typography>
 								</Box>
-							}
-						></CardHeader>
-						<CardContent>
-							<Stack divider={<Divider />} spacing={2}>
 								<Stack spacing={2}>
 									<List disablePadding>
 										{assets.map((asset) => (
