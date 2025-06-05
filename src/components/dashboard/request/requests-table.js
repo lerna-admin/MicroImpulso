@@ -74,7 +74,7 @@ const columns = [
 				</Typography>
 			</Stack>
 		),
-		name: "Fecha inicio / Fecha fin",
+		name: "Fecha Inicio / Fecha Fin",
 		align: "center",
 		width: "120px",
 	},
