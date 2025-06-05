@@ -46,6 +46,12 @@ export async function getRequestById(id) {
 	return res.json();
 }
 
+export async function getClosingSummaryByAgent(agentId) {
+	const res = await fetch(`${BASE_URL}/loan-request/agent/${agentId}/closing-summary`);
+	if (!res.ok) throw new Error("Error al obtener cierre de ruta");
+	return res.json();
+}
+
 export async function createRequest(data) {
 	const res = await fetch(`${BASE_URL}/loan-request`, {
 		method: "POST",

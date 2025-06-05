@@ -1,12 +1,19 @@
 import * as React from "react";
+import { getClosingSummaryByAgent } from "@/app/dashboard/requests/hooks/use-requests";
 import Box from "@mui/material/Box";
 
 import { appConfig } from "@/config/app";
+import { getUser } from "@/lib/custom-auth/server";
 import { DetailBalanceList } from "@/components/widgets/detail-lists/detail-balance-list";
 
 export const metadata = { title: `Balance de la ruta | Dashboard | ${appConfig.name}` };
 
-export default function Page() {
+export default async function Page() {
+	const {
+		data: { user },
+	} = await getUser();
+
+	const data = await getClosingSummaryByAgent(user.id);
 	return (
 		<Box
 			sx={{
@@ -16,7 +23,7 @@ export default function Page() {
 				width: "var(--Content-width)",
 			}}
 		>
-			<DetailBalanceList />
+			<DetailBalanceList data={data} />
 		</Box>
 	);
 }

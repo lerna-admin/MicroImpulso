@@ -18,27 +18,41 @@ import { usePopover } from "@/hooks/use-popover";
 
 dayjs.locale("es");
 
-const assets = [
-	{ name: "Cartera ($)", value: 21_500 },
-	{ name: "Cobrado ($)", value: 15_300 },
-	{ name: "Clientes (#)", value: 2076 },
-	{ name: "Renovados $ (#)", value: 2076 },
-	{ name: "Nuevos $ (#)", value: 2076 },
-];
+export function DetailBalanceList({ data }) {
+	const [assets, setAssets] = React.useState([
+		{ id: 1, name: "Cartera ($)", value: "" },
+		{ id: 2, name: "Cobrado ($)", value: "" },
+		{ id: 3, name: "Clientes (#)", value: "" },
+		{ id: 4, name: "Renovados $ (#)", value: "" },
+		{ id: 5, name: "Nuevos $ (#)", value: "" },
+	]);
 
-export function DetailBalanceList() {
-	const totalAmount = assets.reduce((acc, asset) => {
-		return acc + asset.value;
-	}, 0);
+	React.useEffect(() => {
+		const updates = [
+			{ id: 1, value: parseCurrency(data.cartera) },
+			{ id: 2, value: parseCurrency(data.cobrado) },
+			{ id: 3, value: data.clientes },
+			{ id: 4, value: `${parseCurrency(data.valorRenovados)} (${data.renovados})` },
+			{ id: 5, value: `${parseCurrency(data.valorNuevos)} (${data.nuevos})` },
+		];
+		setAssets((prev) =>
+			prev.map((item) => {
+				const update = updates.find((u) => u.id === item.id);
+				return update ? { ...item, value: update.value } : item;
+			})
+		);
+	}, [data]);
 
-	const totalRequests = 10;
+	const totalAmount = data.valorRenovados + data.valorNuevos
+
+	const totalRequests = data.renovados + data.nuevos
 
 	const today = dayjs();
 	const formattedDate = `${today.format("DD")} ${today.format("MMMM").toUpperCase()} ${today.format("YYYY, hh:mm A")}`;
 
 	const popover = usePopover();
 
-	const handleRoadClousure = () => {
+	const handleRoadClousure = async () => {
 		popover.handleClose();
 		console.log("handleRoadClousure");
 	};
@@ -75,15 +89,12 @@ export function DetailBalanceList() {
 								<Stack spacing={2}>
 									<List disablePadding>
 										{assets.map((asset) => (
-											<ListItem disableGutters key={asset.name} sx={{ py: 1.5 }}>
+											<ListItem disableGutters key={asset.id} sx={{ py: 1.5 }}>
 												<Stack direction="row" spacing={1} sx={{ alignItems: "center", flex: "1 1 auto" }}>
 													<Typography variant="subtitle2">{asset.name}</Typography>
 												</Stack>
 												<Typography color="text.secondary" variant="subtitle2">
-													{new Intl.NumberFormat("es-CO", {
-														currency: "COP",
-														minimumFractionDigits: 0,
-													}).format(asset.value)}
+													{asset.value}
 												</Typography>
 											</ListItem>
 										))}
@@ -133,3 +144,11 @@ export function DetailBalanceList() {
 		</Card>
 	);
 }
+
+const parseCurrency = (value) => {
+	return new Intl.NumberFormat("es-CO", {
+		style: "currency",
+		currency: "COP",
+		minimumFractionDigits: 0,
+	}).format(value);
+};
