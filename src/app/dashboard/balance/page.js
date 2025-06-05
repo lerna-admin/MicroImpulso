@@ -1,13 +1,19 @@
 import * as React from "react";
-import { Card, CardHeader, Divider } from "@mui/material";
+import { getClosingSummaryByAgent } from "@/app/dashboard/requests/hooks/use-requests";
 import Box from "@mui/material/Box";
 
 import { appConfig } from "@/config/app";
+import { getUser } from "@/lib/custom-auth/server";
 import { DetailBalanceList } from "@/components/widgets/detail-lists/detail-balance-list";
 
 export const metadata = { title: `Balance de la ruta | Dashboard | ${appConfig.name}` };
 
-export default function Page() {
+export default async function Page() {
+	const {
+		data: { user },
+	} = await getUser();
+
+	const data = await getClosingSummaryByAgent(user.id);
 	return (
 		<Box
 			sx={{
@@ -17,11 +23,7 @@ export default function Page() {
 				width: "var(--Content-width)",
 			}}
 		>
-			<Card variant="outlined">
-				<CardHeader titleTypographyProps={{ variant: "h4" }} title={"Balance de la ruta"} />
-				<Divider />
-				<DetailBalanceList />
-			</Card>
+			<DetailBalanceList data={data} />
 		</Box>
 	);
 }

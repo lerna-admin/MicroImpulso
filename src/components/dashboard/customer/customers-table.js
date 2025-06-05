@@ -76,7 +76,7 @@ export function CustomersTable({ rows }) {
 					</Typography>
 				</Stack>
 			),
-			name: "Fecha Inicio Fecha Final",
+			name: "Fecha Inicio / Fecha Fin",
 			align: "center",
 			width: "120px",
 		},
