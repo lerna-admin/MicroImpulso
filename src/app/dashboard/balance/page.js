@@ -1,5 +1,4 @@
 import * as React from "react";
-import { Card, CardHeader, Divider } from "@mui/material";
 import Box from "@mui/material/Box";
 
 import { appConfig } from "@/config/app";
@@ -17,11 +16,7 @@ export default function Page() {
 				width: "var(--Content-width)",
 			}}
 		>
-			<Card variant="outlined">
-				<CardHeader titleTypographyProps={{ variant: "h4" }} title={"Balance de la ruta"} />
-				<Divider />
-				<DetailBalanceList />
-			</Card>
+			<DetailBalanceList />
 		</Box>
 	);
 }

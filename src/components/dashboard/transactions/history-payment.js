@@ -157,7 +157,7 @@ export function HistoryPayments({
 					<CardHeader
 						action={
 							<Button color="secondary" onClick={popover.handleOpen} startIcon={<PlusIcon />}>
-								Crear Pago
+								Registrar Pago
 							</Button>
 						}
 						avatar={

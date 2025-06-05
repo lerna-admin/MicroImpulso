@@ -30,7 +30,7 @@ export async function getRequestsByAgent(id, { page = 1, limit = 10, status = ""
 	return res.json();
 }
 
-export async function getRequestsByCustomerId(id,) {
+export async function getRequestsByCustomerId(id) {
 	const res = await fetch(`${BASE_URL}/loan-request/client/${id}`);
 	if (!res.ok) throw new Error("Error al obtener solicitud por client id");
 	return res.json();
@@ -59,6 +59,16 @@ export async function createRequest(data) {
 export async function updateRequest(data, id) {
 	const res = await fetch(`${BASE_URL}/loan-request/${id}`, {
 		method: "PATCH",
+		headers: { "Content-Type": "application/json" },
+		body: JSON.stringify(data),
+	});
+	if (!res.ok) throw new Error("Error al actualizar solicitud");
+	return { data: res.json(), status: res.status };
+}
+
+export async function renewRequest(data, id) {
+	const res = await fetch(`${BASE_URL}/loan-request/${id}/renew`, {
+		method: "POST",
 		headers: { "Content-Type": "application/json" },
 		body: JSON.stringify(data),
 	});
