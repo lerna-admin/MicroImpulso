@@ -35,7 +35,7 @@ export async function signInWithApi({ document, password }) {
 		const { token } = await response.json();
 		const { user } = jwtDecode(token);
 
-		const cookieStore = cookies();
+		const cookieStore = await cookies();
 		cookieStore.set("access_token", token, {
 			path: "/",
 			httpOnly: true,

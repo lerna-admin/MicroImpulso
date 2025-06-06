@@ -54,6 +54,8 @@ export const paths = {
 			create: "/dashboard/customers/create",
 			details: (customerId) => `/dashboard/customers/${customerId}`,
 			list: "/dashboard/customers",
+			history: (customerId) => `/dashboard/customers/${customerId}/history`,
+
 		},
 		eCommerce: "/dashboard/e-commerce",
 		fileStorage: "/dashboard/file-storage",
