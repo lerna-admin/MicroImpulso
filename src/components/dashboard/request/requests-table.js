@@ -3,7 +3,7 @@
 import * as React from "react";
 import RouterLink from "next/link";
 import { useRouter } from "next/navigation";
-import { updateRequest } from "@/app/dashboard/requests/hooks/use-requests";
+import { renewRequest, updateRequest } from "@/app/dashboard/requests/hooks/use-requests";
 import { createTransaction } from "@/app/dashboard/transactions/hooks/use-transactions";
 import {
 	Button,
@@ -15,12 +15,16 @@ import {
 	Link,
 	Menu,
 	MenuItem,
+	Stack,
+	TextField,
 	Tooltip,
 } from "@mui/material";
 import Box from "@mui/material/Box";
 import Chip from "@mui/material/Chip";
+import Grid from "@mui/material/Grid2";
 import IconButton from "@mui/material/IconButton";
 import Typography from "@mui/material/Typography";
+import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import {
 	DotsThree as DotsThreeIcon,
 	ExclamationMark as ExclamationMarkIcon,
@@ -60,18 +64,26 @@ const columns = [
 		width: "70px",
 	},
 	{
-		formatter(row) {
-			return dayjs(row.createdAt).format("MMM D, YYYY");
-		},
-		name: "Fecha de inicio",
-		width: "100px",
+		formatter: (row) => (
+			<Stack direction="column" spacing={1} sx={{ alignItems: "center" }}>
+				<Typography color="inherit" variant="body2">
+					{dayjs(row.createdAt).format("MMM D, YYYY")}
+				</Typography>
+				<Typography color="inherit" variant="body2">
+					{dayjs(row.endDateAt).format("MMM D, YYYY")}
+				</Typography>
+			</Stack>
+		),
+		name: "Fecha Inicio / Fecha Fin",
+		align: "center",
+		width: "120px",
 	},
 	{
 		formatter(row) {
 			return dayjs(row.updatedAt).format("MMM D, YYYY");
 		},
-		name: "Fecha de actualización",
-		width: "100px",
+		name: "Fecha Ult. Pago",
+		width: "135px",
 	},
 
 	{
@@ -138,7 +150,10 @@ export function ActionsCell({ row }) {
 	const popoverAlert = usePopover();
 	const popoverModalApproved = usePopover();
 	const popoverModalFunded = usePopover();
+	const popoverModalRenew = usePopover();
 	const [anchorEl, setAnchorEl] = React.useState(null);
+	const [amount, setAmount] = React.useState(0);
+	const [selectedDate, setSelectedDate] = React.useState(dayjs(row.endDateAt));
 
 	const handleOptions = (event) => {
 		setAnchorEl(event.currentTarget);
@@ -150,6 +165,13 @@ export function ActionsCell({ row }) {
 		if (response.status === 200) popoverAlert.handleOpen();
 		router.refresh();
 		popoverModalApproved.handleClose();
+	};
+
+	const handleRenewLoanRequest = async () => {
+		const response = await renewRequest({ amount: amount, newDate: selectedDate }, row.id);
+		if (response.status === 200) popoverAlert.handleOpen();
+		router.refresh();
+		popoverModalRenew.handleClose();
 	};
 
 	const handleFundedLoanRequest = async () => {
@@ -166,10 +188,14 @@ export function ActionsCell({ row }) {
 		popoverModalFunded.handleClose();
 	};
 
+	const handleDateChange = (newValue) => {
+		setSelectedDate(newValue);
+	};
+
 	return (
 		<React.Fragment>
 			<Tooltip title="Más opciones">
-				<IconButton disabled={row.status === "funded"} onClick={handleOptions}>
+				<IconButton onClick={handleOptions}>
 					<DotsThreeIcon weight="bold" />
 				</IconButton>
 			</Tooltip>
@@ -180,6 +206,7 @@ export function ActionsCell({ row }) {
 				slotProps={{ paper: { elevation: 0 } }}
 			>
 				<MenuItem
+					disabled={row.status !== "new" && row.status !== "under_review"}
 					onClick={() => {
 						popover.handleClose();
 						popoverModalApproved.handleOpen();
@@ -188,6 +215,7 @@ export function ActionsCell({ row }) {
 					<Typography>Aprobar</Typography>
 				</MenuItem>
 				<MenuItem
+					disabled={row.status !== "approved"}
 					onClick={() => {
 						popover.handleClose();
 						popoverModalFunded.handleOpen();
@@ -196,6 +224,7 @@ export function ActionsCell({ row }) {
 					<Typography>Desembolsar</Typography>
 				</MenuItem>
 				<MenuItem
+					disabled={row.status !== "funded"}
 					onClick={() => {
 						popover.handleClose();
 						router.push(paths.dashboard.requests.details(row.id));
@@ -203,7 +232,83 @@ export function ActionsCell({ row }) {
 				>
 					<Typography>Abonar</Typography>
 				</MenuItem>
+				<MenuItem
+					disabled={row.status !== "funded"}
+					onClick={() => {
+						popover.handleClose();
+						popoverModalRenew.handleOpen();
+					}}
+				>
+					<Typography>Renovar</Typography>
+				</MenuItem>
 			</Menu>
+
+			{/* Modal para renovar solicitud */}
+			<Dialog
+				fullWidth
+				maxWidth={"xs"}
+				open={popoverModalRenew.open}
+				onClose={popoverModalRenew.handleClose}
+				aria-labelledby="alert-dialog-title"
+				aria-describedby="alert-dialog-description"
+			>
+				<DialogTitle id="alert-dialog-title" textAlign={"center"}>
+					{"Renovar solicitud"}
+				</DialogTitle>
+
+				<DialogContent>
+					<Stack spacing={4} sx={{ p: 3 }}>
+						<Grid container spacing={3}>
+							<Grid
+								size={{
+									md: 12,
+									xs: 12,
+								}}
+							>
+								<TextField
+									label="Monto"
+									variant="outlined"
+									slotProps={{ htmlInput: { min: 0 } }}
+									value={amount.toLocaleString("es-CO")}
+									onChange={(e) => {
+										const parsed = parseCurrency(e.target.value);
+										setAmount(parsed);
+									}}
+									fullWidth
+								/>
+							</Grid>
+							<Grid
+								size={{
+									md: 12,
+									xs: 12,
+								}}
+							>
+								<DatePicker
+									sx={{ width: "100%" }}
+									label="Fecha nueva"
+									value={selectedDate}
+									onChange={handleDateChange}
+									minDate={dayjs(row.endDateAt)}
+								/>
+							</Grid>
+						</Grid>
+					</Stack>
+				</DialogContent>
+				<DialogActions sx={{ padding: 3 }}>
+					<Button variant="contained" onClick={handleRenewLoanRequest} autoFocus>
+						Aceptar
+					</Button>
+					<Button
+						variant="outlined"
+						onClick={() => {
+							popover.handleClose();
+							popoverModalRenew.handleClose();
+						}}
+					>
+						Cancelar
+					</Button>
+				</DialogActions>
+			</Dialog>
 
 			{/* Modal para aprobar solicitud*/}
 			<Dialog
@@ -214,10 +319,12 @@ export function ActionsCell({ row }) {
 				aria-labelledby="alert-dialog-title"
 				aria-describedby="alert-dialog-description"
 			>
-				<DialogTitle id="alert-dialog-title">{"Confirmación"}</DialogTitle>
+				<DialogTitle id="alert-dialog-title" textAlign={"center"}>
+					{"Confirmación"}
+				</DialogTitle>
 
 				<DialogContent>
-					<DialogContentText id="alert-dialog-description" textAlign={"center"}>
+					<DialogContentText id="alert-dialog-description" textAlign={"justify"}>
 						{`¿Desea cambiar el estado de la solicitud a Aprobada para el cliente ${row.client.name}?`}
 					</DialogContentText>
 				</DialogContent>
@@ -290,3 +397,8 @@ export function ActionsCell({ row }) {
 		</React.Fragment>
 	);
 }
+
+const parseCurrency = (value) => {
+	// Elimina cualquier carácter que no sea número
+	return Number(value.replaceAll(/[^0-9]/g, ""));
+};

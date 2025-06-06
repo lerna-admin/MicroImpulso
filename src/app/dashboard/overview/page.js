@@ -17,71 +17,20 @@ import { LoanRequestsByYear } from "@/components/dashboard/overview/loan-request
 import { Subscriptions } from "@/components/dashboard/overview/subscriptions";
 import { Summary } from "@/components/dashboard/overview/summary";
 
-import { getRequestsStatsBranchesCurrentMonth, getRequestsStatsBranchesMonthlyHistory } from "./hooks/use-stats";
+import {
+	getRequestsStatsBranchesCurrentMonth,
+	getRequestsStatsBranchesMonthlyHistory,
+	getRequestsStatsClientsSummary,
+} from "./hooks/use-stats";
 
 export const metadata = { title: `Resumen | Dashboard | ${appConfig.name}` };
 
-const generateMonthlyOverview = (data) => {
-	const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-
-	const currentYear = new Date().getFullYear().toString();
-	const previousYear = (new Date().getFullYear() - 1).toString();
-
-	const result = monthNames.map((monthName, index) => {
-		const monthNumber = (index + 1).toString().padStart(2, "0");
-
-		const dataPrevYear = data.find((d) => d.month === `${previousYear}-${monthNumber}`);
-		const dataCurrYear = data.find((d) => d.month === `${currentYear}-${monthNumber}`);
-
-		const fundedCurrentYear = dataCurrYear?.data?.reduce((sum, item) => sum + (item.statusCounts?.funded || 0), 0) || 0;
-		const fundedPreviousYear =
-			dataPrevYear?.data?.reduce((sum, item) => sum + (item.statusCounts?.funded || 0), 0) || 0;
-
-		return {
-			name: monthName,
-			v1: fundedCurrentYear,
-			v2: fundedPreviousYear,
-		};
-	});
-
-	return result;
-};
-
-const calculateFundedGrowth = (data) => {
-	let totalPreviousYear = 0;
-	let totalCurrentYear = 0;
-
-	for (const month of data) {
-		const year = month.month.split("-")[0];
-		const fundedThisMonth = month.data.reduce((sum, item) => sum + (item.statusCounts?.funded || 0), 0);
-
-		if (year === "2024") {
-			totalPreviousYear += fundedThisMonth;
-		} else if (year === "2025") {
-			totalCurrentYear += fundedThisMonth;
-		}
-	}
-
-	const difference = totalCurrentYear - totalPreviousYear;
-
-	let growth = 0;
-	if (totalPreviousYear > 0) {
-		growth = (difference / totalPreviousYear) * 100;
-	} else if (totalCurrentYear > 0) {
-		growth = 100;
-	}
-
-	return {
-		difference,
-		growth: Math.round(growth),
-	};
-};
-
 export default async function Page() {
-	const resp = await getRequestsStatsBranchesCurrentMonth();
-	const resp2 = await getRequestsStatsBranchesMonthlyHistory();
+	const reqStatsBranchesCurMonth = await getRequestsStatsBranchesCurrentMonth();
+	const reqStatsMonthHistory = await getRequestsStatsBranchesMonthlyHistory();
+	const { notPaid, critical, lateOver15 } = await getRequestsStatsClientsSummary();
 
-	const requestsByBranches = resp.map((branch) => {
+	const requestsByBranches = reqStatsBranchesCurMonth.map((branch) => {
 		return {
 			name: branch.branchName,
 			v1: branch.totalRequests,
@@ -89,9 +38,9 @@ export default async function Page() {
 		};
 	});
 
-	const requestsByYear = generateMonthlyOverview(resp2);
+	const requestsByYear = generateMonthlyOverview(reqStatsMonthHistory);
 
-	const { growth, difference } = calculateFundedGrowth(resp2);
+	const { growth, difference } = calculateFundedGrowth(reqStatsMonthHistory);
 
 	return (
 		<Box
@@ -115,7 +64,13 @@ export default async function Page() {
 							xs: 12,
 						}}
 					>
-						<Summary amount={67} diff={15} icon={ListChecksIcon} title="No pagados" trend="up" />
+						<Summary
+							title="No pagados"
+							amount={notPaid.count}
+							diff={notPaid.variation.percentage}
+							icon={UsersIcon}
+							trend={notPaid.variation.type}
+						/>
 					</Grid>
 					<Grid
 						size={{
@@ -123,7 +78,13 @@ export default async function Page() {
 							xs: 12,
 						}}
 					>
-						<Summary amount={67} diff={5} icon={UsersIcon} title="Mora > 15" trend="down" />
+						<Summary
+							title="Mora > 15"
+							amount={lateOver15.count}
+							diff={lateOver15.variation.percentage}
+							icon={UsersIcon}
+							trend={lateOver15.variation.type}
+						/>
 					</Grid>
 					<Grid
 						size={{
@@ -131,7 +92,13 @@ export default async function Page() {
 							xs: 12,
 						}}
 					>
-						<Summary amount={0} diff={12} icon={WarningIcon} title="Criticos" trend="down" />
+						<Summary
+							title="Criticos"
+							amount={critical.count}
+							diff={critical.variation.percentage}
+							icon={UsersIcon}
+							trend={critical.variation.type}
+						/>
 					</Grid>
 					<Grid
 						size={{
@@ -295,3 +262,59 @@ export default async function Page() {
 		</Box>
 	);
 }
+
+const generateMonthlyOverview = (data) => {
+	const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+	const currentYear = new Date().getFullYear().toString();
+	const previousYear = (new Date().getFullYear() - 1).toString();
+
+	const result = monthNames.map((monthName, index) => {
+		const monthNumber = (index + 1).toString().padStart(2, "0");
+
+		const dataPrevYear = data.find((d) => d.month === `${previousYear}-${monthNumber}`);
+		const dataCurrYear = data.find((d) => d.month === `${currentYear}-${monthNumber}`);
+
+		const fundedCurrentYear = dataCurrYear?.data?.reduce((sum, item) => sum + (item.statusCounts?.funded || 0), 0) || 0;
+		const fundedPreviousYear =
+			dataPrevYear?.data?.reduce((sum, item) => sum + (item.statusCounts?.funded || 0), 0) || 0;
+
+		return {
+			name: monthName,
+			v1: fundedCurrentYear,
+			v2: fundedPreviousYear,
+		};
+	});
+
+	return result;
+};
+
+const calculateFundedGrowth = (data) => {
+	let totalPreviousYear = 0;
+	let totalCurrentYear = 0;
+
+	for (const month of data) {
+		const year = month.month.split("-")[0];
+		const fundedThisMonth = month.data.reduce((sum, item) => sum + (item.statusCounts?.funded || 0), 0);
+
+		if (year === "2024") {
+			totalPreviousYear += fundedThisMonth;
+		} else if (year === "2025") {
+			totalCurrentYear += fundedThisMonth;
+		}
+	}
+
+	const difference = totalCurrentYear - totalPreviousYear;
+
+	let growth = 0;
+	if (totalPreviousYear > 0) {
+		growth = (difference / totalPreviousYear) * 100;
+	} else if (totalCurrentYear > 0) {
+		growth = 100;
+	}
+
+	return {
+		difference,
+		growth: Math.round(growth),
+	};
+};

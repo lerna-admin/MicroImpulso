@@ -41,22 +41,22 @@ export function Summary({ amount, diff, icon: Icon, title, trend, requireTrend =
 							<Box
 								sx={{
 									alignItems: "center",
-									color: trend === "up" ? "var(--mui-palette-success-main)" : "var(--mui-palette-error-main)",
+									color: trend === "increase" ? "var(--mui-palette-success-main)" : "var(--mui-palette-error-main)",
 									display: "flex",
 									justifyContent: "center",
 								}}
 							>
-								{trend === "up" ? (
+								{trend === "increase" ? (
 									<TrendUpIcon fontSize="var(--icon-fontSize-md)" />
 								) : (
 									<TrendDownIcon fontSize="var(--icon-fontSize-md)" />
 								)}
 							</Box>
 							<Typography color="text.secondary" variant="body2">
-								<Typography color={trend === "up" ? "success.main" : "error.main"} component="span" variant="subtitle2">
+								<Typography color={trend === "increase" ? "success.main" : "error.main"} component="span" variant="subtitle2">
 									{new Intl.NumberFormat("en-US", { style: "percent", maximumFractionDigits: 2 }).format(diff / 100)}
 								</Typography>{" "}
-								{trend === "up" ? "de incremento" : "de decremento"} respecto al último mes.
+								{trend === "increase" ? "de incremento" : "de decremento"} respecto al último mes.
 							</Typography>
 						</Stack>
 					</Box>
