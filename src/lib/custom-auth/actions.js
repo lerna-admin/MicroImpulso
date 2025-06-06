@@ -33,12 +33,19 @@ export async function signInWithApi({ document, password }) {
 		}
 
 		const { token } = await response.json();
-		const { user } = jwtDecode(token);
+		const { user, closedRoute } = jwtDecode(token);
 
 		const cookieStore = await cookies();
 		cookieStore.set("access_token", token, {
 			path: "/",
 			httpOnly: true,
+			secure: false,
+			sameSite: "lax",
+			maxAge: 60 * 60 * 24,
+		});
+		cookieStore.set("isAgentClosed", String(closedRoute), {
+			path: "/",
+			httpOnly: false,
 			secure: false,
 			sameSite: "lax",
 			maxAge: 60 * 60 * 24,
