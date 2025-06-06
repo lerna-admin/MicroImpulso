@@ -27,12 +27,14 @@ import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 import { Plus as PlusIcon } from "@phosphor-icons/react/dist/ssr/Plus";
 import { ShoppingCartSimple as ShoppingCartSimpleIcon } from "@phosphor-icons/react/dist/ssr/ShoppingCartSimple";
+import Cookies from "js-cookie";
 import { Controller, useForm } from "react-hook-form";
 import { z as zod } from "zod";
 
 import { dayjs } from "@/lib/dayjs";
 import { usePopover } from "@/hooks/use-popover";
 import { DataTable } from "@/components/core/data-table";
+import { NotificationAlert } from "@/components/widgets/notifications/notification-alert";
 
 const columns = [
 	{
@@ -117,9 +119,13 @@ export function HistoryPayments({
 	amountToPay,
 	requestId,
 }) {
+	const [alertMsg, setAlertMsg] = React.useState("");
+	const [alertSeverity, setAlertSeverity] = React.useState("success");
 	const popover = usePopover();
+	const popoverAlert = usePopover();
 	const schema = createSchema(amountToPay, amountPaid);
 	const router = useRouter();
+	const isAgentClosed = Cookies.get("isAgentClosed");
 
 	const {
 		reset,
@@ -151,13 +157,21 @@ export function HistoryPayments({
 		popover.handleClose();
 	});
 
+	const handleRegisterPay = () => {
+		if (isAgentClosed === "true") {
+			popoverAlert.handleOpen();
+			setAlertMsg("El agente ya hizo el cierre del dia.");
+			setAlertSeverity("error");
+		} else popover.handleOpen();
+	};
+
 	return (
 		<React.Fragment>
 			{payments.length > 0 ? (
 				<Card>
 					<CardHeader
 						action={
-							<Button color="secondary" onClick={popover.handleOpen} startIcon={<PlusIcon />}>
+							<Button color="secondary" onClick={handleRegisterPay} startIcon={<PlusIcon />}>
 								Registrar Pago
 							</Button>
 						}
@@ -305,6 +319,13 @@ export function HistoryPayments({
 					</DialogActions>
 				</form>
 			</Dialog>
+
+			<NotificationAlert
+				openAlert={popoverAlert.open}
+				onClose={popoverAlert.handleClose}
+				msg={alertMsg}
+				severity={alertSeverity}
+			></NotificationAlert>
 		</React.Fragment>
 	);
 }

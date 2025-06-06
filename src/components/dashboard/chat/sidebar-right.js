@@ -339,9 +339,6 @@ function SidebarContent({ currentThreadId, threads, contacts }) {
 				openAlert={openAlert}
 				onClose={() => setOpenAlert(false)}
 				msg={"Perfil actualizado!"}
-				autoHideDuration={2000}
-				posHorizontal={"right"}
-				posVertical={"bottom"}
 			></NotificationAlert>
 		</React.Fragment>
 	);

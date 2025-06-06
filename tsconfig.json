@@ -27,7 +27,8 @@
     "next-env.d.ts",
     ".next/types/**/*.ts",
     "**/*.ts",
-    "**/*.tsx"
-, "src/components/dashboard/documents/pdfViewer.tsx", "src/components/dashboard/documents/pdf-viewer.js"  ],
+    "**/*.tsx", 
+    "src/components/dashboard/documents/pdf-viewer.js", "src/app/dashboard/customers/[customerId]/history/page.js"
+    ],
   "exclude": ["node_modules"]
 }

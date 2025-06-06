@@ -159,7 +159,7 @@ export function CustomerEditForm({ customerToEdit }) {
 										style: "currency",
 										currency: "COP",
 										minimumFractionDigits: 0,
-									}).format(customerToEdit.montoPrestado)}
+									}).format(customerToEdit.montoPrestado ?? 0)}
 									onChange={handleChange}
 								/>
 							</FormControl>
@@ -213,12 +213,9 @@ export function CustomerEditForm({ customerToEdit }) {
 			</form>
 
 			<NotificationAlert
-				openAlert={popover}
+				openAlert={popover.open}
 				onClose={popover.handleClose}
 				msg={"Perfil actualizado!"}
-				autoHideDuration={3000}
-				posHorizontal={"right"}
-				posVertical={"bottom"}
 			></NotificationAlert>
 		</>
 	);

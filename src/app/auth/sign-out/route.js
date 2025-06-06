@@ -7,6 +7,7 @@ export async function GET() {
 
 	// Cleanup tokens
 	res.cookies.delete("access_token");
+	res.cookies.delete("isAgentClosed");
 	res.headers.set("Location", getAppUrl().toString());
 
 	return res;

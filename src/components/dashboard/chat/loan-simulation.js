@@ -289,9 +289,6 @@ export function LoanSimulation({ contact }) {
 				openAlert={popoverAlert.open}
 				onClose={popoverAlert.handleClose}
 				msg={"¡Solicitud actualizada!"}
-				autoHideDuration={2000}
-				posHorizontal={"left"}
-				posVertical={"bottom"}
 			></NotificationAlert>
 
 			{/* Modal para enviar simulacion de credito*/}

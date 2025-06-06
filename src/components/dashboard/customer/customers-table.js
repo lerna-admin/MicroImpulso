@@ -11,11 +11,13 @@ import Link from "@mui/material/Link";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 import { BellRinging as BellRingingIcon, DotsThree as DotsThreeIcon } from "@phosphor-icons/react/dist/ssr";
+import Cookies from "js-cookie";
 
 import { paths } from "@/paths";
 import { dayjs } from "@/lib/dayjs";
 import { usePopover } from "@/hooks/use-popover";
 import { DataTable } from "@/components/core/data-table";
+import { NotificationAlert } from "@/components/widgets/notifications/notification-alert";
 
 dayjs.locale("es");
 
@@ -185,7 +187,11 @@ function ShowAlert({ endDateLoanRequest }) {
 function ActionsCell({ row }) {
 	const router = useRouter();
 	const popover = usePopover();
+	const popoverAlert = usePopover();
+	const [alertMsg, setAlertMsg] = React.useState("");
+	const [alertSeverity, setAlertSeverity] = React.useState("success");
 	const [anchorEl, setAnchorEl] = React.useState(null);
+	const isAgentClosed = Cookies.get("isAgentClosed");
 
 	const handleOptions = (event) => {
 		setAnchorEl(event.currentTarget);
@@ -193,12 +199,18 @@ function ActionsCell({ row }) {
 	};
 
 	const handlePayment = () => {
-		popover.handleClose();
-		router.push(paths.dashboard.requests.details(row.loanRequest.id));
+		if (isAgentClosed === "true") {
+			popoverAlert.handleOpen();
+			setAlertMsg("El agente ya hizo el cierre del dia.");
+			setAlertSeverity("error");
+		} else {
+			popover.handleClose();
+			router.push(paths.dashboard.requests.details(row.loanRequest.id));
+		}
 	};
 
 	return (
-		<>
+		<React.Fragment>
 			<Tooltip title="Más opciones">
 				<IconButton onClick={handleOptions}>
 					<DotsThreeIcon weight="bold" />
@@ -214,6 +226,12 @@ function ActionsCell({ row }) {
 					<Typography>Abonar</Typography>
 				</MenuItem>
 			</Menu>
-		</>
+			<NotificationAlert
+				openAlert={popoverAlert.open}
+				onClose={popoverAlert.handleClose}
+				msg={alertMsg}
+				severity={alertSeverity}
+			></NotificationAlert>
+		</React.Fragment>
 	);
 }

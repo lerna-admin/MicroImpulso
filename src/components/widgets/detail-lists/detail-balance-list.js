@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { closeDay } from "@/app/dashboard/balance/hooks/use-balance";
 import { CardHeader, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from "@mui/material";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
@@ -12,13 +13,16 @@ import List from "@mui/material/List";
 import ListItem from "@mui/material/ListItem";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
+import Cookies from "js-cookie";
 
 import { dayjs } from "@/lib/dayjs";
 import { usePopover } from "@/hooks/use-popover";
 
+import { NotificationAlert } from "../notifications/notification-alert";
+
 dayjs.locale("es");
 
-export function DetailBalanceList({ data }) {
+export function DetailBalanceList({ dataBalance, user }) {
 	const [assets, setAssets] = React.useState([
 		{ id: 1, name: "Cartera ($)", value: "" },
 		{ id: 2, name: "Cobrado ($)", value: "" },
@@ -27,13 +31,25 @@ export function DetailBalanceList({ data }) {
 		{ id: 5, name: "Nuevos $ (#)", value: "" },
 	]);
 
+	const [errorMsg, setErrorMsg] = React.useState("");
+	const [responseStatus, setResponseStatus] = React.useState(null);
+
+	const totalAmount = dataBalance.valorRenovados + dataBalance.valorNuevos;
+	const totalRequests = dataBalance.renovados + dataBalance.nuevos;
+
+	const today = dayjs();
+	const formattedDate = `${today.format("DD")} ${today.format("MMMM").toUpperCase()} ${today.format("YYYY, hh:mm A")}`;
+
+	const popoverError = usePopover();
+	const popover = usePopover();
+
 	React.useEffect(() => {
 		const updates = [
-			{ id: 1, value: parseCurrency(data.cartera) },
-			{ id: 2, value: parseCurrency(data.cobrado) },
-			{ id: 3, value: data.clientes },
-			{ id: 4, value: `${parseCurrency(data.valorRenovados)} (${data.renovados})` },
-			{ id: 5, value: `${parseCurrency(data.valorNuevos)} (${data.nuevos})` },
+			{ id: 1, value: parseCurrency(dataBalance.cartera) },
+			{ id: 2, value: parseCurrency(dataBalance.cobrado) },
+			{ id: 3, value: dataBalance.clientes },
+			{ id: 4, value: `${parseCurrency(dataBalance.valorRenovados)} (${dataBalance.renovados})` },
+			{ id: 5, value: `${parseCurrency(dataBalance.valorNuevos)} (${dataBalance.nuevos})` },
 		];
 		setAssets((prev) =>
 			prev.map((item) => {
@@ -41,19 +57,18 @@ export function DetailBalanceList({ data }) {
 				return update ? { ...item, value: update.value } : item;
 			})
 		);
-	}, [data]);
-
-	const totalAmount = data.valorRenovados + data.valorNuevos;
-	const totalRequests = data.renovados + data.nuevos;
-
-	const today = dayjs();
-	const formattedDate = `${today.format("DD")} ${today.format("MMMM").toUpperCase()} ${today.format("YYYY, hh:mm A")}`;
-
-	const popover = usePopover();
+	}, [dataBalance]);
 
 	const handleRoadClousure = async () => {
 		popover.handleClose();
-		console.log("handleRoadClousure");
+		const { message, statusCode } = await closeDay(user.id);
+		if (statusCode === 400) {
+			setResponseStatus(statusCode);
+			setErrorMsg(message);
+			popoverError.handleOpen();
+		}
+
+		Cookies.set("isAgentClosed", true);
 	};
 
 	return (
@@ -136,6 +151,12 @@ export function DetailBalanceList({ data }) {
 					</DialogActions>
 				</Dialog>
 			</Box>
+			<NotificationAlert
+				openAlert={popoverError.open}
+				onClose={popoverError.handleClose}
+				msg={errorMsg}
+				severity={responseStatus === 400 ? "error" : "success"}
+			></NotificationAlert>
 		</Card>
 	);
 }

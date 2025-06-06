@@ -202,9 +202,6 @@ export function CustomerEditForm({ customerToEdit }) {
 				openAlert={openAlert}
 				onClose={() => setOpenAlert(false)}
 				msg={"Perfil actualizado!"}
-				autoHideDuration={3000}
-				posHorizontal={"right"}
-				posVertical={"bottom"}
 			></NotificationAlert>
 		</>
 	);
