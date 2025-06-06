@@ -36,6 +36,12 @@ export async function getRequestsByCustomerId(id) {
 	return res.json();
 }
 
+export async function getAllRequestsByCustomerId(id) {
+	const res = await fetch(`${BASE_URL}/loan-request/client/${id}/all`);
+	if (!res.ok) throw new Error("Error al obtener todas las solicitudes por client id");
+	return res.json();
+}
+
 /**
  *
  * @returns {Request}
@@ -43,12 +49,6 @@ export async function getRequestsByCustomerId(id) {
 export async function getRequestById(id) {
 	const res = await fetch(`${BASE_URL}/loan-request/${id}`);
 	if (!res.ok) throw new Error("Solicitud no encontrada");
-	return res.json();
-}
-
-export async function getClosingSummaryByAgent(agentId) {
-	const res = await fetch(`${BASE_URL}/loan-request/agent/${agentId}/closing-summary`);
-	if (!res.ok) throw new Error("Error al obtener cierre de ruta");
 	return res.json();
 }
 

@@ -1,5 +1,5 @@
 import * as React from "react";
-import { getClosingSummaryByAgent } from "@/app/dashboard/requests/hooks/use-requests";
+import { getClosingSummaryByAgent } from "@/app/dashboard/balance/hooks/use-balance";
 import Box from "@mui/material/Box";
 
 import { appConfig } from "@/config/app";
@@ -14,6 +14,7 @@ export default async function Page() {
 	} = await getUser();
 
 	const data = await getClosingSummaryByAgent(user.id);
+
 	return (
 		<Box
 			sx={{
@@ -23,7 +24,7 @@ export default async function Page() {
 				width: "var(--Content-width)",
 			}}
 		>
-			<DetailBalanceList data={data} />
+			<DetailBalanceList dataBalance={data} user={user} />
 		</Box>
 	);
 }

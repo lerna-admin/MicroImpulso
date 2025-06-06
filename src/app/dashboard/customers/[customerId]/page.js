@@ -1,29 +1,26 @@
 import * as React from "react";
 import RouterLink from "next/link";
+import { ROLES } from "@/constants/roles";
+import { CardContent, Typography } from "@mui/material";
 import Avatar from "@mui/material/Avatar";
 import Box from "@mui/material/Box";
 import Card from "@mui/material/Card";
 import CardHeader from "@mui/material/CardHeader";
-// import Chip from "@mui/material/Chip";
 import Divider from "@mui/material/Divider";
 import Grid from "@mui/material/Grid2";
 import Link from "@mui/material/Link";
 import Stack from "@mui/material/Stack";
-// import Typography from "@mui/material/Typography";
-// import {
-// 	Timer as TimerIcon,
-// 	WarningDiamond as WarningDiamondIcon,
-// 	XCircle as XCircleIcon,
-// } from "@phosphor-icons/react/dist/ssr";
 import { ArrowLeft as ArrowLeftIcon } from "@phosphor-icons/react/dist/ssr/ArrowLeft";
-// import { CheckCircle as CheckCircleIcon } from "@phosphor-icons/react/dist/ssr/CheckCircle";
 import { User as UserIcon } from "@phosphor-icons/react/dist/ssr/User";
 
 import { appConfig } from "@/config/app";
 import { paths } from "@/paths";
+import { getUser } from "@/lib/custom-auth/server";
 import { PropertyList } from "@/components/core/property-list";
 import { CustomerEditForm } from "@/components/dashboard/customer/customer-edit-form";
+import { CustomersLineItemsTable } from "@/components/dashboard/customer/customers-line-items-table";
 
+import { getAllRequestsByCustomerId } from "../../requests/hooks/use-requests";
 import { getCustomerById } from "../hooks/use-customers";
 
 export const metadata = { title: `Detalle | Clientes | Dashboard | ${appConfig.name}` };
@@ -31,14 +28,12 @@ export const metadata = { title: `Detalle | Clientes | Dashboard | ${appConfig.n
 export default async function Page({ params }) {
 	const { customerId } = params;
 	const customer = await getCustomerById(customerId);
+	const allRequestByClient = await getAllRequestsByCustomerId(customerId);
+	const {
+		data: { user },
+	} = await getUser();
 
-	// const mappingIcons = {
-	// 	active: { label: "Activo", icon: <CheckCircleIcon color="var(--mui-palette-success-main)" weight="fill" /> },
-	// 	inactive: { label: "Inactivo", icon: <XCircleIcon color="var(--mui-palette-error-main)" weight="fill" /> },
-	// 	suspended: { label: "Suspendido", icon: <TimerIcon color="var(--mui-palette-warning-main)" weight="fill" /> },
-	// 	prospect: { label: "Prospecto", icon: <WarningDiamondIcon color="var(--mui-palette-info-main)" weight="fill" /> },
-	// };
-	// const { label, icon } = mappingIcons[customer.status] ?? { label: "Unknown", icon: null };
+	const totalRequestsAmountToPay = allRequestByClient.reduce((acc, req) => acc + req.amount, 0);
 
 	return (
 		<Box
@@ -74,11 +69,6 @@ export default async function Page({ params }) {
 						<Stack spacing={4}>
 							<Card>
 								<CardHeader
-									// subheader={
-									// 	<Stack direction="row" spacing={2} sx={{ alignItems: "center", flexWrap: "wrap", paddingTop: 1 }}>
-									// 		<Chip icon={icon} label={label} size="small" variant="outlined" />
-									// 	</Stack>
-									// }
 									avatar={
 										<Avatar>
 											<UserIcon fontSize="var(--Icon-fontSize)" />
@@ -94,6 +84,40 @@ export default async function Page({ params }) {
 									<CustomerEditForm customerToEdit={customer}></CustomerEditForm>
 								</PropertyList>
 							</Card>
+							{user.role !== ROLES.AGENTE && (
+								<Card>
+									<CardHeader
+										avatar={
+											<Avatar>
+												<UserIcon fontSize="var(--Icon-fontSize)" />
+											</Avatar>
+										}
+										title="Solicitudes del Cliente"
+									/>
+									<CardContent>
+										<Card sx={{ borderRadius: 1 }} variant="outlined">
+											<Box sx={{ overflowX: "auto" }}>
+												<CustomersLineItemsTable rows={allRequestByClient} />
+											</Box>
+											<Divider />
+											<Box sx={{ display: "flex", justifyContent: "flex-end", p: 2 }}>
+												<Stack spacing={2} sx={{ width: "300px", maxWidth: "100%" }}>
+													<Stack direction="row" sx={{ justifyContent: "space-between" }}>
+														<Typography variant="subtitle1">Total</Typography>
+														<Typography variant="subtitle1">
+															{new Intl.NumberFormat("es-CO", {
+																style: "currency",
+																currency: "COP",
+																minimumFractionDigits: 0,
+															}).format(totalRequestsAmountToPay)}
+														</Typography>
+													</Stack>
+												</Stack>
+											</Box>
+										</Card>
+									</CardContent>
+								</Card>
+							)}
 						</Stack>
 					</Grid>
 				</Grid>

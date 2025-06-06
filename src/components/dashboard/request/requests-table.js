@@ -32,6 +32,7 @@ import {
 } from "@phosphor-icons/react/dist/ssr";
 import { CheckCircle as CheckCircleIcon } from "@phosphor-icons/react/dist/ssr/CheckCircle";
 import { Clock as ClockIcon } from "@phosphor-icons/react/dist/ssr/Clock";
+import Cookies from "js-cookie";
 
 import { paths } from "@/paths";
 import { dayjs } from "@/lib/dayjs";
@@ -154,22 +155,41 @@ export function ActionsCell({ row }) {
 	const [anchorEl, setAnchorEl] = React.useState(null);
 	const [amount, setAmount] = React.useState(0);
 	const [selectedDate, setSelectedDate] = React.useState(dayjs(row.endDateAt));
+	const [alertMsg, setAlertMsg] = React.useState("");
+	const [alertSeverity, setAlertSeverity] = React.useState("success");
+	const isAgentClosed = Cookies.get("isAgentClosed");
 
 	const handleOptions = (event) => {
-		setAnchorEl(event.currentTarget);
-		popover.handleOpen();
+		if (isAgentClosed === "true") {
+			popoverAlert.handleOpen();
+			setAlertMsg("El agente ya hizo el cierre del dia.");
+			setAlertSeverity("error");
+		} else {
+			popover.handleOpen();
+			setAnchorEl(event.currentTarget);
+		}
 	};
 
 	const handleApproveLoanRequest = async () => {
 		const response = await updateRequest({ status: "approved" }, row.id);
-		if (response.status === 200) popoverAlert.handleOpen();
+		if (response.status === 200) {
+			popoverAlert.handleOpen();
+			setAlertMsg("¡Solicitud Actualizada!");
+			setAlertSeverity("success");
+			setAlertSeverity();
+		}
 		router.refresh();
 		popoverModalApproved.handleClose();
 	};
 
 	const handleRenewLoanRequest = async () => {
 		const response = await renewRequest({ amount: amount, newDate: selectedDate }, row.id);
-		if (response.status === 200) popoverAlert.handleOpen();
+		if (response.status === 200) {
+			setAlertMsg("¡Solicitud Actualizada!");
+			setAlertSeverity("success");
+			popoverAlert.handleOpen();
+		}
+
 		router.refresh();
 		popoverModalRenew.handleClose();
 	};
@@ -389,10 +409,8 @@ export function ActionsCell({ row }) {
 			<NotificationAlert
 				openAlert={popoverAlert.open}
 				onClose={popoverAlert.handleClose}
-				msg={"Solicitud actualizada!"}
-				autoHideDuration={2000}
-				posHorizontal={"right"}
-				posVertical={"bottom"}
+				msg={alertMsg}
+				severity={alertSeverity}
 			></NotificationAlert>
 		</React.Fragment>
 	);

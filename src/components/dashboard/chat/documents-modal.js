@@ -243,9 +243,6 @@ export function DocumentsModal({ open, customer, documents }) {
 							openAlert={openAlert}
 							onClose={() => setOpenAlert(false)}
 							msg={"Clasificación actualizada!"}
-							autoHideDuration={2000}
-							posHorizontal={"right"}
-							posVertical={"bottom"}
 						></NotificationAlert>
 					</Grid>
 				</DialogContent>
@@ -305,9 +302,6 @@ export function DocumentsModal({ open, customer, documents }) {
 				openAlert={popoverAlert.open}
 				onClose={popoverAlert.handleClose}
 				msg={"Solicitud actualizada!"}
-				autoHideDuration={2000}
-				posHorizontal={"right"}
-				posVertical={"bottom"}
 			></NotificationAlert>
 		</React.Fragment>
 	);
