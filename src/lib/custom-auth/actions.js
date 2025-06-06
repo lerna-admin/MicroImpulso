@@ -32,8 +32,8 @@ export async function signInWithApi({ document, password }) {
 			return { error: message || "Login failed" };
 		}
 
-		const { token } = await response.json();
-		const { user, closedRoute } = jwtDecode(token);
+		const { token , closedRoute} = await response.json();
+		const { user  } = jwtDecode(token);
 
 		const cookieStore = await cookies();
 		cookieStore.set("access_token", token, {
