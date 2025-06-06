@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Chip } from "@mui/material";
+import { Card, Chip, Divider } from "@mui/material";
 import Box from "@mui/material/Box";
 import Grid from "@mui/material/Grid2";
 import Stack from "@mui/material/Stack";
@@ -7,9 +7,10 @@ import Typography from "@mui/material/Typography";
 
 import { appConfig } from "@/config/app";
 import { dayjs } from "@/lib/dayjs";
-import { Content } from "@/components/dashboard/cash-flow/content";
+import { CashFlowHeader } from "@/components/dashboard/cash-flow/cash-flow-header";
+import { MovementsPagination } from "@/components/dashboard/cash-flow/movements-pagination";
 import { Summary } from "@/components/dashboard/cash-flow/summary";
-import { TableMovements } from "@/components/dashboard/cash-flow/table-movements";
+import { MovementsTable } from "@/components/dashboard/cash-flow/table-movements";
 
 export const metadata = { title: `Movimientos de caja | Dashboard | ${appConfig.name}` };
 
@@ -22,6 +23,30 @@ const assets = [
 	{ label: "Prestamos", value: 0, trend: "decrease" },
 	{ label: "Gastos", value: 0, trend: "increase" },
 	{ label: "Caja real", value: 0, trend: "decrease" },
+];
+
+const invoices = [
+	{
+		id: "INV-004",
+		description: "Anim excepteur dolor excepteur id voluptate amet adipisicing exercitation non eu.",
+		amount: 550_000,
+		category: "cobro",
+		createdDate: dayjs().subtract(1, "hour").toDate(),
+	},
+	{
+		id: "INV-003",
+		description: "Sint qui incididunt ea occaecat incididunt ad cillum sunt tempor.",
+		amount: 190_000,
+		category: "prestamos",
+		createdDate: dayjs().subtract(2, "hour").subtract(2, "day").toDate(),
+	},
+	{
+		id: "INV-002",
+		description: "Ullamco est ex ullamco magna esse qui consequat laborum minim deserunt ut velit eu.",
+		amount: 781_000,
+		category: "gastos",
+		createdDate: dayjs().subtract(4, "hour").subtract(6, "day").toDate(),
+	},
 ];
 
 export default function Page() {
@@ -37,7 +62,7 @@ export default function Page() {
 			}}
 		>
 			<Stack spacing={10}>
-				<Content />
+				<CashFlowHeader />
 				<Grid container spacing={4}>
 					<Grid size={12} sx={{ display: "flex", justifyContent: "space-between" }}>
 						<Typography variant="subtitle1">Dashboard Financial</Typography>
@@ -47,7 +72,13 @@ export default function Page() {
 						<Summary assets={assets} />
 					</Grid>
 					<Grid size={12}>
-						<TableMovements />
+						<Card>
+							<Box sx={{ overflowX: "auto" }}>
+								<MovementsTable invoices={invoices} />
+							</Box>
+							<Divider />
+							<MovementsPagination count={invoices.length + 10} page={0} />
+						</Card>
 					</Grid>
 				</Grid>
 			</Stack>

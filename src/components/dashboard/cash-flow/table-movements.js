@@ -2,7 +2,6 @@
 
 import * as React from "react";
 import Box from "@mui/material/Box";
-import Card from "@mui/material/Card";
 import Chip from "@mui/material/Chip";
 import Divider from "@mui/material/Divider";
 import InputAdornment from "@mui/material/InputAdornment";
@@ -13,30 +12,6 @@ import { MagnifyingGlass as MagnifyingGlassIcon } from "@phosphor-icons/react/di
 
 import { dayjs } from "@/lib/dayjs";
 import { DataTable } from "@/components/core/data-table";
-
-const invoices = [
-	{
-		id: "INV-004",
-		description: "Anim excepteur dolor excepteur id voluptate amet adipisicing exercitation non eu.",
-		amount: 550_000,
-		category: "cobro",
-		createdDate: dayjs().subtract(1, "hour").toDate(),
-	},
-	{
-		id: "INV-003",
-		description: "Sint qui incididunt ea occaecat incididunt ad cillum sunt tempor.",
-		amount: 190_000,
-		category: "prestamos",
-		createdDate: dayjs().subtract(2, "hour").subtract(2, "day").toDate(),
-	},
-	{
-		id: "INV-002",
-		description: "Ullamco est ex ullamco magna esse qui consequat laborum minim deserunt ut velit eu.",
-		amount: 781_000,
-		category: "gastos",
-		createdDate: dayjs().subtract(4, "hour").subtract(6, "day").toDate(),
-	},
-];
 
 const columns = [
 	{ field: "id", name: "ID", width: "150px" },
@@ -85,9 +60,9 @@ const columns = [
 	},
 ];
 
-export function TableMovements() {
+export function MovementsTable({ invoices }) {
 	return (
-		<Card>
+		<>
 			<Stack direction="row" spacing={2} sx={{ alignItems: "center", flexWrap: "wrap", p: 3 }}>
 				<OutlinedInput
 					placeholder="Buscar movimientos"
@@ -103,6 +78,6 @@ export function TableMovements() {
 			<Box sx={{ overflowX: "auto" }}>
 				<DataTable columns={columns} rows={invoices} />
 			</Box>
-		</Card>
+		</>
 	);
 }

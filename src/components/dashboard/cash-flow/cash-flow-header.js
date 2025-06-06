@@ -25,7 +25,7 @@ import {
 
 import { usePopover } from "@/hooks/use-popover";
 
-export function Content() {
+export function CashFlowHeader() {
 	const popover = usePopover();
 	const [amount, setAmount] = React.useState(0);
 	const [typeMovement, setTypeMovement] = React.useState("");
