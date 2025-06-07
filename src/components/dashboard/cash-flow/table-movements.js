@@ -15,13 +15,13 @@ import { DataTable } from "@/components/core/data-table";
 
 const columns = [
 	{ field: "id", name: "ID", width: "150px" },
-
 	{
 		formatter: (row) => {
 			const mapping = {
-				cobro: { label: "Cobro", color: "success" },
-				prestamos: { label: "Prestamos", color: "error" },
-				gastos: { label: "Gastos", color: "success" },
+				COBRO_CLIENTE: { label: "Cobro", color: "success" },
+				PRESTAMO: { label: "Prestamos", color: "error" },
+				ENTRADA_GERENCIA: { label: "Entra caja", color: "success" },
+				GASTO_PROVEEDOR: { label: "Gastos", color: "error" },
 			};
 			const { label, color } = mapping[row.category] ?? { label: "Unknown", color: "secondary" };
 
@@ -30,7 +30,6 @@ const columns = [
 		name: "Categoria",
 		width: "150px",
 	},
-
 	{
 		formatter: (row) => {
 			return new Intl.NumberFormat("es-CO", { style: "currency", currency: "COP", minimumFractionDigits: 0 }).format(

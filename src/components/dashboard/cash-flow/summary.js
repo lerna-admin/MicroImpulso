@@ -48,14 +48,18 @@ export function Summary({ assets }) {
 									</Typography>
 									{asset.trend === "increase" ? (
 										<TrendUpIcon color="var(--mui-palette-success-main)" fontSize="var(--icon-fontSize-md)" />
-									) : (
+									) : asset.trend === "decrease" ? (
 										<TrendDownIcon color="var(--mui-palette-error-main)" fontSize="var(--icon-fontSize-md)" />
-									)}
+									) : null}
 								</Stack>
 								<Typography
 									variant="h4"
 									color={
-										asset.trend === "increase" ? "var(--mui-palette-success-main)" : "var(--mui-palette-error-main)"
+										asset.trend === "increase"
+											? "var(--mui-palette-success-main)"
+											: asset.trend === "decrease"
+												? "var(--mui-palette-error-main)"
+												: "inherit"
 									}
 								>
 									{new Intl.NumberFormat("es-CO", {
