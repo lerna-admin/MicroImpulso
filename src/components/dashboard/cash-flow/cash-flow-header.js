@@ -1,6 +1,8 @@
 "use client";
 
 import * as React from "react";
+import { useRouter } from "next/navigation";
+import { createCashMovement } from "@/app/dashboard/cash_flow/hooks/use-cash-flow";
 import {
 	Box,
 	Button,
@@ -25,8 +27,9 @@ import {
 
 import { usePopover } from "@/hooks/use-popover";
 
-export function CashFlowHeader() {
+export function CashFlowHeader({ branch }) {
 	const popover = usePopover();
+	const router = useRouter();
 	const [amount, setAmount] = React.useState(0);
 	const [typeMovement, setTypeMovement] = React.useState("");
 	const [category, setCategory] = React.useState("");
@@ -34,6 +37,15 @@ export function CashFlowHeader() {
 
 	const handleRenewLoanRequest = async () => {
 		popover.handleClose();
+
+		await createCashMovement({
+			typeMovement: typeMovement,
+			amount: amount,
+			category: category,
+			description: description,
+		}); // TODO hacer que si la respuesta es correcta muestre un alert exitoso o error.
+
+		router.refresh();
 	};
 
 	return (
@@ -46,8 +58,8 @@ export function CashFlowHeader() {
 					<Box padding={1} paddingRight={0}>
 						<BuildingIcon />
 					</Box>
-					<Typography padding={1} variant="body2">
-						Sede Normandia
+					<Typography padding={1} variant="body2" >
+						{`Sede ${branch}`}
 					</Typography>
 				</Box>
 				<Box sx={{ display: "flex", justifyContent: "flex-end" }}>
@@ -86,16 +98,18 @@ export function CashFlowHeader() {
 									value={typeMovement}
 									onChange={(e) => setTypeMovement(e.target.value)}
 								>
-									<MenuItem value="INGRESOS">
+									{/* TODO HACER QUE CUANDO SELECCIONE UN TIPO DE MOVIMIENTO SOLO MUESTRE LO CORRESPONDIDO, ES DECIR NO 
+									MOSTRAR EN UNA ENTRADA DE DINERO NO PUEDO ELEGIR UN GASTO */}
+									<MenuItem value="ENTRADA">
 										<Stack direction="row" alignItems="center" spacing={1}>
 											<TrendUpIcon color="var(--mui-palette-success-main)" fontSize="var(--icon-fontSize-md)" />
-											<Typography>Ingresos</Typography>
+											<Typography>Entrada</Typography>
 										</Stack>
 									</MenuItem>
-									<MenuItem value="EGRESOS">
+									<MenuItem value="SALIDA">
 										<Stack direction="row" alignItems="center" spacing={1}>
 											<TrendDownIcon color="var(--mui-palette-error-main)" fontSize="var(--icon-fontSize-md)" />
-											<Typography>Egresos</Typography>
+											<Typography>Salida</Typography>
 										</Stack>
 									</MenuItem>
 								</Select>
@@ -126,9 +140,10 @@ export function CashFlowHeader() {
 							>
 								<InputLabel id="category">Categoria</InputLabel>
 								<Select fullWidth labelId="category" value={category} onChange={(e) => setCategory(e.target.value)}>
-									<MenuItem value="COBRO">Cobro</MenuItem>
-									<MenuItem value="PRESTAMOS">Prestamos</MenuItem>
-									<MenuItem value="GASTOS">Gastos</MenuItem>
+									<MenuItem value="COBRO_CLIENTE">Cobro</MenuItem>
+									<MenuItem value="PRESTAMO">Prestamos</MenuItem>
+									<MenuItem value="GASTO_PROVEEDOR">Gastos</MenuItem>
+									<MenuItem value="ENTRADA_GERENCIA">Entrada caja</MenuItem>
 								</Select>
 							</Grid>
 							<Grid
