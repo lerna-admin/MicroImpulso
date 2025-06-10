@@ -3,13 +3,16 @@
 import * as React from "react";
 import { useRouter } from "next/navigation";
 import { createCashMovement } from "@/app/dashboard/cash_flow/hooks/use-cash-flow";
+import { formatCurrency } from "@/helpers/format-currency";
+import { zodResolver } from "@hookform/resolvers/zod";
 import {
 	Box,
 	Button,
 	Dialog,
-	DialogActions,
 	DialogContent,
 	DialogTitle,
+	FormControl,
+	FormHelperText,
 	InputLabel,
 	MenuItem,
 	Select,
@@ -24,32 +27,83 @@ import {
 	TrendDown as TrendDownIcon,
 	TrendUp as TrendUpIcon,
 } from "@phosphor-icons/react/dist/ssr";
+import { Controller, useForm, useWatch } from "react-hook-form";
+import { z as zod } from "zod";
 
 import { usePopover } from "@/hooks/use-popover";
+import { NotificationAlert } from "@/components/widgets/notifications/notification-alert";
+
+const schema = zod.object({
+	amount: zod
+		.string()
+		.min(1, "El monto es obligatorio")
+		.transform((val) => val.replaceAll(/\D/g, ""))
+		.transform(Number)
+		.refine((val) => Number.isInteger(val) && val > 0, {
+			message: "Debe ser un número entero mayor a 0",
+		}),
+	typeMovement: zod.string().min(1, { message: "El tipo de movimiento es obligatorio" }),
+	category: zod.string().min(1, { message: "La categoria es obligatoria" }),
+	description: zod.string().min(1, { message: "La descripción es obligatoria" }),
+});
 
 export function CashFlowHeader({ branch }) {
 	const popover = usePopover();
 	const router = useRouter();
-	const [amount, setAmount] = React.useState(0);
-	const [typeMovement, setTypeMovement] = React.useState("");
-	const [category, setCategory] = React.useState("");
-	const [description, setDescription] = React.useState("");
 
-	const handleRenewLoanRequest = async () => {
-		popover.handleClose();
+	const popoverAlert = usePopover();
+	const [alertMsg, setAlertMsg] = React.useState("");
+	const [alertSeverity, setAlertSeverity] = React.useState("");
+	const [isPending, setIsPending] = React.useState(false);
 
-		await createCashMovement({
-			typeMovement: typeMovement,
-			amount: amount,
-			category: category,
-			description: description,
-		}); // TODO hacer que si la respuesta es correcta muestre un alert exitoso o error.
+	const {
+		control,
+		handleSubmit,
+		formState: { errors },
+		reset,
+	} = useForm({
+		resolver: zodResolver(schema),
+		defaultValues: {
+			amount: "",
+			typeMovement: "",
+			category: "",
+			description: "",
+		},
+	});
 
+	const typeMovement = useWatch({
+		control,
+		name: "typeMovement",
+	});
+
+	const onSubmit = React.useCallback(async (dataForm) => {
+		setIsPending(true);
+
+		try {
+			await createCashMovement({
+				typeMovement: dataForm.typeMovement,
+				amount: dataForm.amount,
+				category: dataForm.category,
+				description: dataForm.description,
+			});
+			setAlertMsg("¡Movimiento creado exitosamente!");
+			setAlertSeverity("success");
+			popover.handleClose();
+
+			reset();
+		} catch (error) {
+			setAlertMsg(error.message);
+			setAlertSeverity("error");
+		}
+
+		popoverAlert.handleOpen();
+		setIsPending(false);
 		router.refresh();
-	};
+	});
 
 	return (
 		<React.Fragment>
+			{/* Titulos */}
 			<Stack direction={{ xs: "column", sm: "row" }} spacing={3} sx={{ alignItems: "center" }}>
 				<Box sx={{ flex: "1 1 auto" }}>
 					<Typography variant="h4">Movimientos de caja</Typography>
@@ -58,7 +112,7 @@ export function CashFlowHeader({ branch }) {
 					<Box padding={1} paddingRight={0}>
 						<BuildingIcon />
 					</Box>
-					<Typography padding={1} variant="body2" >
+					<Typography padding={1} variant="body2">
 						{`Sede ${branch}`}
 					</Typography>
 				</Box>
@@ -78,117 +132,167 @@ export function CashFlowHeader({ branch }) {
 				aria-labelledby="alert-dialog-title"
 				aria-describedby="alert-dialog-description"
 			>
-				<DialogTitle id="alert-dialog-title" textAlign={"center"}>
+				<DialogTitle id="alert-dialog-title" textAlign={"center"} sx={{ pt: 4 }}>
 					{"Añadir nuevo movimiento"}
 				</DialogTitle>
 
 				<DialogContent>
-					<Stack spacing={4} sx={{ p: 3 }}>
-						<Grid container spacing={3}>
-							<Grid
-								size={{
-									md: 12,
-									xs: 12,
-								}}
-							>
-								<InputLabel id="type-movement">Tipo de movimiento</InputLabel>
-								<Select
-									fullWidth
-									labelId="type-movement"
-									value={typeMovement}
-									onChange={(e) => setTypeMovement(e.target.value)}
+					<Box component={"form"} onSubmit={handleSubmit(onSubmit)}>
+						<Stack spacing={3} sx={{ p: 3 }}>
+							<Grid container spacing={3}>
+								<Grid
+									size={{
+										md: 12,
+										xs: 12,
+									}}
 								>
-									{/* TODO HACER QUE CUANDO SELECCIONE UN TIPO DE MOVIMIENTO SOLO MUESTRE LO CORRESPONDIDO, ES DECIR NO 
-									MOSTRAR EN UNA ENTRADA DE DINERO NO PUEDO ELEGIR UN GASTO */}
-									<MenuItem value="ENTRADA">
-										<Stack direction="row" alignItems="center" spacing={1}>
-											<TrendUpIcon color="var(--mui-palette-success-main)" fontSize="var(--icon-fontSize-md)" />
-											<Typography>Entrada</Typography>
-										</Stack>
-									</MenuItem>
-									<MenuItem value="SALIDA">
-										<Stack direction="row" alignItems="center" spacing={1}>
-											<TrendDownIcon color="var(--mui-palette-error-main)" fontSize="var(--icon-fontSize-md)" />
-											<Typography>Salida</Typography>
-										</Stack>
-									</MenuItem>
-								</Select>
+									<Controller
+										control={control}
+										name="typeMovement"
+										render={({ field }) => (
+											<FormControl fullWidth error={Boolean(errors.typeMovement)}>
+												<InputLabel id="type-movement">Tipo de movimiento</InputLabel>
+												<Select {...field} labelId="type-movement">
+													<MenuItem value="ENTRADA">
+														<Stack direction="row" alignItems="center" spacing={1}>
+															<TrendUpIcon color="var(--mui-palette-success-main)" fontSize="var(--icon-fontSize-md)" />
+															<Typography>Entrada</Typography>
+														</Stack>
+													</MenuItem>
+													<MenuItem value="SALIDA">
+														<Stack direction="row" alignItems="center" spacing={1}>
+															<TrendDownIcon color="var(--mui-palette-error-main)" fontSize="var(--icon-fontSize-md)" />
+															<Typography>Salida</Typography>
+														</Stack>
+													</MenuItem>
+												</Select>
+												{errors.typeMovement ? <FormHelperText>{errors.typeMovement.message}</FormHelperText> : null}
+											</FormControl>
+										)}
+									/>
+								</Grid>
+								<Grid
+									size={{
+										md: 12,
+										xs: 12,
+									}}
+								>
+									<Controller
+										control={control}
+										name="amount"
+										render={({ field }) => (
+											<FormControl fullWidth error={Boolean(errors.amount)}>
+												<TextField
+													{...field}
+													label="Monto"
+													variant="outlined"
+													onChange={(e) => {
+														const formatted = formatCurrency(e.target.value);
+														field.onChange(formatted);
+													}}
+													onKeyDown={(e) => {
+														const isNumberKey = /^[0-9]$/.test(e.key);
+														const isControlKey = ["Backspace", "Delete", "ArrowLeft", "ArrowRight", "Tab"].includes(
+															e.key
+														);
+														if (!isNumberKey && !isControlKey) e.preventDefault();
+													}}
+												/>
+												{errors.amount ? <FormHelperText>{errors.amount.message}</FormHelperText> : null}
+											</FormControl>
+										)}
+									/>
+								</Grid>
+								<Grid
+									size={{
+										md: 12,
+										xs: 12,
+									}}
+								>
+									<Controller
+										control={control}
+										name="category"
+										render={({ field }) => (
+											<FormControl fullWidth error={Boolean(errors.category)} disabled={!typeMovement}>
+												<InputLabel id="category">Categoria</InputLabel>
+												<Select labelId="category" {...field}>
+													{typeMovement === "ENTRADA"
+														? [
+																<MenuItem key="COBRO_CLIENTE" value="COBRO_CLIENTE">
+																	Cobro
+																</MenuItem>,
+																<MenuItem key="ENTRADA_GERENCIA" value="ENTRADA_GERENCIA">
+																	Entrada caja
+																</MenuItem>,
+															]
+														: typeMovement === "SALIDA"
+															? [
+																	<MenuItem key="PRESTAMO" value="PRESTAMO">
+																		Préstamos
+																	</MenuItem>,
+																	<MenuItem key="GASTO_PROVEEDOR" value="GASTO_PROVEEDOR">
+																		Gastos
+																	</MenuItem>,
+																]
+															: []}
+												</Select>
+												{errors.category ? <FormHelperText>{errors.category.message}</FormHelperText> : null}
+											</FormControl>
+										)}
+									/>
+								</Grid>
+								<Grid
+									size={{
+										md: 12,
+										xs: 12,
+									}}
+								>
+									<Controller
+										control={control}
+										name="description"
+										render={({ field }) => (
+											<FormControl fullWidth error={Boolean(errors.description)}>
+												<TextField
+													label="Descripción"
+													placeholder="Escribe una descripción..."
+													multiline
+													minRows={3}
+													{...field}
+													slotProps={{ htmlInput: { maxLength: 150 } }}
+												/>
+												{errors.description ? <FormHelperText>{errors.description.message}</FormHelperText> : null}
+											</FormControl>
+										)}
+									/>
+								</Grid>
 							</Grid>
-							<Grid
-								size={{
-									md: 12,
-									xs: 12,
-								}}
-							>
-								<TextField
-									label="Monto"
+
+							<Box component={"div"} display={"flex"} justifyContent={"flex-end"} gap={2}>
+								<Button variant="contained" type="submit" disabled={isPending}>
+									Aceptar
+								</Button>
+								<Button
 									variant="outlined"
-									slotProps={{ htmlInput: { min: 0 } }}
-									value={amount.toLocaleString("es-CO")}
-									onChange={(e) => {
-										const parsed = parseCurrency(e.target.value);
-										setAmount(parsed);
+									onClick={() => {
+										popover.handleClose();
+										reset();
 									}}
-									fullWidth
-								/>
-							</Grid>
-							<Grid
-								size={{
-									md: 12,
-									xs: 12,
-								}}
-							>
-								<InputLabel id="category">Categoria</InputLabel>
-								<Select fullWidth labelId="category" value={category} onChange={(e) => setCategory(e.target.value)}>
-									<MenuItem value="COBRO_CLIENTE">Cobro</MenuItem>
-									<MenuItem value="PRESTAMO">Prestamos</MenuItem>
-									<MenuItem value="GASTO_PROVEEDOR">Gastos</MenuItem>
-									<MenuItem value="ENTRADA_GERENCIA">Entrada caja</MenuItem>
-								</Select>
-							</Grid>
-							<Grid
-								size={{
-									md: 12,
-									xs: 12,
-								}}
-							>
-								<TextField
-									label="Descripción"
-									placeholder="Escribe una descripción..."
-									multiline
-									minRows={3}
-									fullWidth
-									required
-									value={description}
-									slotProps={{ htmlInput: { maxLength: 150 } }}
-									onChange={(e) => {
-										setDescription(e.target.value);
-									}}
-								/>
-							</Grid>
-						</Grid>
-					</Stack>
+								>
+									Cancelar
+								</Button>
+							</Box>
+						</Stack>
+					</Box>
 				</DialogContent>
-				<DialogActions sx={{ padding: 3 }}>
-					<Button variant="contained" onClick={handleRenewLoanRequest} autoFocus>
-						Aceptar
-					</Button>
-					<Button
-						variant="outlined"
-						onClick={() => {
-							popover.handleClose();
-							popover.handleClose();
-						}}
-					>
-						Cancelar
-					</Button>
-				</DialogActions>
 			</Dialog>
+
+			{/* Alertas */}
+			<NotificationAlert
+				openAlert={popoverAlert.open}
+				onClose={popoverAlert.handleClose}
+				msg={alertMsg}
+				severity={alertSeverity}
+			></NotificationAlert>
 		</React.Fragment>
 	);
 }
-
-const parseCurrency = (value) => {
-	// Elimina cualquier carácter que no sea número
-	return Number(value.replaceAll(/[^0-9]/g, ""));
-};

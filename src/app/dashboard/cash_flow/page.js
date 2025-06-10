@@ -4,7 +4,7 @@ import { Card, Chip, Divider } from "@mui/material";
 import Box from "@mui/material/Box";
 import Grid from "@mui/material/Grid2";
 import Stack from "@mui/material/Stack";
-import Typography from "@mui/material/Typography";
+import { DatePicker } from "@mui/x-date-pickers";
 
 import { appConfig } from "@/config/app";
 import { getUser } from "@/lib/custom-auth/server";
@@ -18,7 +18,9 @@ export const metadata = { title: `Movimientos de caja | Dashboard | ${appConfig.
 
 dayjs.locale("es");
 
-export default async function Page() {
+export default async function Page({ searchParams }) {
+	const { page, limit } = await searchParams;
+
 	const rawDate = dayjs().format("MMMM YYYY");
 	const todayMonth = rawDate.charAt(0).toUpperCase() + rawDate.slice(1);
 
@@ -26,7 +28,13 @@ export default async function Page() {
 		data: { user },
 	} = await getUser();
 
-	const { data: invoices } = await getCashMovements(user.branch.id);
+	const {
+		data: movementsData,
+		total: movementsTotalItems,
+		page: movementsPage,
+		limit: movementLimit,
+	} = await getCashMovements(user.branch.id, { page, limit });
+
 	const assets = await getCashFlowSummary(user.branch.id);
 
 	return (
@@ -42,6 +50,7 @@ export default async function Page() {
 				<CashFlowHeader branch={user.branch.name} />
 				<Grid container spacing={4}>
 					<Grid size={12} sx={{ display: "flex", justifyContent: "end" }}>
+						<DatePicker name="movementDate" format="MMMM DD YYYY " label="Fecha"  />
 						<Chip label={todayMonth} size="md" variant="outlined" />
 					</Grid>
 					<Grid size={12}>
@@ -50,11 +59,15 @@ export default async function Page() {
 					<Grid size={12}>
 						<Card>
 							<Box sx={{ overflowX: "auto" }}>
-								<MovementsTable invoices={invoices} />
+								<MovementsTable movementsData={movementsData} />
 							</Box>
 							<Divider />
-							{/* TODO arreglar la paginacion para que quede funcional */}
-							<MovementsPagination count={invoices.length + 10} page={0} />
+							<MovementsPagination
+								filters={{ page, limit }}
+								movementsTotalItems={movementsTotalItems}
+								movementsPage={movementsPage - 1}
+								movementLimit={movementLimit}
+							/>
 						</Card>
 					</Grid>
 				</Grid>

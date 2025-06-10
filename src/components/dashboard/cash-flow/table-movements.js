@@ -59,7 +59,7 @@ const columns = [
 	},
 ];
 
-export function MovementsTable({ invoices }) {
+export function MovementsTable({ movementsData }) {
 	return (
 		<>
 			<Stack direction="row" spacing={2} sx={{ alignItems: "center", flexWrap: "wrap", p: 3 }}>
@@ -75,7 +75,7 @@ export function MovementsTable({ invoices }) {
 			</Stack>
 			<Divider />
 			<Box sx={{ overflowX: "auto" }}>
-				<DataTable columns={columns} rows={invoices} />
+				<DataTable columns={columns} rows={movementsData} />
 			</Box>
 		</>
 	);

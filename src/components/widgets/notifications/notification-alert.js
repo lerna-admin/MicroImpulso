@@ -1,7 +1,7 @@
 import React from "react";
 import { Alert, Snackbar } from "@mui/material";
 
-export const NotificationAlert = ({ openAlert, onClose, msg, severity = "success" }) => {
+export const NotificationAlert = ({ openAlert, onClose, msg, severity }) => {
 	return (
 		<Snackbar
 			open={openAlert}
