@@ -8,6 +8,7 @@ import InputAdornment from "@mui/material/InputAdornment";
 import OutlinedInput from "@mui/material/OutlinedInput";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
+import { DatePicker } from "@mui/x-date-pickers";
 import { MagnifyingGlass as MagnifyingGlassIcon } from "@phosphor-icons/react/dist/ssr/MagnifyingGlass";
 
 import { dayjs } from "@/lib/dayjs";
@@ -61,7 +62,7 @@ const columns = [
 
 export function MovementsTable({ movementsData }) {
 	return (
-		<>
+		<React.Fragment>
 			<Stack direction="row" spacing={2} sx={{ alignItems: "center", flexWrap: "wrap", p: 3 }}>
 				<OutlinedInput
 					placeholder="Buscar movimientos"
@@ -72,11 +73,12 @@ export function MovementsTable({ movementsData }) {
 					}
 					sx={{ flex: "1 1 auto" }}
 				/>
+				<DatePicker name="movementDate" label="" value={dayjs()} />
 			</Stack>
 			<Divider />
 			<Box sx={{ overflowX: "auto" }}>
 				<DataTable columns={columns} rows={movementsData} />
 			</Box>
-		</>
+		</React.Fragment>
 	);
 }

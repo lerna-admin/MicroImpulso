@@ -4,7 +4,6 @@ import { Card, Chip, Divider } from "@mui/material";
 import Box from "@mui/material/Box";
 import Grid from "@mui/material/Grid2";
 import Stack from "@mui/material/Stack";
-import { DatePicker } from "@mui/x-date-pickers";
 
 import { appConfig } from "@/config/app";
 import { getUser } from "@/lib/custom-auth/server";
@@ -16,13 +15,8 @@ import { MovementsTable } from "@/components/dashboard/cash-flow/table-movements
 
 export const metadata = { title: `Movimientos de caja | Dashboard | ${appConfig.name}` };
 
-dayjs.locale("es");
-
 export default async function Page({ searchParams }) {
 	const { page, limit } = await searchParams;
-
-	const rawDate = dayjs().format("MMMM YYYY");
-	const todayMonth = rawDate.charAt(0).toUpperCase() + rawDate.slice(1);
 
 	const {
 		data: { user },
@@ -37,6 +31,9 @@ export default async function Page({ searchParams }) {
 
 	const assets = await getCashFlowSummary(user.branch.id);
 
+	const rawDate = dayjs().format("DD MMMM YYYY");
+	const todayMonth = rawDate.charAt(0).toUpperCase() + rawDate.slice(1);
+
 	return (
 		<Box
 			sx={{
@@ -49,8 +46,7 @@ export default async function Page({ searchParams }) {
 			<Stack spacing={10}>
 				<CashFlowHeader branch={user.branch.name} />
 				<Grid container spacing={4}>
-					<Grid size={12} sx={{ display: "flex", justifyContent: "end" }}>
-						<DatePicker name="movementDate" format="MMMM DD YYYY " label="Fecha"  />
+					<Grid size={12} justifyContent={"flex-end"}>
 						<Chip label={todayMonth} size="md" variant="outlined" />
 					</Grid>
 					<Grid size={12}>
@@ -58,9 +54,7 @@ export default async function Page({ searchParams }) {
 					</Grid>
 					<Grid size={12}>
 						<Card>
-							<Box sx={{ overflowX: "auto" }}>
-								<MovementsTable movementsData={movementsData} />
-							</Box>
+							<MovementsTable movementsData={movementsData} />
 							<Divider />
 							<MovementsPagination
 								filters={{ page, limit }}

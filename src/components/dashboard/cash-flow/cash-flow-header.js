@@ -30,9 +30,11 @@ import {
 import { Controller, useForm, useWatch } from "react-hook-form";
 import { z as zod } from "zod";
 
+import { dayjs } from "@/lib/dayjs";
 import { usePopover } from "@/hooks/use-popover";
 import { NotificationAlert } from "@/components/widgets/notifications/notification-alert";
 
+dayjs.locale("es");
 const schema = zod.object({
 	amount: zod
 		.string()
@@ -103,24 +105,25 @@ export function CashFlowHeader({ branch }) {
 
 	return (
 		<React.Fragment>
-			{/* Titulos */}
-			<Stack direction={{ xs: "column", sm: "row" }} spacing={3} sx={{ alignItems: "center" }}>
-				<Box sx={{ flex: "1 1 auto" }}>
-					<Typography variant="h4">Movimientos de caja</Typography>
-				</Box>
-				<Box sx={{ display: "flex", justifyContent: "space-between" }}>
-					<Box padding={1} paddingRight={0}>
-						<BuildingIcon />
-					</Box>
-					<Typography padding={1} variant="body2">
-						{`Sede ${branch}`}
-					</Typography>
-				</Box>
-				<Box sx={{ display: "flex", justifyContent: "flex-end" }}>
-					<Button color="secondary" startIcon={<PlusIcon />} variant="contained" onClick={popover.handleOpen}>
-						Registrar movimiento
-					</Button>
-				</Box>
+			<Stack spacing={3}>
+				<Grid container spacing={4}>
+					<Grid size={6}>
+						{/* Título */}
+						<Typography variant="h4">Movimientos de caja</Typography>
+					</Grid>
+					<Grid size={6} gap={3} display={"flex"} justifyContent={"flex-end"}>
+						{/* Información de la sede */}
+						<Stack direction="row" spacing={1} alignItems="center" pr={2}>
+							<BuildingIcon />
+							<Typography variant="body2">{`Sede ${branch}`}</Typography>
+						</Stack>
+
+						{/* Botón de acción */}
+						<Button color="secondary" startIcon={<PlusIcon />} variant="contained" onClick={popover.handleOpen}>
+							Registrar movimiento
+						</Button>
+					</Grid>
+				</Grid>
 			</Stack>
 
 			{/* Modal para renovar solicitud */}
