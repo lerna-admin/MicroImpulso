@@ -88,13 +88,6 @@ export const dashboardConfig = {
 					href: paths.dashboard.cash_flow,
 					matcher: { type: "startsWith", href: "/dashboard/cash_flow" },
 				},
-				{
-					key: "balance",
-					title: "Balance de la ruta",
-					icon: "seal-percent",
-					href: paths.dashboard.balance,
-					matcher: { type: "startsWith", href: "/dashboard/balance" },
-				},
 			],
 		},
 

@@ -15,24 +15,23 @@ import { MovementsTable } from "@/components/dashboard/cash-flow/table-movements
 
 export const metadata = { title: `Movimientos de caja | Dashboard | ${appConfig.name}` };
 
+dayjs.locale("es");
+
 export default async function Page({ searchParams }) {
-	const { page, limit } = await searchParams;
+	const { page, limit, date } = await searchParams;
 
 	const {
 		data: { user },
 	} = await getUser();
+
+	const assets = await getCashFlowSummary(user.branch.id, date);
 
 	const {
 		data: movementsData,
 		total: movementsTotalItems,
 		page: movementsPage,
 		limit: movementLimit,
-	} = await getCashMovements(user.branch.id, { page, limit });
-
-	const assets = await getCashFlowSummary(user.branch.id);
-
-	const rawDate = dayjs().format("DD MMMM YYYY");
-	const todayMonth = rawDate.charAt(0).toUpperCase() + rawDate.slice(1);
+	} = await getCashMovements(user.branch.id, page, limit, date);
 
 	return (
 		<Box
@@ -47,14 +46,22 @@ export default async function Page({ searchParams }) {
 				<CashFlowHeader branch={user.branch.name} />
 				<Grid container spacing={4}>
 					<Grid size={12} justifyContent={"flex-end"}>
-						<Chip label={todayMonth} size="md" variant="outlined" />
+						<Chip
+							label={
+								date === undefined
+									? dayjs().format("D MMMM YYYY").toUpperCase()
+									: dayjs(date).format("D MMMM YYYY").toUpperCase()
+							}
+							size="md"
+							variant="outlined"
+						/>
 					</Grid>
 					<Grid size={12}>
 						<Summary assets={assets} />
 					</Grid>
 					<Grid size={12}>
 						<Card>
-							<MovementsTable movementsData={movementsData} />
+							<MovementsTable movementsData={movementsData} filters={{ page, limit }} />
 							<Divider />
 							<MovementsPagination
 								filters={{ page, limit }}

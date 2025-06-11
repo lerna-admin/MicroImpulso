@@ -8,3 +8,7 @@ export const formatCurrency = (value) => {
 		minimumFractionDigits: 0,
 	});
 };
+
+export const unformatCurrency = (formatted) => {
+	return Number.parseInt(formatted.replaceAll(/\D/g, ""), 10) || 0;
+};

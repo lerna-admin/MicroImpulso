@@ -16,7 +16,7 @@ export function Summary({ assets }) {
 	const isMd = useMediaQuery(theme.breakpoints.up("md"));
 
 	// Determina columnas activas
-	const columns = isLg ? 6 : isMd ? 2 : 1;
+	const columns = isLg ? 4 : isMd ? 2 : 1;
 
 	return (
 		<Card>
@@ -25,7 +25,7 @@ export function Summary({ assets }) {
 					display: "grid",
 					columnGap: 0,
 					rowGap: 3,
-					gridTemplateColumns: { xs: "1fr", md: "repeat(2, 1fr)", lg: "repeat(6, 1fr)" },
+					gridTemplateColumns: { xs: "1fr", md: "repeat(2, 1fr)", lg: "repeat(4, 1fr)" },
 					p: 3,
 				}}
 			>

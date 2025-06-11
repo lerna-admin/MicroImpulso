@@ -159,6 +159,8 @@ export function ActionsCell({ row }) {
 	const [alertSeverity, setAlertSeverity] = React.useState("success");
 	const isAgentClosed = Cookies.get("isAgentClosed");
 
+	const [isPending, setIsPending] = React.useState(false);
+
 	const handleOptions = (event) => {
 		if (isAgentClosed === "true") {
 			popoverAlert.handleOpen();
@@ -195,14 +197,20 @@ export function ActionsCell({ row }) {
 	};
 
 	const handleFundedLoanRequest = async () => {
+		setIsPending(true);
 		const data = {
 			loanRequestId: row.id,
 			transactionType: "disbursement",
 			amount: row.requestedAmount,
-			reference: "Abono cliente",
+			reference: "Desembolso cliente",
 		};
-
-		await createTransaction(data);
+		//TODO arreglar este try catch basandome en el cashflow header
+		try {
+			await createTransaction(data);
+			setIsPending(false);
+		} catch (error) {
+			console.error(error);
+		}
 
 		router.refresh();
 		popoverModalFunded.handleClose();
@@ -391,7 +399,7 @@ export function ActionsCell({ row }) {
 					</DialogContentText>
 				</DialogContent>
 				<DialogActions sx={{ padding: 3 }}>
-					<Button variant="contained" onClick={handleFundedLoanRequest} autoFocus>
+					<Button variant="contained" onClick={handleFundedLoanRequest} disabled={isPending} autoFocus>
 						Aceptar
 					</Button>
 					<Button
