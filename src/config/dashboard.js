@@ -46,13 +46,6 @@ export const dashboardConfig = {
 					href: paths.dashboard.customers.list,
 					matcher: { type: "startsWith", href: "/dashboard/customers" },
 				},
-				{
-					key: "agents",
-					title: "Agentes",
-					icon: "identification-badge",
-					href: paths.dashboard.users,
-					matcher: { type: "startsWith", href: "/dashboard/users" },
-				},
 			],
 		},
 

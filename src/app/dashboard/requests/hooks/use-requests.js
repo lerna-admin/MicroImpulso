@@ -17,7 +17,7 @@ const BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 export async function getAllRequests({ page = 1, limit = 10, status = "" }) {
 	const res = await fetch(`${BASE_URL}/loan-request?page=${page}&limit=${limit}&status=${status}`);
 	if (!res.ok) throw new Error("Error al obtener solicitudes");
-	return res.json();
+	return await res.json();
 }
 
 /**
@@ -27,19 +27,19 @@ export async function getAllRequests({ page = 1, limit = 10, status = "" }) {
 export async function getRequestsByAgent(id, { page = 1, limit = 10, status = "" }) {
 	const res = await fetch(`${BASE_URL}/loan-request/agent/${id}?page=${page}&limit=${limit}&status=${status}`);
 	if (!res.ok) throw new Error("Error al obtener solicitudes");
-	return res.json();
+	return await res.json();
 }
 
 export async function getRequestsByCustomerId(id) {
 	const res = await fetch(`${BASE_URL}/loan-request/client/${id}`);
 	if (!res.ok) throw new Error("Error al obtener solicitud por client id");
-	return res.json();
+	return await res.json();
 }
 
 export async function getAllRequestsByCustomerId(id) {
 	const res = await fetch(`${BASE_URL}/loan-request/client/${id}/all`);
 	if (!res.ok) throw new Error("Error al obtener todas las solicitudes por client id");
-	return res.json();
+	return await res.json();
 }
 
 /**
@@ -49,7 +49,7 @@ export async function getAllRequestsByCustomerId(id) {
 export async function getRequestById(id) {
 	const res = await fetch(`${BASE_URL}/loan-request/${id}`);
 	if (!res.ok) throw new Error("Solicitud no encontrada");
-	return res.json();
+	return await res.json();
 }
 
 export async function createRequest(data) {
@@ -59,7 +59,7 @@ export async function createRequest(data) {
 		body: JSON.stringify(data),
 	});
 	if (!res.ok) throw new Error("Error al crear solicitud");
-	return res.json();
+	return await res.json();
 }
 
 export async function updateRequest(data, id) {
@@ -69,7 +69,7 @@ export async function updateRequest(data, id) {
 		body: JSON.stringify(data),
 	});
 	if (!res.ok) throw new Error("Error al actualizar solicitud");
-	return { data: res.json(), status: res.status };
+	return await res.json();
 }
 
 export async function renewRequest(data, id) {
@@ -79,7 +79,7 @@ export async function renewRequest(data, id) {
 		body: JSON.stringify(data),
 	});
 	if (!res.ok) throw new Error("Error al actualizar solicitud");
-	return { data: res.json(), status: res.status };
+	return await res.json();
 }
 
 export async function sendContract(loanRequestId) {
@@ -88,5 +88,5 @@ export async function sendContract(loanRequestId) {
 		headers: { "Content-Type": "application/json" },
 	});
 	if (!res.ok) throw new Error("Error al enviar contrato");
-	return res.json();
+	return await res.json();
 }
