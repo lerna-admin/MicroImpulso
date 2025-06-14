@@ -67,6 +67,7 @@ const columns = [
 export function MovementsTable({ movementsData, filters }) {
 	const { limit } = filters;
 	const [date, setDate] = React.useState(dayjs());
+	const [search, setSearch] = React.useState("");
 
 	const router = useRouter();
 
@@ -83,6 +84,9 @@ export function MovementsTable({ movementsData, filters }) {
 			if (newFilters.limit) {
 				searchParams.set("limit", newFilters.limit);
 			}
+			if (newFilters.search) {
+				searchParams.set("search", newFilters.search);
+			}
 
 			router.push(`${paths.dashboard.cash_flow}?${searchParams.toString()}`);
 		},
@@ -98,17 +102,29 @@ export function MovementsTable({ movementsData, filters }) {
 		[updateSearchParams, filters]
 	);
 
+	const handleSearch = (event) => {
+		setSearch(event.target.value);
+	};
+
 	return (
 		<React.Fragment>
 			<Stack direction="row" spacing={2} sx={{ alignItems: "center", flexWrap: "wrap", p: 3 }}>
 				<OutlinedInput
-					placeholder="Buscar movimientos"
+					placeholder="Buscar movimientos por descripción"
 					startAdornment={
 						<InputAdornment position="start">
 							<MagnifyingGlassIcon fontSize="var(--icon-fontSize-md)" />
 						</InputAdornment>
 					}
+					value={search}
+					onChange={handleSearch}
 					sx={{ flex: "1 1 auto" }}
+					onKeyDown={(e) => {
+						if (e.key !== "Enter") return;
+						console.log(search);
+						
+						updateSearchParams({ ...filters, page: 1, limit: limit, search: search });
+					}}
 				/>
 				<DatePicker name="movementDate" value={date} onChange={handleFilterChange} />
 			</Stack>

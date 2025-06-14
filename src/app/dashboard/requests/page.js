@@ -25,6 +25,8 @@ export default async function Page({ searchParams }) {
 		data: { user },
 	} = await getUser();
 
+	const { permissions } = user;
+
 	const {
 		data: requests,
 		page: requestsPage,
@@ -33,6 +35,8 @@ export default async function Page({ searchParams }) {
 	} = user.role === ROLES.AGENTE
 		? await getRequestsByAgent(user.id, { page, limit, status })
 		: await getAllRequests({ page, limit, status });
+
+	const requestsFormatted = requests.map((req) => ({ ...req, permissions: permissions })); //TODO corregir despues si no me da pereza xd
 
 	return (
 		<React.Fragment>
@@ -55,7 +59,7 @@ export default async function Page({ searchParams }) {
 							<RequestsFilters filters={{ status, page, limit }} />
 							<Divider />
 							<Box sx={{ overflowX: "auto" }}>
-								<RequestsTable rows={requests} />
+								<RequestsTable rows={requestsFormatted} permissions={permissions} />
 							</Box>
 							<Divider />
 							<RequestsPagination
