@@ -34,7 +34,7 @@ export default async function Page({ searchParams }) {
 		totalItems: requestTotalItems,
 	} = user.role === ROLES.AGENTE
 		? await getRequestsByAgent(user.id, { page, limit, status })
-		: await getAllRequests({ page, limit, status });
+		: await getAllRequests({ page, limit, status, branchId: user.branch.id });
 
 	return (
 		<React.Fragment>
@@ -57,7 +57,7 @@ export default async function Page({ searchParams }) {
 							<RequestsFilters filters={{ status, page, limit }} />
 							<Divider />
 							<Box sx={{ overflowX: "auto" }}>
-								<RequestsTable rows={requests} permissions={permissions} />
+								<RequestsTable rows={requests} permissions={permissions} role={user.role} />
 							</Box>
 							<Divider />
 							<RequestsPagination

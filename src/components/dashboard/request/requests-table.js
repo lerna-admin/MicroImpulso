@@ -39,7 +39,7 @@ import { usePopover } from "@/hooks/use-popover";
 import { DataTable } from "@/components/core/data-table";
 import { NotificationAlert } from "@/components/widgets/notifications/notification-alert";
 
-export function RequestsTable({ rows, permissions }) {
+export function RequestsTable({ rows, permissions, role }) {
 	const columns = [
 		{
 			formatter: (row) => (
@@ -122,7 +122,7 @@ export function RequestsTable({ rows, permissions }) {
 		},
 
 		{
-			formatter: (row) => <ActionsCell row={row} permissions={permissions} />,
+			formatter: (row) => <ActionsCell row={row} permissions={permissions} role={role} />,
 			name: "Acciones",
 			hideName: true,
 			width: "70px",
@@ -144,7 +144,7 @@ export function RequestsTable({ rows, permissions }) {
 	);
 }
 
-export function ActionsCell({ row, permissions }) {
+export function ActionsCell({ row, permissions, role }) {
 	const router = useRouter();
 	const popover = usePopover();
 	const popoverAlert = usePopover();
@@ -252,7 +252,11 @@ export function ActionsCell({ row, permissions }) {
 					<Typography>Aprobar</Typography>
 				</MenuItem>
 				<MenuItem
-					disabled={row.status !== "approved" || canDisburse.granted === false}
+					disabled={
+						(role === "ADMIN" && row.status !== "approved") ||
+						canDisburse.granted === false ||
+						row.status !== "approved"
+					}
 					onClick={() => {
 						popover.handleClose();
 						modalFunded.handleOpen();
