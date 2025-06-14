@@ -10,15 +10,15 @@ import { getUser } from "@/lib/custom-auth/server";
 import { dayjs } from "@/lib/dayjs";
 import { CashFlowHeader } from "@/components/dashboard/cash-flow/cash-flow-header";
 import { MovementsPagination } from "@/components/dashboard/cash-flow/movements-pagination";
+import { MovementsTable } from "@/components/dashboard/cash-flow/movements-table";
 import { Summary } from "@/components/dashboard/cash-flow/summary";
-import { MovementsTable } from "@/components/dashboard/cash-flow/table-movements";
 
 export const metadata = { title: `Movimientos de caja | Dashboard | ${appConfig.name}` };
 
 dayjs.locale("es");
 
 export default async function Page({ searchParams }) {
-	const { page, limit, date } = await searchParams;
+	const { page, limit, date, search } = await searchParams;
 
 	const {
 		data: { user },
@@ -31,7 +31,7 @@ export default async function Page({ searchParams }) {
 		total: movementsTotalItems,
 		page: movementsPage,
 		limit: movementLimit,
-	} = await getCashMovements(user.branch.id, page, limit, date);
+	} = await getCashMovements(user.branch.id, search, page, limit, date);
 
 	return (
 		<Box

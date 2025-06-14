@@ -148,17 +148,18 @@ export function ActionsCell({ row }) {
 	const router = useRouter();
 	const popover = usePopover();
 	const popoverAlert = usePopover();
-	const popoverModalApproved = usePopover();
-	const popoverModalFunded = usePopover();
-	const popoverModalRenew = usePopover();
+	const modalApproved = usePopover();
+	const modalFunded = usePopover();
+	const modalRenew = usePopover();
 	const [anchorEl, setAnchorEl] = React.useState(null);
 	const [amount, setAmount] = React.useState(0);
 	const [selectedDate, setSelectedDate] = React.useState(dayjs(row.endDateAt));
 	const [alertMsg, setAlertMsg] = React.useState("");
 	const [alertSeverity, setAlertSeverity] = React.useState("");
+	const [isPending, setIsPending] = React.useState(false);
 	const isAgentClosed = Cookies.get("isAgentClosed");
 
-	const [isPending, setIsPending] = React.useState(false);
+	const canDisburse = row.permissions.find((per) => per.name === "CAN_DISBURSE");
 
 	const handleOptions = (event) => {
 		if (isAgentClosed === "true") {
@@ -182,7 +183,7 @@ export function ActionsCell({ row }) {
 			setAlertSeverity("error");
 		}
 		popoverAlert.handleOpen();
-		popoverModalApproved.handleClose();
+		modalApproved.handleClose();
 		setIsPending(false);
 		router.refresh();
 	};
@@ -198,7 +199,7 @@ export function ActionsCell({ row }) {
 			setAlertSeverity("error");
 		}
 		popoverAlert.handleOpen();
-		popoverModalRenew.handleClose();
+		modalRenew.handleClose();
 		setIsPending(false);
 		router.refresh();
 	};
@@ -214,7 +215,7 @@ export function ActionsCell({ row }) {
 			});
 			setAlertMsg("¡Desembolsado exitosamente!");
 			setAlertSeverity("success");
-			popoverModalFunded.handleClose();
+			modalFunded.handleClose();
 		} catch (error) {
 			setAlertMsg(error.message);
 			setAlertSeverity("error");
@@ -245,16 +246,16 @@ export function ActionsCell({ row }) {
 					disabled={row.status !== "new" && row.status !== "under_review"}
 					onClick={() => {
 						popover.handleClose();
-						popoverModalApproved.handleOpen();
+						modalApproved.handleOpen();
 					}}
 				>
 					<Typography>Aprobar</Typography>
 				</MenuItem>
 				<MenuItem
-					disabled={row.status !== "approved"}
+					disabled={row.status !== "approved" || canDisburse.granted === false}
 					onClick={() => {
 						popover.handleClose();
-						popoverModalFunded.handleOpen();
+						modalFunded.handleOpen();
 					}}
 				>
 					<Typography>Desembolsar</Typography>
@@ -272,7 +273,7 @@ export function ActionsCell({ row }) {
 					disabled={row.status !== "funded"}
 					onClick={() => {
 						popover.handleClose();
-						popoverModalRenew.handleOpen();
+						modalRenew.handleOpen();
 					}}
 				>
 					<Typography>Renovar</Typography>
@@ -283,8 +284,8 @@ export function ActionsCell({ row }) {
 			<Dialog
 				fullWidth
 				maxWidth={"xs"}
-				open={popoverModalRenew.open}
-				onClose={popoverModalRenew.handleClose}
+				open={modalRenew.open}
+				onClose={modalRenew.handleClose}
 				aria-labelledby="alert-dialog-title"
 				aria-describedby="alert-dialog-description"
 			>
@@ -343,7 +344,7 @@ export function ActionsCell({ row }) {
 								variant="outlined"
 								onClick={() => {
 									popover.handleClose();
-									popoverModalRenew.handleClose();
+									modalRenew.handleClose();
 								}}
 							>
 								Cancelar
@@ -357,8 +358,8 @@ export function ActionsCell({ row }) {
 			<Dialog
 				fullWidth
 				maxWidth={"xs"}
-				open={popoverModalApproved.open}
-				onClose={popoverModalApproved.handleClose}
+				open={modalApproved.open}
+				onClose={modalApproved.handleClose}
 				aria-labelledby="alert-dialog-title"
 				aria-describedby="alert-dialog-description"
 			>
@@ -378,7 +379,7 @@ export function ActionsCell({ row }) {
 							variant="outlined"
 							onClick={() => {
 								popover.handleClose();
-								popoverModalApproved.handleClose();
+								modalApproved.handleClose();
 							}}
 						>
 							Cancelar
@@ -391,8 +392,8 @@ export function ActionsCell({ row }) {
 			<Dialog
 				fullWidth
 				maxWidth={"sm"}
-				open={popoverModalFunded.open}
-				onClose={popoverModalFunded.handleClose}
+				open={modalFunded.open}
+				onClose={modalFunded.handleClose}
 				aria-labelledby="alert-dialog-title"
 				aria-describedby="alert-dialog-description"
 			>
@@ -420,7 +421,7 @@ export function ActionsCell({ row }) {
 							variant="outlined"
 							onClick={() => {
 								popover.handleClose();
-								popoverModalFunded.handleClose();
+								modalFunded.handleClose();
 							}}
 						>
 							Cancelar
