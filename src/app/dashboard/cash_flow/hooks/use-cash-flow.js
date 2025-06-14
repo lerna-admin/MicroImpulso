@@ -3,6 +3,8 @@ import { dayjs } from "@/lib/dayjs";
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export async function getCashFlowSummary(branchId, date = dayjs().format("YYYY-MM-DD")) {
+	console.log(`${BASE_URL}/cash/summary?branchId=${branchId}&date=${date}`);
+
 	const res = await fetch(`${BASE_URL}/cash/summary?branchId=${branchId}&date=${date}`);
 	if (!res.ok) throw new Error("Error al obtener resumen de movimientos de caja");
 	return await res.json();
