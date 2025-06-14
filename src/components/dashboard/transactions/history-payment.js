@@ -41,7 +41,7 @@ const columns = [
 	{
 		formatter: (row) => (
 			<Typography sx={{ whiteSpace: "nowrap" }} variant="inherit">
-				{dayjs(row.date).format("MMM D, YYYY hh:mm A")}
+				{dayjs(row.date).utc().format("MMM D, YYYY hh:mm A")}
 			</Typography>
 		),
 		name: "Fecha",
