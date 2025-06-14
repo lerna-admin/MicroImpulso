@@ -8,7 +8,6 @@ import { createTransaction } from "@/app/dashboard/transactions/hooks/use-transa
 import {
 	Button,
 	Dialog,
-	DialogActions,
 	DialogContent,
 	DialogContentText,
 	DialogTitle,
@@ -156,8 +155,10 @@ export function ActionsCell({ row }) {
 	const [amount, setAmount] = React.useState(0);
 	const [selectedDate, setSelectedDate] = React.useState(dayjs(row.endDateAt));
 	const [alertMsg, setAlertMsg] = React.useState("");
-	const [alertSeverity, setAlertSeverity] = React.useState("success");
+	const [alertSeverity, setAlertSeverity] = React.useState("");
 	const isAgentClosed = Cookies.get("isAgentClosed");
+
+	const [isPending, setIsPending] = React.useState(false);
 
 	const handleOptions = (event) => {
 		if (isAgentClosed === "true") {
@@ -171,41 +172,56 @@ export function ActionsCell({ row }) {
 	};
 
 	const handleApproveLoanRequest = async () => {
-		const response = await updateRequest({ status: "approved" }, row.id);
-		if (response.status === 200) {
-			popoverAlert.handleOpen();
-			setAlertMsg("¡Solicitud Actualizada!");
+		setIsPending(true);
+		try {
+			await updateRequest({ status: "approved" }, row.id);
+			setAlertMsg("¡Aprobado exitosamente!");
 			setAlertSeverity("success");
-			setAlertSeverity();
+		} catch (error) {
+			setAlertMsg(error.message);
+			setAlertSeverity("error");
 		}
-		router.refresh();
+		popoverAlert.handleOpen();
 		popoverModalApproved.handleClose();
+		setIsPending(false);
+		router.refresh();
 	};
 
 	const handleRenewLoanRequest = async () => {
-		const response = await renewRequest({ amount: amount, newDate: selectedDate }, row.id);
-		if (response.status === 200) {
-			setAlertMsg("¡Solicitud Actualizada!");
+		setIsPending(true);
+		try {
+			await renewRequest({ amount: amount, newDate: selectedDate }, row.id);
+			setAlertMsg("¡Renovado exitosamente!");
 			setAlertSeverity("success");
-			popoverAlert.handleOpen();
+		} catch (error) {
+			setAlertMsg(error.message);
+			setAlertSeverity("error");
 		}
-
-		router.refresh();
+		popoverAlert.handleOpen();
 		popoverModalRenew.handleClose();
+		setIsPending(false);
+		router.refresh();
 	};
 
 	const handleFundedLoanRequest = async () => {
-		const data = {
-			loanRequestId: row.id,
-			transactionType: "disbursement",
-			amount: row.requestedAmount,
-			reference: "Abono cliente",
-		};
-
-		await createTransaction(data);
-
+		setIsPending(true);
+		try {
+			await createTransaction({
+				loanRequestId: row.id,
+				transactionType: "disbursement",
+				amount: row.requestedAmount,
+				reference: "Desembolso cliente",
+			});
+			setAlertMsg("¡Desembolsado exitosamente!");
+			setAlertSeverity("success");
+			popoverModalFunded.handleClose();
+		} catch (error) {
+			setAlertMsg(error.message);
+			setAlertSeverity("error");
+		}
+		popoverAlert.handleOpen();
+		setIsPending(false);
 		router.refresh();
-		popoverModalFunded.handleClose();
 	};
 
 	const handleDateChange = (newValue) => {
@@ -272,62 +288,69 @@ export function ActionsCell({ row }) {
 				aria-labelledby="alert-dialog-title"
 				aria-describedby="alert-dialog-description"
 			>
-				<DialogTitle id="alert-dialog-title" textAlign={"center"}>
+				<DialogTitle id="alert-dialog-title" textAlign={"center"} sx={{ pt: 4 }}>
 					{"Renovar solicitud"}
 				</DialogTitle>
 
 				<DialogContent>
-					<Stack spacing={4} sx={{ p: 3 }}>
-						<Grid container spacing={3}>
-							<Grid
-								size={{
-									md: 12,
-									xs: 12,
+					<Grid container spacing={3}>
+						<Grid
+							size={{
+								md: 12,
+								xs: 12,
+							}}
+						>
+							<TextField
+								label="Monto"
+								variant="outlined"
+								slotProps={{ htmlInput: { min: 0 } }}
+								value={amount.toLocaleString("es-CO")}
+								onChange={(e) => {
+									const parsed = parseCurrency(e.target.value);
+									setAmount(parsed);
 								}}
-							>
-								<TextField
-									label="Monto"
-									variant="outlined"
-									slotProps={{ htmlInput: { min: 0 } }}
-									value={amount.toLocaleString("es-CO")}
-									onChange={(e) => {
-										const parsed = parseCurrency(e.target.value);
-										setAmount(parsed);
-									}}
-									fullWidth
-								/>
-							</Grid>
-							<Grid
-								size={{
-									md: 12,
-									xs: 12,
-								}}
-							>
-								<DatePicker
-									sx={{ width: "100%" }}
-									label="Fecha nueva"
-									value={selectedDate}
-									onChange={handleDateChange}
-									minDate={dayjs(row.endDateAt)}
-								/>
-							</Grid>
+								fullWidth
+							/>
 						</Grid>
-					</Stack>
+						<Grid
+							size={{
+								md: 12,
+								xs: 12,
+							}}
+						>
+							<DatePicker
+								sx={{ width: "100%" }}
+								label="Fecha nueva"
+								value={selectedDate}
+								onChange={handleDateChange}
+								minDate={dayjs(row.endDateAt)}
+							/>
+						</Grid>
+
+						<Grid
+							size={{
+								md: 12,
+								xs: 12,
+							}}
+							display={"flex"}
+							justifyContent={"flex-end"}
+							gap={2}
+						>
+							<Button variant="contained" disabled={isPending} onClick={handleRenewLoanRequest} autoFocus>
+								Aceptar
+							</Button>
+							<Button
+								variant="outlined"
+								onClick={() => {
+									popover.handleClose();
+									popoverModalRenew.handleClose();
+								}}
+							>
+								Cancelar
+							</Button>
+						</Grid>
+					</Grid>
 				</DialogContent>
-				<DialogActions sx={{ padding: 3 }}>
-					<Button variant="contained" onClick={handleRenewLoanRequest} autoFocus>
-						Aceptar
-					</Button>
-					<Button
-						variant="outlined"
-						onClick={() => {
-							popover.handleClose();
-							popoverModalRenew.handleClose();
-						}}
-					>
-						Cancelar
-					</Button>
-				</DialogActions>
 			</Dialog>
 
 			{/* Modal para aprobar solicitud*/}
@@ -339,29 +362,29 @@ export function ActionsCell({ row }) {
 				aria-labelledby="alert-dialog-title"
 				aria-describedby="alert-dialog-description"
 			>
-				<DialogTitle id="alert-dialog-title" textAlign={"center"}>
+				<DialogTitle id="alert-dialog-title" textAlign={"center"} sx={{ pt: 4 }}>
 					{"Confirmación"}
 				</DialogTitle>
 
 				<DialogContent>
-					<DialogContentText id="alert-dialog-description" textAlign={"justify"}>
-						{`¿Desea cambiar el estado de la solicitud a Aprobada para el cliente ${row.client.name}?`}
+					<DialogContentText id="alert-dialog-description" textAlign={"justify"} sx={{ pb: 3 }}>
+						{`¿Desea aprobar la solicitud para el cliente ${row.client.name}?`}
 					</DialogContentText>
+					<Box component={"div"} display={"flex"} justifyContent={"flex-end"} gap={2}>
+						<Button variant="contained" disabled={isPending} onClick={handleApproveLoanRequest} autoFocus>
+							Aceptar
+						</Button>
+						<Button
+							variant="outlined"
+							onClick={() => {
+								popover.handleClose();
+								popoverModalApproved.handleClose();
+							}}
+						>
+							Cancelar
+						</Button>
+					</Box>
 				</DialogContent>
-				<DialogActions sx={{ padding: 3 }}>
-					<Button variant="contained" onClick={handleApproveLoanRequest} autoFocus>
-						Aceptar
-					</Button>
-					<Button
-						variant="outlined"
-						onClick={() => {
-							popover.handleClose();
-							popoverModalApproved.handleClose();
-						}}
-					>
-						Cancelar
-					</Button>
-				</DialogActions>
 			</Dialog>
 
 			{/* Modal para desembolsar solicitud*/}
@@ -373,12 +396,12 @@ export function ActionsCell({ row }) {
 				aria-labelledby="alert-dialog-title"
 				aria-describedby="alert-dialog-description"
 			>
-				<DialogTitle id="alert-dialog-title" textAlign={"center"}>
+				<DialogTitle id="alert-dialog-title" textAlign={"center"} sx={{ pt: 4 }}>
 					{"Confirmación"}
 				</DialogTitle>
 
 				<DialogContent>
-					<DialogContentText id="alert-dialog-description" textAlign={"justify"}>
+					<DialogContentText id="alert-dialog-description" textAlign={"justify"} sx={{ pb: 2 }}>
 						{`Esta acción no realiza el desembolso automáticamente.
 						Al aceptar, se notificará al cliente ${row.client.name} que su préstamo de ${Number.parseInt(
 							row.requestedAmount
@@ -389,21 +412,21 @@ export function ActionsCell({ row }) {
 						})} fue desembolsado.
 						Asegúrese de haber realizado el desembolso de forma manual antes de continuar.`}
 					</DialogContentText>
+					<Box component={"div"} display={"flex"} justifyContent={"flex-end"} gap={2}>
+						<Button variant="contained" onClick={handleFundedLoanRequest} disabled={isPending} autoFocus>
+							Aceptar
+						</Button>
+						<Button
+							variant="outlined"
+							onClick={() => {
+								popover.handleClose();
+								popoverModalFunded.handleClose();
+							}}
+						>
+							Cancelar
+						</Button>
+					</Box>
 				</DialogContent>
-				<DialogActions sx={{ padding: 3 }}>
-					<Button variant="contained" onClick={handleFundedLoanRequest} autoFocus>
-						Aceptar
-					</Button>
-					<Button
-						variant="outlined"
-						onClick={() => {
-							popover.handleClose();
-							popoverModalFunded.handleClose();
-						}}
-					>
-						Cancelar
-					</Button>
-				</DialogActions>
 			</Dialog>
 
 			<NotificationAlert

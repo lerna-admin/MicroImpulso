@@ -3,6 +3,7 @@
 import * as React from "react";
 import { useRouter } from "next/navigation";
 import { createTransaction } from "@/app/dashboard/transactions/hooks/use-transactions";
+import { formatCurrency, unformatCurrency } from "@/helpers/format-currency";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
 	Dialog,
@@ -94,21 +95,6 @@ function createSchema(amountToPay, amountPaid) {
 				});
 			}
 		});
-}
-
-function formatCurrency(value) {
-	const number = typeof value === "string" ? value.replaceAll(/\D/g, "") : value;
-	const numberValue = Number.parseInt(number || "0", 10);
-
-	return numberValue.toLocaleString("es-CO", {
-		style: "currency",
-		currency: "COP",
-		minimumFractionDigits: 0,
-	});
-}
-
-function unformatCurrency(formatted) {
-	return Number.parseInt(formatted.replaceAll(/\D/g, ""), 10) || 0;
 }
 
 export function HistoryPayments({

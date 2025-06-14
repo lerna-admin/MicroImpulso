@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useRouter } from "next/navigation";
 import Box from "@mui/material/Box";
 import Chip from "@mui/material/Chip";
 import Divider from "@mui/material/Divider";
@@ -8,10 +9,14 @@ import InputAdornment from "@mui/material/InputAdornment";
 import OutlinedInput from "@mui/material/OutlinedInput";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
+import { DatePicker } from "@mui/x-date-pickers";
 import { MagnifyingGlass as MagnifyingGlassIcon } from "@phosphor-icons/react/dist/ssr/MagnifyingGlass";
 
+import { paths } from "@/paths";
 import { dayjs } from "@/lib/dayjs";
 import { DataTable } from "@/components/core/data-table";
+
+dayjs.locale("es");
 
 const columns = [
 	{ field: "id", name: "ID", width: "150px" },
@@ -41,7 +46,7 @@ const columns = [
 	},
 	{
 		formatter: (row) => {
-			return dayjs(row.createdDate).format("MMM D, YYYY");
+			return dayjs(row.createdAt).format("MMM D, YYYY");
 		},
 		name: "Fecha de creación",
 		width: "150px",
@@ -59,9 +64,42 @@ const columns = [
 	},
 ];
 
-export function MovementsTable({ invoices }) {
+export function MovementsTable({ movementsData, filters }) {
+	const { limit } = filters;
+	const [date, setDate] = React.useState(dayjs());
+
+	const router = useRouter();
+
+	const updateSearchParams = React.useCallback(
+		(newFilters) => {
+			const searchParams = new URLSearchParams();
+
+			if (newFilters.date) {
+				searchParams.set("date", newFilters.date);
+			}
+			if (newFilters.page) {
+				searchParams.set("page", newFilters.page);
+			}
+			if (newFilters.limit) {
+				searchParams.set("limit", newFilters.limit);
+			}
+
+			router.push(`${paths.dashboard.cash_flow}?${searchParams.toString()}`);
+		},
+		[router]
+	);
+
+	const handleFilterChange = React.useCallback(
+		(value) => {
+			setDate(value);
+			const dateFormatted = dayjs(value).format("YYYY-MM-DD");
+			updateSearchParams({ ...filters, page: 1, limit: limit, date: dateFormatted });
+		},
+		[updateSearchParams, filters]
+	);
+
 	return (
-		<>
+		<React.Fragment>
 			<Stack direction="row" spacing={2} sx={{ alignItems: "center", flexWrap: "wrap", p: 3 }}>
 				<OutlinedInput
 					placeholder="Buscar movimientos"
@@ -72,11 +110,17 @@ export function MovementsTable({ invoices }) {
 					}
 					sx={{ flex: "1 1 auto" }}
 				/>
+				<DatePicker name="movementDate" value={date} onChange={handleFilterChange} />
 			</Stack>
 			<Divider />
-			<Box sx={{ overflowX: "auto" }}>
-				<DataTable columns={columns} rows={invoices} />
-			</Box>
-		</>
+			<DataTable columns={columns} rows={movementsData} />
+			{movementsData.length === 0 ? (
+				<Box sx={{ p: 3 }}>
+					<Typography color="text.secondary" sx={{ textAlign: "center" }} variant="body2">
+						No se encontraron movimientos de caja.
+					</Typography>
+				</Box>
+			) : null}
+		</React.Fragment>
 	);
 }

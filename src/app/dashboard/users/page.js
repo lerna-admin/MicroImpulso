@@ -6,6 +6,7 @@ import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 
 import { appConfig } from "@/config/app";
+import { getUser } from "@/lib/custom-auth/server";
 import { UsersFilters } from "@/components/dashboard/users/users-filters";
 import { UsersPagination } from "@/components/dashboard/users/users-pagination";
 import { UsersSelectionProvider } from "@/components/dashboard/users/users-selection-context";
@@ -19,11 +20,15 @@ export default async function Page({ searchParams }) {
 	const { name, document, page, limit } = await searchParams;
 
 	const {
+		data: { user },
+	} = await getUser();
+
+	const {
 		data: users,
 		total: userTotalItems,
 		page: usersPage,
 		limit: userLimit,
-	} = await getAllUsers({ page, limit, name, document });
+	} = await getAllUsers({ page, limit, branchId: user.branch.id, name, document });
 
 	return (
 		<Box
