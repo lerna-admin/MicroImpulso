@@ -46,7 +46,7 @@ const columns = [
 	},
 	{
 		formatter: (row) => {
-			return dayjs(row.createdAt).format("MMM D, YYYY");
+			return dayjs(row.createdAt).utc().format("D MMMM YYYY").toUpperCase();
 		},
 		name: "Fecha de creación",
 		width: "150px",
