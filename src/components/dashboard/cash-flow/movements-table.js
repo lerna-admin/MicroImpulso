@@ -121,9 +121,13 @@ export function MovementsTable({ movementsData, filters }) {
 					sx={{ flex: "1 1 auto" }}
 					onKeyDown={(e) => {
 						if (e.key !== "Enter") return;
-						console.log(search);
-						
-						updateSearchParams({ ...filters, page: 1, limit: limit, search: search });
+						updateSearchParams({
+							...filters,
+							search: search,
+							page: 1,
+							limit: limit,
+							date: dayjs(date).format("YYYY-MM-DD"),
+						});
 					}}
 				/>
 				<DatePicker name="movementDate" value={date} onChange={handleFilterChange} />
