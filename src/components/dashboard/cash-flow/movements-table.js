@@ -65,8 +65,8 @@ const columns = [
 ];
 
 export function MovementsTable({ movementsData, filters }) {
-	const { limit } = filters;
-	const [date, setDate] = React.useState(dayjs());
+	const { limit, date } = filters;
+	const [selectedDate, setSelectedDate] = React.useState(dayjs(date));
 	const [search, setSearch] = React.useState("");
 
 	const router = useRouter();
@@ -95,7 +95,8 @@ export function MovementsTable({ movementsData, filters }) {
 
 	const handleFilterChange = React.useCallback(
 		(value) => {
-			setDate(value);
+			setSelectedDate(value);
+			setSearch("")
 			const dateFormatted = dayjs(value).format("YYYY-MM-DD");
 			updateSearchParams({ ...filters, page: 1, limit: limit, date: dateFormatted });
 		},
@@ -126,11 +127,11 @@ export function MovementsTable({ movementsData, filters }) {
 							search: search,
 							page: 1,
 							limit: limit,
-							date: dayjs(date).format("YYYY-MM-DD"),
+							date: dayjs(selectedDate).format("YYYY-MM-DD"),
 						});
 					}}
 				/>
-				<DatePicker name="movementDate" value={date} onChange={handleFilterChange} />
+				<DatePicker name="movementDate" value={selectedDate} onChange={handleFilterChange} />
 			</Stack>
 			<Divider />
 			<DataTable columns={columns} rows={movementsData} />
