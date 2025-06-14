@@ -39,97 +39,97 @@ import { usePopover } from "@/hooks/use-popover";
 import { DataTable } from "@/components/core/data-table";
 import { NotificationAlert } from "@/components/widgets/notifications/notification-alert";
 
-const columns = [
-	{
-		formatter: (row) => (
-			<Link
-				color="inherit"
-				component={RouterLink}
-				href={paths.dashboard.requests.details(row.id)}
-				sx={{ whiteSpace: "nowrap" }}
-				variant="subtitle2"
-			>
-				{row.client.name}
-			</Link>
-		),
-		name: "Nombre completo",
-		width: "150px",
-	},
-	{ formatter: (row) => <p>{row.client.document}</p>, name: "Identificación", width: "100px" },
-	{
-		formatter(row) {
-			return new Intl.NumberFormat("en-US", { style: "currency", currency: "COP" }).format(row.requestedAmount);
+export function RequestsTable({ rows, permissions }) {
+	const columns = [
+		{
+			formatter: (row) => (
+				<Link
+					color="inherit"
+					component={RouterLink}
+					href={paths.dashboard.requests.details(row.id)}
+					sx={{ whiteSpace: "nowrap" }}
+					variant="subtitle2"
+				>
+					{row.client.name}
+				</Link>
+			),
+			name: "Nombre completo",
+			width: "150px",
 		},
-		name: "Monto solicitado",
-		width: "70px",
-	},
-	{
-		formatter: (row) => (
-			<Stack direction="column" spacing={1} sx={{ alignItems: "center" }}>
-				<Typography color="inherit" variant="body2">
-					{dayjs(row.createdAt).format("MMM D, YYYY")}
-				</Typography>
-				<Typography color="inherit" variant="body2">
-					{dayjs(row.endDateAt).format("MMM D, YYYY")}
-				</Typography>
-			</Stack>
-		),
-		name: "Fecha Inicio / Fecha Fin",
-		align: "center",
-		width: "120px",
-	},
-	{
-		formatter(row) {
-			return dayjs(row.updatedAt).format("MMM D, YYYY");
+		{ formatter: (row) => <p>{row.client.document}</p>, name: "Identificación", width: "100px" },
+		{
+			formatter(row) {
+				return new Intl.NumberFormat("en-US", { style: "currency", currency: "COP" }).format(row.requestedAmount);
+			},
+			name: "Monto solicitado",
+			width: "70px",
 		},
-		name: "Fecha Ult. Pago",
-		width: "135px",
-	},
-
-	{
-		formatter: (row) => {
-			const mapping = {
-				new: {
-					label: "Nueva",
-					icon: <ExclamationMarkIcon color="var(--mui-palette-info-main)" weight="fill" />,
-				},
-				under_review: {
-					label: "En estudio",
-					icon: <ClockIcon color="var(--mui-palette-warning-main)" weight="fill" />,
-				},
-				approved: {
-					label: "Aprobada",
-					icon: <CheckCircleIcon color="var(--mui-palette-info-main)" weight="fill" />,
-				},
-				funded: {
-					label: "Desembolsado",
-					icon: <CheckCircleIcon color="var(--mui-palette-warning-main)" weight="fill" />,
-				},
-				completed: {
-					label: "Completada",
-					icon: <CheckCircleIcon color="var(--mui-palette-success-main)" weight="fill" />,
-				},
-				rejected: { label: "Rechazada", icon: <XCircleIcon color="var(--mui-palette-error-main)" weight="fill" /> },
-				canceled: { label: "Cancelada", icon: <XCircleIcon color="var(--mui-palette-error-main)" weight="fill" /> },
-			};
-			const { label, icon } = mapping[row.status] ?? { label: "Unknown", icon: null };
-
-			return <Chip icon={icon} label={label} size="small" variant="outlined" />;
+		{
+			formatter: (row) => (
+				<Stack direction="column" spacing={1} sx={{ alignItems: "center" }}>
+					<Typography color="inherit" variant="body2">
+						{dayjs(row.createdAt).format("MMM D, YYYY")}
+					</Typography>
+					<Typography color="inherit" variant="body2">
+						{dayjs(row.endDateAt).format("MMM D, YYYY")}
+					</Typography>
+				</Stack>
+			),
+			name: "Fecha Inicio / Fecha Fin",
+			align: "center",
+			width: "120px",
 		},
-		name: "Estado",
-		width: "100px",
-	},
+		{
+			formatter(row) {
+				return dayjs(row.updatedAt).format("MMM D, YYYY");
+			},
+			name: "Fecha Ult. Pago",
+			width: "135px",
+		},
 
-	{
-		formatter: (row) => <ActionsCell row={row} />,
-		name: "Acciones",
-		hideName: true,
-		width: "70px",
-		align: "right",
-	},
-];
+		{
+			formatter: (row) => {
+				const mapping = {
+					new: {
+						label: "Nueva",
+						icon: <ExclamationMarkIcon color="var(--mui-palette-info-main)" weight="fill" />,
+					},
+					under_review: {
+						label: "En estudio",
+						icon: <ClockIcon color="var(--mui-palette-warning-main)" weight="fill" />,
+					},
+					approved: {
+						label: "Aprobada",
+						icon: <CheckCircleIcon color="var(--mui-palette-info-main)" weight="fill" />,
+					},
+					funded: {
+						label: "Desembolsado",
+						icon: <CheckCircleIcon color="var(--mui-palette-warning-main)" weight="fill" />,
+					},
+					completed: {
+						label: "Completada",
+						icon: <CheckCircleIcon color="var(--mui-palette-success-main)" weight="fill" />,
+					},
+					rejected: { label: "Rechazada", icon: <XCircleIcon color="var(--mui-palette-error-main)" weight="fill" /> },
+					canceled: { label: "Cancelada", icon: <XCircleIcon color="var(--mui-palette-error-main)" weight="fill" /> },
+				};
+				const { label, icon } = mapping[row.status] ?? { label: "Unknown", icon: null };
 
-export function RequestsTable({ rows }) {
+				return <Chip icon={icon} label={label} size="small" variant="outlined" />;
+			},
+			name: "Estado",
+			width: "100px",
+		},
+
+		{
+			formatter: (row) => <ActionsCell row={row} permissions={permissions} />,
+			name: "Acciones",
+			hideName: true,
+			width: "70px",
+			align: "right",
+		},
+	];
+
 	return (
 		<React.Fragment>
 			<DataTable columns={columns} rows={rows} />
@@ -144,7 +144,7 @@ export function RequestsTable({ rows }) {
 	);
 }
 
-export function ActionsCell({ row }) {
+export function ActionsCell({ row, permissions }) {
 	const router = useRouter();
 	const popover = usePopover();
 	const popoverAlert = usePopover();
@@ -159,7 +159,7 @@ export function ActionsCell({ row }) {
 	const [isPending, setIsPending] = React.useState(false);
 	const isAgentClosed = Cookies.get("isAgentClosed");
 
-	const canDisburse = row.permissions.find((per) => per.name === "CAN_DISBURSE");
+	const canDisburse = permissions.find((per) => per.name === "CAN_DISBURSE");
 
 	const handleOptions = (event) => {
 		if (isAgentClosed === "true") {
