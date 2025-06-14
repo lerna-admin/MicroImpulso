@@ -49,7 +49,7 @@ const schema = zod.object({
 	description: zod.string().min(1, { message: "La descripción es obligatoria" }),
 });
 
-export function CashFlowHeader({ branch }) {
+export function CashFlowHeader({ user }) {
 	const popover = usePopover();
 	const router = useRouter();
 
@@ -78,6 +78,14 @@ export function CashFlowHeader({ branch }) {
 		name: "typeMovement",
 	});
 
+	const {
+		branch: { name: branchName },
+	} = user;
+
+	const {
+		branch: { id: branchId },
+	} = user;
+
 	const onSubmit = React.useCallback(async (dataForm) => {
 		setIsPending(true);
 
@@ -87,6 +95,8 @@ export function CashFlowHeader({ branch }) {
 				amount: dataForm.amount,
 				category: dataForm.category,
 				description: dataForm.description,
+				userId: user.id,
+				branchId: branchId,
 			});
 			setAlertMsg("¡Movimiento creado exitosamente!");
 			setAlertSeverity("success");
@@ -115,7 +125,7 @@ export function CashFlowHeader({ branch }) {
 						{/* Información de la sede */}
 						<Stack direction="row" spacing={1} alignItems="center" pr={2}>
 							<BuildingIcon />
-							<Typography variant="body2">{`Sede ${branch}`}</Typography>
+							<Typography variant="body2">{`Sede ${branchName}`}</Typography>
 						</Stack>
 
 						{/* Botón de acción */}

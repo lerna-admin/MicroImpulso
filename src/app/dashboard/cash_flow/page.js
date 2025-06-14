@@ -43,7 +43,7 @@ export default async function Page({ searchParams }) {
 			}}
 		>
 			<Stack spacing={10}>
-				<CashFlowHeader branch={user.branch.name} />
+				<CashFlowHeader user={user} />
 				<Grid container spacing={4}>
 					<Grid size={12} justifyContent={"flex-end"}>
 						<Chip
