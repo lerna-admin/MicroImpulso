@@ -9,7 +9,7 @@ function noop() {
 	// No operation placeholder
 }
  function playNotificationSound() {
-  const audio = new Audio('/public/assets/newMessage.wav');
+  const audio = new Audio('/assets/newMessage.wav');
   audio.play().catch((e) => {
     console.warn('No se pudo reproducir el sonido:', e);
   });
