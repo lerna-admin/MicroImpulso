@@ -14,8 +14,10 @@ const BASE_URL = process.env.NEXT_PUBLIC_API_URL;
  *
  * @returns {Request[]}
  */
-export async function getAllRequests({ page = 1, limit = 10, status = "" }) {
-	const res = await fetch(`${BASE_URL}/loan-request?page=${page}&limit=${limit}&status=${status}`);
+export async function getAllRequests({ page = 1, limit = 10, status = "", branchId }) {
+	console.log(`${BASE_URL}/loan-request?page=${page}&limit=${limit}&status=${status}&branchId=${branchId}`);
+	
+	const res = await fetch(`${BASE_URL}/loan-request?page=${page}&limit=${limit}&status=${status}&branchId=${branchId}`);
 	if (!res.ok) throw new Error("Error al obtener solicitudes");
 	return await res.json();
 }
