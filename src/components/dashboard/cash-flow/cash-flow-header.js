@@ -126,7 +126,7 @@ export function CashFlowHeader({ branch }) {
 				</Grid>
 			</Stack>
 
-			{/* Modal para renovar solicitud */}
+			{/* Modal para registrar movimiento */}
 			<Dialog
 				fullWidth
 				maxWidth={"sm"}

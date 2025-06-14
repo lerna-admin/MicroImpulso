@@ -67,6 +67,7 @@ export function Summary({ assets }) {
 										currency: "COP",
 										minimumFractionDigits: 0,
 									}).format(asset.value)}
+									{asset.label === "Renovados" || asset.label === "Nuevos" ? ` (${asset.amount})` : null}
 								</Typography>
 							</Stack>
 						</React.Fragment>

@@ -1,11 +1,15 @@
 "use client";
 
 import * as React from "react";
+import { deleteCloseDay } from "@/app/dashboard/balance/hooks/use-balance";
+import { savePermission } from "@/app/dashboard/requests/hooks/use-permissions";
+import { getUserById } from "@/app/dashboard/users/hooks/use-users";
 import {
 	Button,
 	Checkbox,
 	Dialog,
 	DialogContent,
+	DialogContentText,
 	DialogTitle,
 	FormControlLabel,
 	FormGroup,
@@ -28,6 +32,7 @@ import {
 import { dayjs } from "@/lib/dayjs";
 import { usePopover } from "@/hooks/use-popover";
 import { DataTable } from "@/components/core/data-table";
+import { NotificationAlert } from "@/components/widgets/notifications/notification-alert";
 
 export function UsersTable({ rows }) {
 	const columns = [
@@ -87,28 +92,59 @@ export function UsersTable({ rows }) {
 
 export function ActionsCell({ row }) {
 	const popover = usePopover();
-	const modalPermisos = usePopover();
+	const modalAcciones = usePopover();
+	const modalRevertirCierre = usePopover();
+	const notificationAlert = usePopover();
+	const [alertMsg, setAlertMsg] = React.useState("");
+	const [alertSeverity, setAlertSeverity] = React.useState("");
 	const [anchorEl, setAnchorEl] = React.useState(null);
-	const [allowDisbursement, setAllowDisbursement] = React.useState(false);
+	const [permissions, setPermissions] = React.useState([]);
 
 	const handleOptions = (event) => {
 		setAnchorEl(event.currentTarget);
 		popover.handleOpen();
 	};
 
-	const handleActions = () => {
-		//TODO Peticion para traer los permisos del agente seleccionado
-		console.log(row.id);
-		modalPermisos.handleOpen();
+	const handleActions = async () => {
+		try {
+			const { permissions } = await getUserById(row.id);
+			setPermissions(permissions);
+		} catch (error) {
+			setAlertMsg(error.message);
+			setAlertSeverity("error");
+		}
+		modalAcciones.handleOpen();
 	};
 
-	const handleSaveChanges = () => {
-		modalPermisos.handleClose();
-		console.log("Permitir:", allowDisbursement);
+	const handleSaveChanges = async () => {
+		try {
+			const permissionsToSave = permissions.map((permission) => ({ id: permission.id, granted: permission.granted }));
+			await savePermission(row.id, permissionsToSave);
+			setAlertMsg("¡Se ha guardado exitosamente!");
+			setAlertSeverity("success");
+		} catch (error) {
+			setAlertMsg(error.message);
+			setAlertSeverity("error");
+		}
+		notificationAlert.handleOpen();
+		modalAcciones.handleClose();
 	};
 
-	const handleChange = (event) => {
-		setAllowDisbursement(event.target.checked);
+	const handleRevertClosingDay = async () => {
+		try {
+			await deleteCloseDay(row.id);
+			setAlertMsg("¡Se ha revertido exitosamente!");
+			setAlertSeverity("success");
+		} catch (error) {
+			setAlertMsg(error.message);
+			setAlertSeverity("error");
+		}
+		notificationAlert.handleOpen();
+		modalRevertirCierre.handleClose();
+	};
+
+	const handleChange = (id, checked) => {
+		setPermissions((prev) => prev.map((perm) => (perm.id === id ? { ...perm, granted: checked } : perm)));
 	};
 
 	return (
@@ -128,9 +164,9 @@ export function ActionsCell({ row }) {
 					<ListItemIcon>
 						<ListChecksIcon />
 					</ListItemIcon>
-					<Typography>Acciones</Typography>
+					<Typography>Permisos</Typography>
 				</MenuItem>
-				<MenuItem onClick={() => console.log("Pendiente")}>
+				<MenuItem onClick={modalRevertirCierre.handleOpen}>
 					<ListItemIcon>
 						<ArrowCounterClockwiseIcon />
 					</ListItemIcon>
@@ -138,16 +174,17 @@ export function ActionsCell({ row }) {
 				</MenuItem>
 			</Menu>
 
+			{/* Modal para acciones del usuario seleccionado */}
 			<Dialog
 				fullWidth
 				maxWidth={"xs"}
-				open={modalPermisos.open}
-				onClose={modalPermisos.handleClose}
+				open={modalAcciones.open}
+				onClose={modalAcciones.handleClose}
 				aria-labelledby="alert-dialog-title"
 				aria-describedby="alert-dialog-description"
 			>
 				<DialogTitle id="alert-dialog-title" textAlign={"center"} sx={{ pt: 4, pb: 4 }}>
-					{"Acciones"}
+					{"Permisos"}
 				</DialogTitle>
 
 				<DialogContent>
@@ -159,17 +196,23 @@ export function ActionsCell({ row }) {
 							}}
 						>
 							<FormGroup>
-								<FormControlLabel
-									control={
-										<Checkbox
-											label
-											checked={allowDisbursement}
-											onChange={handleChange}
-											inputProps={{ "aria-label": "controlled" }}
-										/>
-									}
-									label="Permitir desembolsar"
-								/>
+								{permissions.map((permission) => (
+									<FormControlLabel
+										key={permission.id}
+										control={
+											<Checkbox
+												checked={permission.granted}
+												onChange={(event) => handleChange(permission.id, event.target.checked)}
+												inputProps={{ "aria-label": "controlled" }}
+											/>
+										}
+										label={
+											<Tooltip key={permission.id} title={permission.description ?? "No tiene descripción"}>
+												{permission.label}
+											</Tooltip>
+										}
+									/>
+								))}
 							</FormGroup>
 						</Grid>
 
@@ -189,7 +232,7 @@ export function ActionsCell({ row }) {
 								variant="outlined"
 								onClick={() => {
 									popover.handleClose();
-									modalPermisos.handleClose();
+									modalAcciones.handleClose();
 								}}
 							>
 								Cancelar
@@ -198,6 +241,47 @@ export function ActionsCell({ row }) {
 					</Grid>
 				</DialogContent>
 			</Dialog>
+
+			{/* Modal para revertir cierre del dia */}
+			<Dialog
+				fullWidth
+				maxWidth={"xs"}
+				open={modalRevertirCierre.open}
+				onClose={modalRevertirCierre.handleClose}
+				aria-labelledby="alert-dialog-title"
+				aria-describedby="alert-dialog-description"
+			>
+				<DialogTitle id="alert-dialog-title" textAlign={"center"} sx={{ pt: 4, pb: 4 }}>
+					{"Revertir cierre del dia"}
+				</DialogTitle>
+
+				<DialogContent>
+					<DialogContentText id="alert-dialog-description" textAlign={"justify"} sx={{ pb: 3 }}>
+						{`¿Desea revertir el cierre del dia para ${row.name} ?`}
+					</DialogContentText>
+					<Box component={"div"} display={"flex"} justifyContent={"flex-end"} gap={2}>
+						<Button variant="contained" onClick={handleRevertClosingDay} autoFocus>
+							Aceptar
+						</Button>
+						<Button
+							variant="outlined"
+							onClick={() => {
+								popover.handleClose();
+								modalRevertirCierre.handleClose();
+							}}
+						>
+							Cancelar
+						</Button>
+					</Box>
+				</DialogContent>
+			</Dialog>
+
+			<NotificationAlert
+				openAlert={notificationAlert.open}
+				onClose={notificationAlert.handleClose}
+				msg={alertMsg}
+				severity={alertSeverity}
+			></NotificationAlert>
 		</React.Fragment>
 	);
 }
