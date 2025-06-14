@@ -8,16 +8,32 @@ import { useAuth } from "@/components/auth/custom/auth-context";
 function noop() {
 	// No operation placeholder
 }
+ function playNotificationSound() {
+  const audio = new Audio('@/files/sounds/newMessage.wav');
+  audio.play().catch((e) => {
+    console.warn('No se pudo reproducir el sonido:', e);
+  });
+}
 
 function areMessagesEqual(mapA, mapB) {
-	if (mapA.size !== mapB.size) return false;
+	if (mapA.size !== mapB.size) {
+		playNotificationSound(); // 🔔 Diferente número de hilos
+		return false;
+	}
 
 	for (const [key, msgsA] of mapA.entries()) {
 		const msgsB = mapB.get(key);
-		if (!msgsB || msgsA.length !== msgsB.length) return false;
 
-		for (const [i, element] of msgsA.entries()) {
-			if (element.id !== msgsB[i].id) return false;
+		if (!msgsB || msgsA.length !== msgsB.length) {
+			playNotificationSound(); 
+			return false;
+		}
+
+		for (let i = 0; i < msgsA.length; i++) {
+			if (msgsA[i].id !== msgsB[i].id) {
+				playNotificationSound(); 
+				return false;
+			}
 		}
 	}
 
