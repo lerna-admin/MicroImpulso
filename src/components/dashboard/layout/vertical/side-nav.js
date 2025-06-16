@@ -10,7 +10,6 @@ import { ArrowSquareOut as ArrowSquareOutIcon } from "@phosphor-icons/react/dist
 import { CaretDown as CaretDownIcon } from "@phosphor-icons/react/dist/ssr/CaretDown";
 import { CaretRight as CaretRightIcon } from "@phosphor-icons/react/dist/ssr/CaretRight";
 
-import { paths } from "@/paths";
 import { isNavItemActive } from "@/lib/is-nav-item-active";
 import { Logo } from "@/components/core/logo";
 

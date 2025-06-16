@@ -14,6 +14,8 @@ import {
 	FormHelperText,
 	InputLabel,
 	OutlinedInput,
+	useMediaQuery,
+	useTheme,
 } from "@mui/material";
 import Avatar from "@mui/material/Avatar";
 import Box from "@mui/material/Box";
@@ -41,7 +43,7 @@ const columns = [
 	{
 		formatter: (row) => (
 			<Typography sx={{ whiteSpace: "nowrap" }} variant="inherit">
-				{dayjs(row.date).utc().format("MMM D, YYYY hh:mm A")}
+				{dayjs(row.date).utc().format("DD-MM-YYYY hh:mm A")}
 			</Typography>
 		),
 		name: "Fecha",
@@ -71,7 +73,7 @@ const columns = [
 			return <Chip color={color} label={label} size="small" variant="soft" />;
 		},
 		name: "Tipo de transacción",
-		width: "150px",
+		width: "190px",
 	},
 ];
 
@@ -112,6 +114,33 @@ export function HistoryPayments({
 	const schema = createSchema(amountToPay, amountPaid);
 	const router = useRouter();
 	const isAgentClosed = Cookies.get("isAgentClosed");
+
+	const theme = useTheme();
+	const isSmallScreen = useMediaQuery(theme.breakpoints.down("sm"));
+	const dividerOrientation = isSmallScreen ? "horizontal" : "vertical";
+
+	const items = [
+		{
+			label: "Abonos",
+			value: totalTransactions.toString(),
+		},
+		{
+			label: "Total Pagado",
+			value: amountPaid,
+		},
+		{
+			label: "Saldo",
+			value: amountToPay - amountPaid,
+		},
+		{
+			label: "Total a pagar",
+			value: amountToPay,
+		},
+		{
+			label: "Total Prestado",
+			value: requestedAmount,
+		},
+	];
 
 	const {
 		reset,
@@ -156,81 +185,59 @@ export function HistoryPayments({
 			{payments.length > 0 ? (
 				<Card>
 					<CardHeader
-						action={
-							<Button color="secondary" onClick={handleRegisterPay} startIcon={<PlusIcon />}>
-								Registrar Pago
-							</Button>
+						subheader={
+							<Stack
+								direction={{ xs: "column", sm: "row" }}
+								spacing={2}
+								justifyContent="space-between"
+								alignItems={{ xs: "flex-start", sm: "center" }}
+							>
+								<Stack direction="row" spacing={2} alignItems="center">
+									<Avatar sx={{ backgroundColor: "white", color: "black", boxShadow: "var(--mui-shadows-8)" }}>
+										<ShoppingCartSimpleIcon fontSize="var(--Icon-fontSize)" />
+									</Avatar>
+									<Typography color="textPrimary" variant="h6">
+										Historial de transacciones
+									</Typography>
+								</Stack>
+
+								<Button
+									color="secondary"
+									onClick={handleRegisterPay}
+									startIcon={<PlusIcon />}
+									sx={{ alignSelf: { xs: "stretch", sm: "auto" } }}
+								>
+									Registrar Pago
+								</Button>
+							</Stack>
 						}
-						avatar={
-							<Avatar>
-								<ShoppingCartSimpleIcon fontSize="var(--Icon-fontSize)" />
-							</Avatar>
-						}
-						title="Historial de transacciones"
 					/>
 					<CardContent>
 						<Stack spacing={3}>
 							<Card sx={{ borderRadius: 1 }} variant="outlined">
 								<Stack
-									direction="row"
-									divider={<Divider flexItem orientation="vertical" />}
-									spacing={3}
+									flexWrap={"wrap"}
+									direction={{ xs: "column", sm: "row" }}
+									spacing={{ xs: 1, sm: 1, md: 1 }}
+									divider={<Divider flexItem orientation={dividerOrientation} />}
 									sx={{ justifyContent: "space-between", p: 2 }}
 								>
-									<div>
-										<Typography color="text.secondary" variant="overline">
-											Abonos
-										</Typography>
-										<Typography variant="h6">{totalTransactions}</Typography>
-									</div>
-									<div>
-										<Typography color="text.secondary" variant="overline">
-											Total Pagado
-										</Typography>
-										<Typography variant="h6">
-											{new Intl.NumberFormat("en-CO", {
-												style: "currency",
-												currency: "COP",
-												minimumFractionDigits: 0,
-											}).format(amountPaid)}
-										</Typography>
-									</div>
-									<div>
-										<Typography color="text.secondary" variant="overline">
-											Saldo
-										</Typography>
-										<Typography variant="h6">
-											{new Intl.NumberFormat("en-CO", {
-												style: "currency",
-												currency: "COP",
-												minimumFractionDigits: 0,
-											}).format(amountToPay - amountPaid)}
-										</Typography>
-									</div>
-									<div>
-										<Typography color="text.secondary" variant="overline">
-											Total a pagar
-										</Typography>
-										<Typography variant="h6">
-											{new Intl.NumberFormat("en-CO", {
-												style: "currency",
-												currency: "COP",
-												minimumFractionDigits: 0,
-											}).format(amountToPay)}
-										</Typography>
-									</div>
-									<div>
-										<Typography color="text.secondary" variant="overline">
-											Total Prestado
-										</Typography>
-										<Typography variant="h6">
-											{new Intl.NumberFormat("en-CO", {
-												style: "currency",
-												currency: "COP",
-												minimumFractionDigits: 0,
-											}).format(requestedAmount)}
-										</Typography>
-									</div>
+									{items.map((item, index) => (
+										<Box key={index}>
+											<Typography color="text.secondary" variant="overline">
+												{item.label}
+											</Typography>
+											<Typography variant="h6">
+												{typeof item.value === "number"
+													? new Intl.NumberFormat("en-CO", {
+															style: "currency",
+															currency: "COP",
+															minimumFractionDigits: 0,
+														}).format(item.value)
+													: item.value}
+											</Typography>
+										</Box>
+									))}
 								</Stack>
 							</Card>
 							<Card sx={{ borderRadius: 1 }} variant="outlined">

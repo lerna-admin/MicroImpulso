@@ -7,6 +7,7 @@ import Box from "@mui/material/Box";
 import Chip from "@mui/material/Chip";
 import Drawer from "@mui/material/Drawer";
 import Stack from "@mui/material/Stack";
+import { useColorScheme } from "@mui/material/styles";
 import Typography from "@mui/material/Typography";
 import { ArrowSquareOut as ArrowSquareOutIcon } from "@phosphor-icons/react/dist/ssr/ArrowSquareOut";
 import { CaretDown as CaretDownIcon } from "@phosphor-icons/react/dist/ssr/CaretDown";
@@ -19,8 +20,15 @@ import { Logo } from "@/components/core/logo";
 import { icons } from "./nav-icons";
 import { WorkspacesSwitch } from "./workspaces-switch";
 
-export function MobileNav({ items = [], open, onClose }) {
+const logoColors = {
+	dark: { blend_in: "light", discrete: "light", evident: "light" },
+	light: { blend_in: "dark", discrete: "dark", evident: "light" },
+};
+
+export function MobileNav({ color = "evident", items = [], open, onClose }) {
 	const pathname = usePathname();
+	const { colorScheme = "light" } = useColorScheme();
+	const logoColor = logoColors[colorScheme][color];
 
 	return (
 		<Drawer
@@ -61,11 +69,13 @@ export function MobileNav({ items = [], open, onClose }) {
 		>
 			<Stack spacing={2} sx={{ p: 2 }}>
 				<div>
-					<Box component={RouterLink} href={paths.home} sx={{ display: "inline-flex" }}>
-						<Logo color="light" height={32} width={122} />
+					<Box component={RouterLink} href={"/dashboard"} sx={{ display: "inline-flex", textDecoration: "none" }}>
+						<Logo color={logoColor} height={60} width={60} />
+						<Typography variant="body1" color="white" alignContent={"center"} fontWeight={"bold"}>
+							icroImpulso
+						</Typography>
 					</Box>
 				</div>
-				<WorkspacesSwitch />
 			</Stack>
 			<Box component="nav" sx={{ flex: "1 1 auto", p: 2 }}>
 				{renderNavGroups({ items, onClose, pathname })}

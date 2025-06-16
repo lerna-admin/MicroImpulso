@@ -7,7 +7,7 @@ import Box from "@mui/material/Box";
 import IconButton from "@mui/material/IconButton";
 import Stack from "@mui/material/Stack";
 import Tooltip from "@mui/material/Tooltip";
-import { Bell as BellIcon } from "@phosphor-icons/react/dist/ssr/Bell";
+import { Bell as BellIcon, List as ListIcon } from "@phosphor-icons/react/dist/ssr";
 
 import { usePopover } from "@/hooks/use-popover";
 import { useAuth } from "@/components/auth/custom/auth-context";
@@ -45,6 +45,17 @@ export function MainNav({ items }) {
 						py: 1,
 					}}
 				>
+					{" "}
+					<Stack direction="row" spacing={2} sx={{ alignItems: "center", flex: "1 1 auto" }}>
+						<IconButton
+							onClick={() => {
+								setOpenNav(true);
+							}}
+							sx={{ display: { lg: "none" } }}
+						>
+							<ListIcon />
+						</IconButton>
+					</Stack>
 					<Stack
 						direction="row"
 						spacing={2}

@@ -54,15 +54,15 @@ export function RequestsTable({ rows, permissions, role }) {
 				</Link>
 			),
 			name: "Nombre completo",
-			width: "150px",
+			width: "180px",
 		},
-		{ formatter: (row) => <p>{row.client.document}</p>, name: "Identificación", width: "100px" },
+		{ formatter: (row) => <p>{row.client.document}</p>, name: "Identificación", width: "130px" },
 		{
 			formatter(row) {
-				return new Intl.NumberFormat("en-US", { style: "currency", currency: "COP" }).format(row.requestedAmount);
+				return new Intl.NumberFormat("en-US", { style: "currency", currency: "COP", minimumFractionDigits: 0 }).format(row.requestedAmount);
 			},
 			name: "Monto solicitado",
-			width: "70px",
+			width: "160px",
 		},
 		{
 			formatter: (row) => (
@@ -75,8 +75,7 @@ export function RequestsTable({ rows, permissions, role }) {
 					</Typography>
 				</Stack>
 			),
-			name: "Fecha Inicio / Fecha Fin",
-			align: "center",
+			name: "Fecha Inicio - Fecha Fin",
 			width: "120px",
 		},
 		{
@@ -84,7 +83,7 @@ export function RequestsTable({ rows, permissions, role }) {
 				return dayjs(row.updatedAt).format("MMM D, YYYY");
 			},
 			name: "Fecha Ult. Pago",
-			width: "135px",
+			width: "150px",
 		},
 
 		{
@@ -126,7 +125,6 @@ export function RequestsTable({ rows, permissions, role }) {
 			name: "Acciones",
 			hideName: true,
 			width: "70px",
-			align: "right",
 		},
 	];
 
@@ -136,7 +134,7 @@ export function RequestsTable({ rows, permissions, role }) {
 			{rows.length === 0 ? (
 				<Box sx={{ p: 3 }}>
 					<Typography color="text.secondary" sx={{ textAlign: "center" }} variant="body2">
-						No se encontraron solicitudes
+						No se encontraron solicitudes.
 					</Typography>
 				</Box>
 			) : null}
