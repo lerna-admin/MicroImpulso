@@ -7,7 +7,7 @@ export const NotificationAlert = ({ openAlert, onClose, msg, severity }) => {
 			open={openAlert}
 			autoHideDuration={2000}
 			onClose={onClose}
-			anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+			anchorOrigin={{ vertical: "top", horizontal: "right" }}
 		>
 			<Alert severity={severity} onClose={onClose}>
 				{msg}

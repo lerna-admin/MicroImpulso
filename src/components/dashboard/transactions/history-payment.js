@@ -43,7 +43,7 @@ const columns = [
 	{
 		formatter: (row) => (
 			<Typography sx={{ whiteSpace: "nowrap" }} variant="inherit">
-				{dayjs(row.date).utc().format("DD-MM-YYYY hh:mm A")}
+				{dayjs(row.date).utc().format("DD-MM-YYYY")}
 			</Typography>
 		),
 		name: "Fecha",
@@ -155,21 +155,26 @@ export function HistoryPayments({
 	});
 
 	const onSubmit = React.useCallback(async ({ amount }) => {
-		const data = {
-			loanRequestId: requestId,
-			transactionType: "repayment",
-			amount: Number.parseInt(amount),
-			reference: "Abono cliente",
-		};
+		try {
+			const data = {
+				loanRequestId: requestId,
+				transactionType: "repayment",
+				amount: Number.parseInt(amount),
+				reference: "Abono cliente",
+			};
 
-		await createTransaction(data);
+			await createTransaction(data);
+			reset({ amount: 0 });
 
-		reset({
-			amount: 0,
-		});
-
-		router.refresh();
+			setAlertMsg("¡Pago registrado!");
+			setAlertSeverity("success");
+		} catch (error) {
+			setAlertMsg(error.message);
+			setAlertSeverity("error");
+		}
 		popover.handleClose();
+		popoverAlert.handleOpen();
+		router.refresh();
 	});
 
 	const handleRegisterPay = () => {
@@ -254,6 +259,7 @@ export function HistoryPayments({
 				</Typography>
 			)}
 
+			{/* Modal para registrar pago */}
 			<Dialog
 				fullWidth
 				maxWidth={"xs"}
