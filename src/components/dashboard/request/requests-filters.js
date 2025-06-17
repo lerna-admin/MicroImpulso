@@ -20,7 +20,7 @@ const tabs = [
 
 export function RequestsFilters({ filters = {}, allBranches, userBranch }) {
 	const router = useRouter();
-	const { status, limit } = filters;
+	const { status } = filters;
 
 	const [branchSelected, setBranchSelected] = React.useState(userBranch);
 
@@ -48,7 +48,7 @@ export function RequestsFilters({ filters = {}, allBranches, userBranch }) {
 
 	const handleStatusChange = React.useCallback(
 		(_, value) => {
-			updateSearchParams({ ...filters, status: value, page: 1, limit: limit });
+			updateSearchParams({ ...filters, status: value, page: 1 });
 		},
 		[updateSearchParams, filters]
 	);
@@ -57,7 +57,7 @@ export function RequestsFilters({ filters = {}, allBranches, userBranch }) {
 		({ target }) => {
 			const { value } = target;
 			setBranchSelected(value);
-			updateSearchParams({ ...filters, branch: value, page: 1, limit: limit });
+			updateSearchParams({ ...filters, branch: value, page: 1 });
 		},
 		[updateSearchParams, filters]
 	);
@@ -87,7 +87,7 @@ export function RequestsFilters({ filters = {}, allBranches, userBranch }) {
 					labelId="branch-label"
 					name="branchSelected"
 					onChange={handleBranchChange}
-					sx={{ maxWidth: "100%", width: "120px", marginTop: "0 !important" }}
+					sx={{ maxWidth: "100%", width: "170px", marginTop: "0 !important" }}
 					value={branchSelected}
 				>
 					{allBranches.map((sede) => (
