@@ -14,6 +14,8 @@ const BASE_URL = process.env.NEXT_PUBLIC_API_URL;
  * @returns {Client[]}
  */
 export async function getAllCustomers({ page = 1, limit = 10, status = "", type = "", paymentDay = "" }) {
+	console.log(`${BASE_URL}/clients?page=${page}&limit=${limit}&status=${status}&type=${type}&paymentDay=${paymentDay}`);
+	
 	const res = await fetch(
 		`${BASE_URL}/clients?page=${page}&limit=${limit}&status=${status}&type=${type}&paymentDay=${paymentDay}`
 	);

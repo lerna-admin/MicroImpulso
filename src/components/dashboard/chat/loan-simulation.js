@@ -4,6 +4,7 @@ import * as React from "react";
 import { useRouter } from "next/navigation";
 import { sendSimulation } from "@/app/dashboard/chat/hooks/use-conversations";
 import { getRequestsByCustomerId, updateRequest } from "@/app/dashboard/requests/hooks/use-requests";
+import { deleteAlphabeticals } from "@/helpers/format-currency";
 import {
 	Box,
 	Button,
@@ -22,16 +23,10 @@ import {
 import Grid from "@mui/material/Grid2";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import html2canvas from "html2canvas";
-import { QRCodeSVG } from "qrcode.react";
 
 import { dayjs } from "@/lib/dayjs";
 import { usePopover } from "@/hooks/use-popover";
 import { NotificationAlert } from "@/components/widgets/notifications/notification-alert";
-
-const parseCurrency = (value) => {
-	// Elimina cualquier carácter que no sea número
-	return Number(value.replaceAll(/[^0-9]/g, ""));
-};
 
 export function LoanSimulation({ contact }) {
 	const [capital, setCapital] = React.useState(0);
@@ -204,7 +199,7 @@ export function LoanSimulation({ contact }) {
 						slotProps={{ htmlInput: { min: 0 } }}
 						value={capital.toLocaleString("es-CO")}
 						onChange={(e) => {
-							const parsed = parseCurrency(e.target.value);
+							const parsed = deleteAlphabeticals(e.target.value);
 							setCapital(parsed);
 						}}
 						fullWidth

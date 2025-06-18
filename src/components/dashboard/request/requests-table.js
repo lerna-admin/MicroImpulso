@@ -5,6 +5,7 @@ import RouterLink from "next/link";
 import { useRouter } from "next/navigation";
 import { renewRequest, updateRequest } from "@/app/dashboard/requests/hooks/use-requests";
 import { createTransaction } from "@/app/dashboard/transactions/hooks/use-transactions";
+import { deleteAlphabeticals } from "@/helpers/format-currency";
 import {
 	Button,
 	Dialog,
@@ -59,7 +60,9 @@ export function RequestsTable({ rows, permissions, role }) {
 		{ formatter: (row) => <p>{row.client.document}</p>, name: "Identificación", width: "130px" },
 		{
 			formatter(row) {
-				return new Intl.NumberFormat("en-US", { style: "currency", currency: "COP", minimumFractionDigits: 0 }).format(row.requestedAmount);
+				return new Intl.NumberFormat("en-US", { style: "currency", currency: "COP", minimumFractionDigits: 0 }).format(
+					row.requestedAmount
+				);
 			},
 			name: "Monto solicitado",
 			width: "160px",
@@ -309,7 +312,7 @@ export function ActionsCell({ row, permissions, role }) {
 								slotProps={{ htmlInput: { min: 0 } }}
 								value={amount.toLocaleString("es-CO")}
 								onChange={(e) => {
-									const parsed = parseCurrency(e.target.value);
+									const parsed = deleteAlphabeticals(e.target.value);
 									setAmount(parsed);
 								}}
 								fullWidth
@@ -441,8 +444,3 @@ export function ActionsCell({ row, permissions, role }) {
 		</React.Fragment>
 	);
 }
-
-const parseCurrency = (value) => {
-	// Elimina cualquier carácter que no sea número
-	return Number(value.replaceAll(/[^0-9]/g, ""));
-};

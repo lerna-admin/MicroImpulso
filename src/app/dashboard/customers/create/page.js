@@ -3,16 +3,20 @@ import RouterLink from "next/link";
 import Box from "@mui/material/Box";
 import Link from "@mui/material/Link";
 import Stack from "@mui/material/Stack";
-import Typography from "@mui/material/Typography";
 import { ArrowLeft as ArrowLeftIcon } from "@phosphor-icons/react/dist/ssr/ArrowLeft";
 
 import { appConfig } from "@/config/app";
 import { paths } from "@/paths";
+import { getUser } from "@/lib/custom-auth/server";
 import { CustomerCreateForm } from "@/components/dashboard/customer/customer-create-form";
 
 export const metadata = { title: `Create | Customers | Dashboard | ${appConfig.name}` };
 
-export default function Page() {
+export default async function Page() {
+	const {
+		data: { user },
+	} = await getUser();
+
 	return (
 		<Box
 			sx={{
@@ -36,11 +40,8 @@ export default function Page() {
 							Clientes
 						</Link>
 					</div>
-					<div>
-						<Typography variant="h4">Crear cliente</Typography>
-					</div>
 				</Stack>
-				<CustomerCreateForm />
+				<CustomerCreateForm user={{ id: user.id, role: user.role }} />
 			</Stack>
 		</Box>
 	);
