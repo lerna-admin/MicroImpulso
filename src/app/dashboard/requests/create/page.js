@@ -10,7 +10,7 @@ import { appConfig } from "@/config/app";
 import { paths } from "@/paths";
 import { RequestCreateForm } from "@/components/dashboard/request/request-create-form";
 
-export const metadata = { title: `Create | Orders | Dashboard | ${appConfig.name}` };
+export const metadata = { title: `Create | Requests | Dashboard | ${appConfig.name}` };
 
 export default function Page() {
 	return (
@@ -33,11 +33,11 @@ export default function Page() {
 							variant="subtitle2"
 						>
 							<ArrowLeftIcon fontSize="var(--icon-fontSize-md)" />
-							Orders
+							Solicitudes
 						</Link>
 					</div>
 					<div>
-						<Typography variant="h4">Create order</Typography>
+						<Typography variant="h4">Crear solicitud</Typography>
 					</div>
 				</Stack>
 				<RequestCreateForm />

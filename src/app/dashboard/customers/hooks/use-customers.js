@@ -50,7 +50,7 @@ export async function createCustomer(data) {
 		body: JSON.stringify(data),
 	});
 	if (!res.ok) throw new Error("Error al crear cliente");
-	return res.json();
+	return await res.json();
 }
 
 export async function updateCustomer(data, id) {

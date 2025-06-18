@@ -68,7 +68,7 @@ export function CustomerEditForm({ customerToEdit }) {
 							}}
 						>
 							<FormControl fullWidth>
-								<InputLabel>Cedula</InputLabel>
+								<InputLabel>N. de documento</InputLabel>
 								<OutlinedInput
 									defaultValue={customerToEdit.client.document}
 									id="document"

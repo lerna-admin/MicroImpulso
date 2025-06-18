@@ -33,11 +33,11 @@ export default function Page() {
 							variant="subtitle2"
 						>
 							<ArrowLeftIcon fontSize="var(--icon-fontSize-md)" />
-							Customers
+							Clientes
 						</Link>
 					</div>
 					<div>
-						<Typography variant="h4">Create customer</Typography>
+						<Typography variant="h4">Crear cliente</Typography>
 					</div>
 				</Stack>
 				<CustomerCreateForm />

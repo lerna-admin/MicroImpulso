@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
-import { Box, Chip, Divider, Grid2, Tooltip } from "@mui/material";
+import { Box, Chip, Tooltip, useMediaQuery, useTheme } from "@mui/material";
 import {
 	CalendarDots as CalendarDotsIcon,
 	Money as MoneyIcon,
@@ -19,6 +19,8 @@ export function CustomerStatistics({ statistics, filters = {} }) {
 	const { limit } = filters;
 	const [activeType, setActiveType] = React.useState(null);
 	const [activePaymentDay, setActivePaymentDay] = React.useState(null);
+	const theme = useTheme();
+	const isSmallScreen = useMediaQuery(theme.breakpoints.down("sm"));
 
 	const [filterButtonsAndStatistics, setFilterButtonsAndStatistics] = React.useState([
 		{ id: 1, action: false, label: "NP:", icon: <ThumbsDownIcon />, value: "0" },
@@ -26,7 +28,6 @@ export function CustomerStatistics({ statistics, filters = {} }) {
 		{ id: 3, action: false, label: "CR:", icon: <ReceiptXIcon />, value: "0" },
 		{ id: 4, action: false, label: "", icon: <UserCircleIcon />, value: "0" },
 		{ id: 5, action: false, label: "", icon: <MoneyIcon />, value: "0" },
-		{ divider: true },
 		{ id: 6, action: true, label: "Quincenal", icon: <CalendarDotsIcon />, value: "" },
 		{ id: 7, action: true, label: "Mensual", icon: <CalendarDotsIcon />, value: "" },
 		{ id: 8, action: true, label: "5-20", icon: <CalendarDotsIcon />, value: "" },
@@ -112,39 +113,42 @@ export function CustomerStatistics({ statistics, filters = {} }) {
 	);
 
 	return (
-		<Box sx={{ flexGrow: 1 }}>
-			<Grid2 container spacing={1} columns={{ xs: 4, sm: 8, md: 12 }} alignItems="center">
-				{filterButtonsAndStatistics.map((item, index) => {
-					if (item.divider) {
-						return <Divider key={index} orientation="vertical" flexItem sx={{ mx: 2, borderColor: "grey" }} />;
-					}
-					const { label, value, icon, action } = item;
-					return (
-						<Grid2 key={index} size={"auto"}>
-							<Tooltip title={value}>
-								<Chip
-									icon={icon}
-									label={`${label} ${value}`.trim()}
-									variant={
-										label.toUpperCase() === activeType || label.toUpperCase() === activePaymentDay
-											? "contained"
-											: "outlined"
-									}
-									size="small"
-									onClick={action ? () => handleFilterButton(label) : undefined}
-									sx={{
-										fontSize: "0.75rem",
-										px: 1,
-										height: 32,
-										maxWidth: 135,
-										whiteSpace: "nowrap",
-									}}
-								/>
-							</Tooltip>
-						</Grid2>
-					);
-				})}
-			</Grid2>
+		<Box
+			sx={{
+				display: "grid",
+				gridTemplateColumns: isSmallScreen ? "repeat(2, 1fr)" : "repeat(5, 1fr)",
+				gridTemplateRows: isSmallScreen ? "repeat(5, auto)" : "repeat(2, auto)",
+				gap: 1.3,
+			}}
+		>
+			{filterButtonsAndStatistics.map((item, index) => {
+				const { label, value, icon, action } = item;
+
+				return (
+					<Box key={index} sx={{ textAlign: "center" }}>
+						<Tooltip title={value}>
+							<Chip
+								icon={icon}
+								label={`${label} ${value}`.trim()}
+								variant={
+									label.toUpperCase() === activeType || label.toUpperCase() === activePaymentDay
+										? "contained"
+										: "outlined"
+								}
+								size="small"
+								onClick={action ? () => handleFilterButton(label) : undefined}
+								sx={{
+									fontSize: "0.75rem",
+									px: 1,
+									height: 32,
+									maxWidth: 135,
+									width: "100%",
+								}}
+							/>
+						</Tooltip>
+					</Box>
+				);
+			})}
 		</Box>
 	);
 }

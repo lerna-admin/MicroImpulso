@@ -201,7 +201,6 @@ export function RequestCreateForm() {
 				<CardContent>
 					<Stack divider={<Divider />} spacing={4}>
 						<Stack spacing={3}>
-							<Typography variant="h6">Basic information</Typography>
 							<Grid container spacing={3}>
 								<Grid
 									size={{
@@ -218,52 +217,6 @@ export function RequestCreateForm() {
 												<OutlinedInput {...field} />
 												{errors.customer ? <FormHelperText>{errors.customer.message}</FormHelperText> : null}
 											</FormControl>
-										)}
-									/>
-								</Grid>
-								<Grid
-									size={{
-										md: 6,
-										xs: 12,
-									}}
-								>
-									<Controller
-										control={control}
-										name="number"
-										render={({ field }) => (
-											<FormControl disabled fullWidth>
-												<InputLabel>Number</InputLabel>
-												<OutlinedInput {...field} />
-											</FormControl>
-										)}
-									/>
-								</Grid>
-								<Grid
-									size={{
-										md: 6,
-										xs: 12,
-									}}
-								>
-									<Controller
-										control={control}
-										name="issueDate"
-										render={({ field }) => (
-											<DatePicker
-												{...field}
-												format="MMM D, YYYY"
-												label="Issue date"
-												onChange={(date) => {
-													field.onChange(date?.toDate());
-												}}
-												slotProps={{
-													textField: {
-														error: Boolean(errors.issueDate),
-														fullWidth: true,
-														helperText: errors.issueDate?.message,
-													},
-												}}
-												value={dayjs(field.value)}
-											/>
 										)}
 									/>
 								</Grid>
@@ -397,187 +350,14 @@ export function RequestCreateForm() {
 								</Grid>
 							</Grid>
 						</Stack>
-						<Stack spacing={3}>
-							<Typography variant="h6">Shipping information</Typography>
-							<Stack spacing={3}>
-								<div>
-									<FormControlLabel control={<Checkbox defaultChecked />} label="Same as billing address" />
-								</div>
-								<Controller
-									control={control}
-									name="deliveryNotes"
-									render={({ field }) => (
-										<FormControl error={Boolean(errors.deliveryNotes)} fullWidth>
-											<InputLabel>Delivery notes</InputLabel>
-											<OutlinedInput {...field} multiline placeholder="e.g Leave package at the door" rows={3} />
-											{errors.deliveryNotes ? <FormHelperText>{errors.deliveryNotes.message}</FormHelperText> : null}
-										</FormControl>
-									)}
-								/>
-							</Stack>
-						</Stack>
-						<Stack spacing={3}>
-							<Typography variant="h6">Line items</Typography>
-							<Stack spacing={2}>
-								<Card sx={{ borderRadius: 1 }} variant="outlined">
-									<DataTable columns={getLineItemColumns({})} rows={lineItems} />
-								</Card>
-								<div>
-									<Button color="secondary" startIcon={<PlusCircleIcon />} variant="outlined">
-										Add item
-									</Button>
-								</div>
-							</Stack>
-						</Stack>
-						<Grid container spacing={3}>
-							<Grid
-								size={{
-									md: 4,
-									xs: 12,
-								}}
-							>
-								<Controller
-									control={control}
-									name="discount"
-									render={({ field }) => (
-										<FormControl error={Boolean(errors.discount)} fullWidth>
-											<InputLabel>Discount</InputLabel>
-											<OutlinedInput
-												{...field}
-												inputProps={{ step: 0.01 }}
-												onChange={(event) => {
-													const value = event.target.valueAsNumber;
-
-													if (Number.isNaN(value)) {
-														field.onChange("");
-														return;
-													}
-
-													field.onChange(Number.parseFloat(value.toFixed(2)));
-												}}
-												startAdornment={<InputAdornment position="start">$</InputAdornment>}
-												type="number"
-											/>
-											{errors.discount ? <FormHelperText>{errors.discount.message}</FormHelperText> : null}
-										</FormControl>
-									)}
-								/>
-							</Grid>
-							<Grid
-								size={{
-									md: 4,
-									xs: 12,
-								}}
-							>
-								<Controller
-									control={control}
-									name="shippingRate"
-									render={({ field }) => (
-										<FormControl error={Boolean(errors.shippingRate)} fullWidth>
-											<InputLabel>Shipping rate</InputLabel>
-											<OutlinedInput
-												{...field}
-												inputProps={{ step: 0.01 }}
-												onChange={(event) => {
-													const value = event.target.valueAsNumber;
-
-													if (Number.isNaN(value)) {
-														field.onChange("");
-														return;
-													}
-
-													field.onChange(Number.parseFloat(value.toFixed(2)));
-												}}
-												startAdornment={<InputAdornment position="start">$</InputAdornment>}
-												type="number"
-											/>
-											{errors.shippingRate ? <FormHelperText>{errors.shippingRate.message}</FormHelperText> : null}
-										</FormControl>
-									)}
-								/>
-							</Grid>
-							<Grid
-								size={{
-									md: 4,
-									xs: 12,
-								}}
-							>
-								<Controller
-									control={control}
-									name="taxRate"
-									render={({ field }) => (
-										<FormControl error={Boolean(errors.taxRate)} fullWidth>
-											<InputLabel>Tax rate (%)</InputLabel>
-											<OutlinedInput
-												{...field}
-												inputProps={{ step: 0.01 }}
-												onChange={(event) => {
-													const value = event.target.valueAsNumber;
-
-													if (Number.isNaN(value)) {
-														field.onChange("");
-														return;
-													}
-
-													if (value > 100) {
-														field.onChange(100);
-														return;
-													}
-
-													field.onChange(Number.parseFloat(value.toFixed(2)));
-												}}
-												type="number"
-											/>
-											{errors.taxRate ? <FormHelperText>{errors.taxRate.message}</FormHelperText> : null}
-										</FormControl>
-									)}
-								/>
-							</Grid>
-						</Grid>
-						<Box sx={{ display: "flex", justifyContent: "flex-end" }}>
-							<Stack spacing={2} sx={{ width: "300px", maxWidth: "100%" }}>
-								<Stack direction="row" spacing={3} sx={{ justifyContent: "space-between" }}>
-									<Typography variant="body2">Subtotal</Typography>
-									<Typography variant="body2">
-										{new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(subtotal)}
-									</Typography>
-								</Stack>
-								<Stack direction="row" spacing={3} sx={{ justifyContent: "space-between" }}>
-									<Typography variant="body2">Discount</Typography>
-									<Typography variant="body2">
-										{discount
-											? new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(discount)
-											: "-"}
-									</Typography>
-								</Stack>
-								<Stack direction="row" spacing={3} sx={{ justifyContent: "space-between" }}>
-									<Typography variant="body2">Shipping</Typography>
-									<Typography variant="body2">
-										{shippingRate
-											? new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(shippingRate)
-											: "-"}
-									</Typography>
-								</Stack>
-								<Stack direction="row" spacing={3} sx={{ justifyContent: "space-between" }}>
-									<Typography variant="body2">Taxes</Typography>
-									<Typography variant="body2">
-										{tax ? new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(tax) : "-"}
-									</Typography>
-								</Stack>
-								<Stack direction="row" spacing={3} sx={{ justifyContent: "space-between" }}>
-									<Typography variant="subtitle1">Total</Typography>
-									<Typography variant="subtitle1">
-										{new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(total)}
-									</Typography>
-								</Stack>
-							</Stack>
-						</Box>
 					</Stack>
 				</CardContent>
 				<CardActions sx={{ justifyContent: "flex-end" }}>
-					<Button color="secondary">Cancel</Button>
+					<Button color="secondary" variant="outlined">
+						Cancelar{" "}
+					</Button>
 					<Button type="submit" variant="contained">
-						Create request
+						Guardar
 					</Button>
 				</CardActions>
 			</Card>
