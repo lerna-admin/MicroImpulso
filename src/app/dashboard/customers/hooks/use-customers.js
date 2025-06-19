@@ -13,14 +13,22 @@ const BASE_URL = process.env.NEXT_PUBLIC_API_URL;
  *
  * @returns {Client[]}
  */
-export async function getAllCustomers({ page = 1, limit = 10, status = "", type = "", paymentDay = "" }) {
-	console.log(`${BASE_URL}/clients?page=${page}&limit=${limit}&status=${status}&type=${type}&paymentDay=${paymentDay}`);
-	
-	const res = await fetch(
-		`${BASE_URL}/clients?page=${page}&limit=${limit}&status=${status}&type=${type}&paymentDay=${paymentDay}`
-	);
+export async function getAllCustomers({ page = 1, limit = 10, status = "", type = "", paymentDay = "", name = "" }) {
+	const params = new URLSearchParams();
+
+	params.append("page", page.toString());
+	params.append("limit", limit.toString());
+
+	if (status) params.append("status", status);
+	if (type) params.append("type", type);
+	if (paymentDay) params.append("paymentDay", paymentDay);
+	if (name) params.append("name", name);
+
+	const url = `${BASE_URL}/clients?${params.toString()}`;
+	const res = await fetch(url);
+
 	if (!res.ok) throw new Error("Error al obtener clientes");
-	return res.json();
+	return await res.json();
 }
 
 /**

@@ -30,6 +30,33 @@ import { dayjs } from "@/lib/dayjs";
 import { usePopover } from "@/hooks/use-popover";
 import { NotificationAlert } from "@/components/widgets/notifications/notification-alert";
 
+const schema = zod.object({
+	customer: zod.any(),
+	amount: zod
+		.number({ invalid_type_error: "El monto debe ser un número" })
+		.min(1, { message: "El monto es obligatorio" })
+		.max(5_000_000, { message: "El monto no puede superar los 5.000.000" }),
+	typePayment: zod.enum(["QUINCENAL", "MENSUAL"], { errorMap: () => ({ message: "Debes elegir un tipo de pago" }) }),
+	datePayment: zod.enum(["15-30", "5-20", "10-25"], {
+		errorMap: () => ({ message: "Debes elegir una fecha de pago" }),
+	}),
+	selectedDate: zod
+		.custom((val) => dayjs.isDayjs(val) && val.isValid(), {
+			message: "La fecha es obligatoria",
+		})
+		.refine((val) => dayjs(val).isAfter(dayjs(), "day"), {
+			message: "La fecha debe ser posterior a hoy",
+		}),
+});
+
+const defaultValues = {
+	customer: [],
+	amount: 0,
+	typePayment: "",
+	datePayment: "",
+	selectedDate: dayjs(),
+};
+
 const determinarAgent = (user) => {
 	if (user.role === "AGENT") {
 		return user.id;
@@ -44,63 +71,21 @@ export function RequestCreateForm({ user }) {
 	const [alertSeverity, setAlertSeverity] = React.useState("success");
 
 	const [inputValue, setInputValue] = React.useState("");
-	const [options, setOptions] = React.useState([]);
 	const [loading, setLoading] = React.useState(false);
-
-	const schema = zod.object({
-		customer: zod
-			.unknown() // Acepta cualquier cosa inicialmente, incluso {}
-			.refine(
-				(val) =>
-					typeof val === "object" &&
-					val !== null &&
-					"id" in val &&
-					typeof val.id === "number" &&
-					val.id > 0 &&
-					"label" in val &&
-					typeof val.label === "string" &&
-					val.label.trim() !== "",
-				{
-					message: "Debes seleccionar un cliente",
-				}
-			),
-		amount: zod
-			.number({ invalid_type_error: "El monto debe ser un número" })
-			.min(1, { message: "El monto es obligatorio" })
-			.max(5_000_000, { message: "El monto no puede superar los 5.000.000" }),
-		typePayment: zod.enum(["QUINCENAL", "MENSUAL"], { errorMap: () => ({ message: "Debes elegir un tipo de pago" }) }),
-		datePayment: zod.enum(["15-30", "5-20", "10-25"], {
-			errorMap: () => ({ message: "Debes elegir una fecha de pago" }),
-		}),
-		selectedDate: zod
-			.custom((val) => dayjs.isDayjs(val) && val.isValid(), {
-				message: "La fecha es obligatoria",
-			})
-			.refine((val) => dayjs(val).isAfter(dayjs(), "day"), {
-				message: "La fecha debe ser posterior a hoy",
-			}),
-	});
-
-	const defaultValues = {
-		customer: {},
-		amount: 0,
-		typePayment: "",
-		datePayment: "",
-		selectedDate: dayjs(),
-	};
 
 	const {
 		control,
 		handleSubmit,
 		formState: { errors },
 		reset,
+		setValue,
 	} = useForm({ defaultValues, resolver: zodResolver(schema) });
 
 	const onSubmit = React.useCallback(
 		async (dataForm) => {
 			try {
 				const bodyRequest = {
-					clientId: dataForm.customer.id,
+					clientId: 241,
 					agentId: determinarAgent(user),
 					status: "NEW",
 					requestedAmount: dataForm.amount,
@@ -112,49 +97,42 @@ export function RequestCreateForm({ user }) {
 				await createRequest(bodyRequest);
 				setAlertMsg("¡Creado exitosamente!");
 				setAlertSeverity("success");
+				reset();
 			} catch (error) {
 				setAlertMsg(error.message);
 				setAlertSeverity("error");
-			} finally {
-				popoverAlert.handleOpen();
-				reset();
 			}
 		},
 		[router]
 	);
 
 	const fetchOptions = async (query) => {
-		setLoading(true);
-		try {
-			const { data } = await getAllCustomers({ name: query });
-			const dataFormatted = data.map(({ client }) => ({ label: client.name, id: client.id }));
-			setOptions(dataFormatted);
-		} catch (error) {
-			console.error("Error fetching autocomplete options:", error);
-		} finally {
-			setLoading(false);
-		}
+		if (!query) return [];
+		const { data } = await getAllCustomers({ name: query });
+		return data.filter((item) => item.client.name.toLowerCase().includes(query.toLowerCase()));
 	};
 
-	const debounced = React.useMemo(
+	const debouncedFetch = React.useMemo(
 		() =>
-			debounce((value) => {
-				if (value.trim()) {
-					fetchOptions(value);
-				} else {
-					setOptions([]);
-				}
-			}, 700), // Espera 700ms después del último tipo
+			debounce(async (query, callback) => {
+				setLoading(true);
+				const results = await fetchOptions(query);
+				callback(results);
+				setLoading(false);
+			}, 400),
 		[]
 	);
 
 	React.useEffect(() => {
-		debounced(inputValue);
-		// Cleanup del debounce para evitar efectos secundarios
-		return () => {
-			debounced.clear();
-		};
-	}, [inputValue, debounced]);
+		if (inputValue === "") {
+			setValue("customer", []);
+			return;
+		}
+
+		debouncedFetch(inputValue, (results) => {
+			setValue("customer", [results]);
+		});
+	}, [inputValue, debouncedFetch]);
 
 	return (
 		<form onSubmit={handleSubmit(onSubmit)}>
@@ -175,49 +153,24 @@ export function RequestCreateForm({ user }) {
 								<Controller
 									control={control}
 									name="customer"
-									render={({ field }) => {
-										return (
-											<FormControl error={Boolean(errors.customer)} fullWidth>
-												<InputLabel required sx={{ marginBottom: "0.5rem" }}>
-													Cliente
-												</InputLabel>
-												<Autocomplete
-													freeSolo
-													options={options}
-													loading={loading}
-													inputValue={inputValue}
-													value={field.value || null}
-													onInputChange={(event, newInputValue) => {
-														setInputValue(newInputValue);
-													}}
-													onChange={(event, newValue) => {
-														field.onChange(newValue);
-													}}
-													getOptionLabel={(option) => (typeof option === "string" ? option : option?.label || "")}
-													isOptionEqualToValue={(option, value) => option?.label === value?.label}
-													renderInput={(params) => (
-														<TextField
-															{...params}
-															placeholder="Escribe su nombre"
-															variant="outlined"
-															slotProps={{
-																input: {
-																	...params.InputProps,
-																	endAdornment: (
-																		<React.Fragment>
-																			{loading ? <CircularProgress color="inherit" size={20} /> : null}
-																			{params.InputProps.endAdornment}
-																		</React.Fragment>
-																	),
-																},
-															}}
-														/>
-													)}
-												/>
-												{errors.customer ? <FormHelperText>{errors.customer.message}</FormHelperText> : null}
-											</FormControl>
-										);
-									}}
+									render={({ field }) => (
+										<FormControl error={Boolean(errors.customer)} fullWidth>
+											<Autocomplete
+												{...field}
+												freeSolo
+												options={field.value}
+												loading={loading}
+												getOptionLabel={(option) => (typeof option === "string" ? option : (option.client?.name ?? ""))}
+												value={field.value}
+												onChange={(_, newValue) => field.onChange(newValue)}
+												inputValue={inputValue}
+												onInputChange={(_, newInputValue) => setInputValue(newInputValue)}
+												isOptionEqualToValue={(option, value) => option?.id === value?.id}
+												renderInput={(params) => <TextField {...params} label="Cliente" variant="outlined" />}
+											/>
+											{errors.customer ? <FormHelperText>{errors.customer.message}</FormHelperText> : null}
+										</FormControl>
+									)}
 								/>
 							</Grid>
 						</Grid>
@@ -319,7 +272,7 @@ export function RequestCreateForm({ user }) {
 					<Button variant="outlined" component={RouterLink} href={paths.dashboard.customers.list}>
 						Cancelar
 					</Button>
-					<Button variant="contained" type="subnmit">
+					<Button variant="contained" type="submit">
 						Guardar
 					</Button>
 				</CardActions>
