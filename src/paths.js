@@ -48,7 +48,11 @@ export const paths = {
 			thread: (threadType, threadId) => `/dashboard/chat/${threadType}/${threadId}`,
 			preview: (clientId) => `/dashboard/chat?previewId=${clientId}`,
 		},
-		configuration: "/dashboard/configuration",
+		configuration: {
+			permissions: "/dashboard/configuration/permissions",
+			amountManagment: "/dashboard/configuration/amountManagment",
+			paymentInformation: "/dashboard/configuration/paymentInformation",
+		},
 		crypto: "/dashboard/crypto",
 		customers: {
 			create: "/dashboard/customers/create",

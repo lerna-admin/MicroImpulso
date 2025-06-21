@@ -127,9 +127,9 @@ export function CustomerCreateForm({ user }) {
 			createCustomer(bodyCustomer)
 				.then(({ id: newClientId }) => {
 					const bodyRequest = {
-						clientId: newClientId,
-						agentId: determinarAgent(user),
-						status: "NEW",
+						client: newClientId,
+						agent: determinarAgent(user),
+						status: "new",
 						requestedAmount: dataForm.amount,
 						endDateAt: dataForm.selectedDate,
 						amount: 0,

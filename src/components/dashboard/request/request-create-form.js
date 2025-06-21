@@ -2,7 +2,6 @@
 
 import * as React from "react";
 import RouterLink from "next/link";
-import { useRouter } from "next/navigation";
 import { getAllCustomers } from "@/app/dashboard/customers/hooks/use-customers";
 import { createRequest } from "@/app/dashboard/requests/hooks/use-requests";
 import { deleteAlphabeticals, formatCurrency } from "@/helpers/format-currency";
@@ -38,7 +37,6 @@ const determinarAgent = (user) => {
 };
 
 export function RequestCreateForm({ user }) {
-	const router = useRouter();
 	const popoverAlert = usePopover();
 	const [alertMsg, setAlertMsg] = React.useState("");
 	const [alertSeverity, setAlertSeverity] = React.useState("success");
@@ -96,32 +94,29 @@ export function RequestCreateForm({ user }) {
 		reset,
 	} = useForm({ defaultValues, resolver: zodResolver(schema) });
 
-	const onSubmit = React.useCallback(
-		async (dataForm) => {
-			try {
-				const bodyRequest = {
-					clientId: dataForm.customer.id,
-					agentId: determinarAgent(user),
-					status: "NEW",
-					requestedAmount: dataForm.amount,
-					endDateAt: dataForm.selectedDate,
-					amount: 0,
-					paymentDay: dataForm.datePayment,
-					type: dataForm.typePayment,
-				};
-				await createRequest(bodyRequest);
-				setAlertMsg("¡Creado exitosamente!");
-				setAlertSeverity("success");
-			} catch (error) {
-				setAlertMsg(error.message);
-				setAlertSeverity("error");
-			} finally {
-				popoverAlert.handleOpen();
-				reset();
-			}
-		},
-		[router]
-	);
+	const onSubmit = React.useCallback(async (dataForm) => {
+		try {
+			const bodyRequest = {
+				client: dataForm.customer.id,
+				agent: determinarAgent(user),
+				status: "new",
+				requestedAmount: dataForm.amount,
+				endDateAt: dataForm.selectedDate,
+				amount: 0,
+				paymentDay: dataForm.datePayment,
+				type: dataForm.typePayment,
+			};
+			await createRequest(bodyRequest);
+			setAlertMsg("¡Creado exitosamente!");
+			setAlertSeverity("success");
+		} catch (error) {
+			setAlertMsg(error.message);
+			setAlertSeverity("error");
+		} finally {
+			popoverAlert.handleOpen();
+			reset();
+		}
+	});
 
 	const fetchOptions = async (query) => {
 		setLoading(true);
@@ -319,7 +314,7 @@ export function RequestCreateForm({ user }) {
 					<Button variant="outlined" component={RouterLink} href={paths.dashboard.customers.list}>
 						Cancelar
 					</Button>
-					<Button variant="contained" type="subnmit">
+					<Button variant="contained" type="submit">
 						Guardar
 					</Button>
 				</CardActions>

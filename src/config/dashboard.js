@@ -26,13 +26,6 @@ export const dashboardConfig = {
 					matcher: { type: "startsWith", href: "/dashboard/reports" },
 				},
 				{
-					key: "configuration",
-					title: "Configuración",
-					icon: "gear",
-					href: paths.dashboard.configuration,
-					matcher: { type: "startsWith", href: "/dashboard/configuration" },
-				},
-				{
 					key: "requests",
 					title: "Solicitudes",
 					icon: "cards-three",
@@ -60,13 +53,6 @@ export const dashboardConfig = {
 			title: "Administrador",
 			items: [
 				{
-					key: "clients",
-					title: "Clientes",
-					icon: "users",
-					href: paths.dashboard.customers.list,
-					matcher: { type: "startsWith", href: "/dashboard/customers" },
-				},
-				{
 					key: "agents",
 					title: "Agentes",
 					icon: "identification-badge",
@@ -74,11 +60,29 @@ export const dashboardConfig = {
 					matcher: { type: "startsWith", href: "/dashboard/users" },
 				},
 				{
-					key: "requests",
-					title: "Solicitudes",
-					icon: "cards-three",
-					href: paths.dashboard.requests.list,
-					matcher: { type: "startsWith", href: "/dashboard/requests" },
+					key: "clients",
+					title: "Clientes",
+					icon: "users",
+					matcher: { type: "startsWith", href: "/dashboard/customers" },
+					items: [
+						{ key: "clients", title: "Lista de clientes", href: paths.dashboard.customers.list },
+						{ key: "clients:create", title: "Crear cliente", href: paths.dashboard.customers.create },
+					],
+				},
+				{
+					key: "configuration",
+					title: "Configuración",
+					icon: "gear",
+					matcher: { type: "startsWith", href: "/dashboard/permissions" },
+					items: [
+						{ key: "permissions", title: "Permisos", href: paths.dashboard.configuration.permissions },
+						{ key: "amountManagment", title: "Gestion de montos", href: paths.dashboard.configuration.amountManagment },
+						{
+							key: "paymentInformation",
+							title: "Información de pago",
+							href: paths.dashboard.configuration.paymentInformation,
+						},
+					],
 				},
 				{
 					key: "cash_flow",
@@ -86,6 +90,16 @@ export const dashboardConfig = {
 					icon: "cash-register",
 					href: paths.dashboard.cash_flow,
 					matcher: { type: "startsWith", href: "/dashboard/cash_flow" },
+				},
+				{
+					key: "requests",
+					title: "Solicitudes",
+					icon: "cards-three",
+					matcher: { type: "startsWith", href: "/dashboard/requests" },
+					items: [
+						{ key: "requests", title: "Lista de solicitudes", href: paths.dashboard.requests.list },
+						{ key: "requests:create", title: "Crear solicitud", href: paths.dashboard.requests.create },
+					],
 				},
 			],
 		},

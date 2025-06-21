@@ -17,3 +17,9 @@ export async function getRequestsStatsClientsSummary() {
 	if (!res.ok) throw new Error("Error al obtener resumen de clientes");
 	return res.json();
 }
+
+export async function getManagerSummary() {
+	const res = await fetch(`${BASE_URL}/stats/manager-summary`);
+	if (!res.ok) throw new Error("Error al obtener resumen de clientes");
+	return res.json();
+}
