@@ -17,6 +17,7 @@ import ListItemIcon from "@mui/material/ListItemIcon";
 import ListItemText from "@mui/material/ListItemText";
 import TextField from "@mui/material/TextField";
 import { debounce } from "@mui/material/utils";
+import { ArrowLeft as ArrowLeftIcon, ArrowRight as ArrowRightIcon } from "@phosphor-icons/react/dist/ssr";
 import { Controller, useForm } from "react-hook-form";
 import { z as zod } from "zod";
 
@@ -216,8 +217,8 @@ export function PermissionTransferList({ permissions }) {
 				<Divider />
 				<List
 					sx={{
-						width: 200,
-						height: 230,
+						width: 300,
+						height: 200,
 						bgcolor: "background.paper",
 						overflow: "auto",
 					}}
@@ -324,22 +325,22 @@ export function PermissionTransferList({ permissions }) {
 							<Button
 								sx={{ my: 0.5 }}
 								variant="outlined"
-								size="small"
+								size="medium"
 								onClick={handleCheckedRight}
 								disabled={leftChecked.length === 0}
 								aria-label="move selected right"
 							>
-								&gt;
+								<ArrowRightIcon />
 							</Button>
 							<Button
 								sx={{ my: 0.5 }}
 								variant="outlined"
-								size="small"
+								size="medium"
 								onClick={handleCheckedLeft}
 								disabled={rightChecked.length === 0}
 								aria-label="move selected left"
 							>
-								&lt;
+								<ArrowLeftIcon />
 							</Button>
 						</Grid>
 					</Grid>
