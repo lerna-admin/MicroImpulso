@@ -2,7 +2,10 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
-import { createPaymentInformation } from "@/app/dashboard/configuration/payment-information/hooks/use-payments-information";
+import {
+	createPaymentInformation,
+	editPaymentInformation,
+} from "@/app/dashboard/configuration/payment-information/hooks/use-payments-information";
 import { deleteAlphabeticals, formatCurrency } from "@/helpers/format-currency";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -17,7 +20,6 @@ import {
 	Select,
 	Stack,
 	Switch,
-	Typography,
 } from "@mui/material";
 import { Controller, useForm } from "react-hook-form";
 import { z as zod } from "zod";
@@ -30,6 +32,7 @@ export function PaymentAccountInformation({ paymentAccount }) {
 	const notificationAlert = usePopover();
 	const [alertMsg, setAlertMsg] = React.useState("");
 	const [alertSeverity, setAlertSeverity] = React.useState("success");
+	const [isCreated, setIsCreated] = React.useState(paymentAccount?.id === "" ? true : false);
 
 	const schema = zod.object({
 		name: zod
@@ -122,7 +125,35 @@ export function PaymentAccountInformation({ paymentAccount }) {
 			setAlertSeverity("error");
 		} finally {
 			notificationAlert.handleOpen();
+			setIsCreated(!isCreated)
 			router.refresh();
+			reset();
+		}
+	};
+
+	const handleEditPaymentAccount = async (dataForm) => {
+		try {
+			const body = {
+				holderName: dataForm.name,
+				holderDocument: dataForm.documentId,
+				bankName: dataForm.bankName,
+				accountNumber: dataForm.accountNumber,
+				accountType: dataForm.accountType,
+				currency: dataForm.currency,
+				limit: dataForm.limit,
+				isPrimary: dataForm.isPrimary,
+			};
+			console.log("handleEditPaymentAccount", paymentAccount?.id, body);
+			await editPaymentInformation(paymentAccount?.id, body);
+			setAlertMsg("¡Guardado exitosamente!");
+			setAlertSeverity("success");
+		} catch (error) {
+			setAlertMsg(error.message);
+			setAlertSeverity("error");
+		} finally {
+			notificationAlert.handleOpen();
+			router.refresh();
+			setIsCreated(!isCreated)
 			reset();
 		}
 	};
@@ -140,7 +171,7 @@ export function PaymentAccountInformation({ paymentAccount }) {
 						control={control}
 						name="name"
 						render={({ field }) => (
-							<FormControl fullWidth error={Boolean(errors.name)}>
+							<FormControl fullWidth error={Boolean(errors.name)} disabled={!isCreated}>
 								<InputLabel required>Nombre completo</InputLabel>
 								<OutlinedInput {...field} />
 								{errors.name ? <FormHelperText>{errors.name.message}</FormHelperText> : null}
@@ -158,7 +189,7 @@ export function PaymentAccountInformation({ paymentAccount }) {
 						control={control}
 						name="documentId"
 						render={({ field }) => (
-							<FormControl fullWidth error={Boolean(errors.documentId)}>
+							<FormControl fullWidth error={Boolean(errors.documentId)} disabled={!isCreated}>
 								<InputLabel required>Numero de documento</InputLabel>
 								<OutlinedInput {...field} />
 								{errors.documentId ? <FormHelperText>{errors.documentId.message}</FormHelperText> : null}
@@ -176,7 +207,7 @@ export function PaymentAccountInformation({ paymentAccount }) {
 						control={control}
 						name="bankName"
 						render={({ field }) => (
-							<FormControl fullWidth error={Boolean(errors.bankName)}>
+							<FormControl fullWidth error={Boolean(errors.bankName)} disabled={!isCreated}>
 								<InputLabel id="bankName" required>
 									Nombre del banco
 								</InputLabel>
@@ -199,7 +230,7 @@ export function PaymentAccountInformation({ paymentAccount }) {
 						control={control}
 						name="accountType"
 						render={({ field }) => (
-							<FormControl fullWidth error={Boolean(errors.accountType)}>
+							<FormControl fullWidth error={Boolean(errors.accountType)} disabled={!isCreated}>
 								<InputLabel id="accountType" required>
 									Tipo de cuenta
 								</InputLabel>
@@ -222,7 +253,7 @@ export function PaymentAccountInformation({ paymentAccount }) {
 						control={control}
 						name="accountNumber"
 						render={({ field }) => (
-							<FormControl fullWidth error={Boolean(errors.accountNumber)}>
+							<FormControl fullWidth error={Boolean(errors.accountNumber)} disabled={!isCreated}>
 								<InputLabel required>Numero de cuenta</InputLabel>
 								<OutlinedInput {...field} />
 								{errors.accountNumber ? <FormHelperText>{errors.accountNumber.message}</FormHelperText> : null}
@@ -240,7 +271,7 @@ export function PaymentAccountInformation({ paymentAccount }) {
 						control={control}
 						name="currency"
 						render={({ field }) => (
-							<FormControl fullWidth error={Boolean(errors.currency)}>
+							<FormControl fullWidth error={Boolean(errors.currency)} disabled={!isCreated}>
 								<InputLabel id="currency" required>
 									Moneda
 								</InputLabel>
@@ -263,7 +294,7 @@ export function PaymentAccountInformation({ paymentAccount }) {
 						control={control}
 						name="limit"
 						render={({ field }) => (
-							<FormControl fullWidth error={Boolean(errors.limit)}>
+							<FormControl fullWidth error={Boolean(errors.limit)} disabled={!isCreated}>
 								<InputLabel required>Limite</InputLabel>
 								<OutlinedInput
 									{...field}
@@ -291,9 +322,9 @@ export function PaymentAccountInformation({ paymentAccount }) {
 						control={control}
 						defaultValue={false}
 						render={({ field }) => (
-							<FormControl fullWidth error={Boolean(errors.limit)}>
+							<FormControl fullWidth error={Boolean(errors.isPrimary)} disabled={!isCreated}>
 								<Stack spacing={1}>
-									<Typography variant="subtitle2">Cuenta principal</Typography>
+									<InputLabel>Cuenta principal</InputLabel>
 									<Switch checked={field.value} onChange={field.onChange} name={field.name} />
 								</Stack>
 							</FormControl>
@@ -307,15 +338,25 @@ export function PaymentAccountInformation({ paymentAccount }) {
 					}}
 				>
 					<Stack direction="row" spacing={1} sx={{ alignItems: "center", justifyContent: "flex-end" }}>
-						<Button color="secondary" variant="outlined">
-							Editar
-						</Button>
-						<Button variant="contained" type="submit">
-							Guardar
-						</Button>
+						{paymentAccount?.id === "" ? null : (
+							<Button color="secondary" variant="outlined" onClick={() => setIsCreated(!isCreated)}>
+								Editar
+							</Button>
+						)}
+
+						{paymentAccount?.id === "" ? (
+							<Button variant="contained" type="submit" disabled={!isCreated}>
+								Crear
+							</Button>
+						) : (
+							<Button variant="contained" onClick={handleSubmit(handleEditPaymentAccount)} disabled={!isCreated}>
+								Guardar
+							</Button>
+						)}
 					</Stack>
 				</Grid2>
 			</Grid2>
+
 			<NotificationAlert
 				openAlert={notificationAlert.open}
 				onClose={notificationAlert.handleClose}

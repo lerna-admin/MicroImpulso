@@ -93,7 +93,7 @@ export function PaymentAccountTabs({ tabsInfo }) {
 		<Box sx={{ width: "100%", typography: "body1" }} padding={3}>
 			<TabContext value={tabSelected}>
 				<Box sx={{ borderBottom: 1, borderColor: "divider" }}>
-					<TabList onChange={handleChange} aria-label="lab API tabs example">
+					<TabList onChange={handleChange} variant="scrollable" scrollButtons="auto">
 						{tabs.map((item) => (
 							<Tab
 								wrapped
@@ -149,7 +149,7 @@ export function PaymentAccountTabs({ tabsInfo }) {
 				aria-describedby="alert-dialog-description"
 			>
 				<DialogTitle id="alert-dialog-title" textAlign={"center"} sx={{ pt: 4 }}>
-					{"Eliminar cuenta de pago"}
+					{"Eliminar cuenta"}
 				</DialogTitle>
 
 				<DialogContent>
@@ -157,7 +157,7 @@ export function PaymentAccountTabs({ tabsInfo }) {
 						{`¿Desea eliminar la cuenta de pago ${accountToDelete?.accountNumber}?`}
 					</DialogContentText>
 
-					<Box component={"div"} display={"flex"} justifyContent={"flex-end"} gap={2}>
+					<Box component={"div"} display={"flex"} justifyContent={"flex-end"} gap={2} padding={1}>
 						<Button variant="contained" onClick={handleDeleteAccount}>
 							Aceptar
 						</Button>

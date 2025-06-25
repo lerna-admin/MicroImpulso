@@ -24,3 +24,13 @@ export async function deletePaymentInformation(id) {
 	if (!res.ok) throw new Error("Error al borrar una cuenta de pago");
 	return await res.json();
 }
+
+export async function editPaymentInformation(id, data) {
+	const res = await fetch(`${BASE_URL}/payment-accounts/${id}`, {
+		method: "PUT",
+		headers: { "Content-Type": "application/json" },
+		body: JSON.stringify(data),
+	});
+	if (!res.ok) throw new Error("Error al editar una cuenta de pago");
+	return await res.json();
+}
