@@ -90,7 +90,7 @@ export function AmountManagment({ params }) {
 	}, [params]);
 
 	return (
-		<Box component={"form"} onSubmit={handleSubmit(onSubmit)} padding={3}>
+		<Box component={"form"} onSubmit={handleSubmit(onSubmit)} padding={3} paddingTop={5}>
 			<Grid container spacing={3}>
 				<Grid size={{ md: 6, xs: 12 }}>
 					<Controller
