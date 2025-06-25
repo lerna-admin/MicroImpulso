@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { savePermission } from "@/app/dashboard/requests/hooks/use-permissions";
+import { savePermission } from "@/app/dashboard/configuration/permissions/hooks/use-permissions";
 import { getAllUsers, getUserById } from "@/app/dashboard/users/hooks/use-users";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Autocomplete, CircularProgress, FormControl, FormHelperText, InputLabel } from "@mui/material";

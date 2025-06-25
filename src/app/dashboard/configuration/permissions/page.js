@@ -8,7 +8,7 @@ import { appConfig } from "@/config/app";
 import { getUser } from "@/lib/custom-auth/server";
 import { PermissionTransferList } from "@/components/dashboard/configuration/permissions-transfer-list";
 
-import { getPermissions } from "../../requests/hooks/use-permissions";
+import { getPermissions } from "./hooks/use-permissions";
 
 export const metadata = { title: `Permisos | Dashboard | ${appConfig.name}` };
 

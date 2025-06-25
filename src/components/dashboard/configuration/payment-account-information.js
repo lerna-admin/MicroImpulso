@@ -367,8 +367,15 @@ export function PaymentAccountInformation({ paymentAccount }) {
 				>
 					<Stack direction="row" spacing={1} sx={{ alignItems: "center", justifyContent: "flex-end" }}>
 						{paymentAccount?.id === "" ? null : (
-							<Button color="secondary" variant="outlined" onClick={() => setIsCreated(!isCreated)}>
-								Editar
+							<Button
+								color="secondary"
+								variant="outlined"
+								onClick={() => {
+									setIsCreated(!isCreated);
+									reset();
+								}}
+							>
+								{isCreated ? "Cancelar" : "Editar"}
 							</Button>
 						)}
 

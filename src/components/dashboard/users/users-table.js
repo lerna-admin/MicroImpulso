@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { deleteCloseDay } from "@/app/dashboard/balance/hooks/use-balance";
-import { savePermission } from "@/app/dashboard/requests/hooks/use-permissions";
+import { savePermission } from "@/app/dashboard/configuration/permissions/hooks/use-permissions";
 import { getUserById } from "@/app/dashboard/users/hooks/use-users";
 import {
 	Button,
