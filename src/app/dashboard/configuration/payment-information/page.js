@@ -14,7 +14,7 @@ export const metadata = { title: `Información de pago | Dashboard | ${appConfig
 export default async function Page() {
 	let count = 1;
 
-	const data = await getAllPaymentsInformation();
+	const data = await getAllPaymentsInformation(true);
 	const tabsInfo = data.map((element) => {
 		return {
 			id: count++,

@@ -19,6 +19,7 @@ import {
 	OutlinedInput,
 	Select,
 	Stack,
+	styled,
 	Switch,
 } from "@mui/material";
 import { Controller, useForm } from "react-hook-form";
@@ -69,6 +70,9 @@ export function PaymentAccountInformation({ paymentAccount }) {
 			.number({ invalid_type_error: "El monto debe ser un número" })
 			.min(1, { message: "El monto es obligatorio" }),
 		isPrimary: zod.any().optional(),
+		isActive: zod.literal(true, {
+			errorMap: () => ({ message: "Debes activar esta opción" }),
+		}),
 	});
 
 	const {
@@ -87,6 +91,7 @@ export function PaymentAccountInformation({ paymentAccount }) {
 			currency: paymentAccount.currency,
 			limit: paymentAccount.limit,
 			isPrimary: paymentAccount.isPrimary,
+			isActive: paymentAccount.isActive,
 		},
 	});
 
@@ -101,6 +106,7 @@ export function PaymentAccountInformation({ paymentAccount }) {
 				currency: paymentAccount.currency,
 				limit: paymentAccount.limit,
 				isPrimary: paymentAccount.isPrimary,
+				isActive: paymentAccount.isActive,
 			});
 		}
 	}, [paymentAccount]);
@@ -116,6 +122,7 @@ export function PaymentAccountInformation({ paymentAccount }) {
 				currency: dataForm.currency,
 				limit: dataForm.limit,
 				isPrimary: dataForm.isPrimary,
+				isActive: dataForm.isActive,
 			};
 			await createPaymentInformation(body);
 			setAlertMsg("¡Creado exitosamente!");
@@ -125,7 +132,7 @@ export function PaymentAccountInformation({ paymentAccount }) {
 			setAlertSeverity("error");
 		} finally {
 			notificationAlert.handleOpen();
-			setIsCreated(!isCreated)
+			setIsCreated(!isCreated);
 			router.refresh();
 			reset();
 		}
@@ -142,8 +149,8 @@ export function PaymentAccountInformation({ paymentAccount }) {
 				currency: dataForm.currency,
 				limit: dataForm.limit,
 				isPrimary: dataForm.isPrimary,
+				isActive: dataForm.isActive,
 			};
-			console.log("handleEditPaymentAccount", paymentAccount?.id, body);
 			await editPaymentInformation(paymentAccount?.id, body);
 			setAlertMsg("¡Guardado exitosamente!");
 			setAlertSeverity("success");
@@ -153,7 +160,7 @@ export function PaymentAccountInformation({ paymentAccount }) {
 		} finally {
 			notificationAlert.handleOpen();
 			router.refresh();
-			setIsCreated(!isCreated)
+			setIsCreated(!isCreated);
 			reset();
 		}
 	};
@@ -313,7 +320,7 @@ export function PaymentAccountInformation({ paymentAccount }) {
 				</Grid2>
 				<Grid2
 					size={{
-						md: 6,
+						md: 3,
 						xs: 12,
 					}}
 				>
@@ -324,9 +331,30 @@ export function PaymentAccountInformation({ paymentAccount }) {
 						render={({ field }) => (
 							<FormControl fullWidth error={Boolean(errors.isPrimary)} disabled={!isCreated}>
 								<Stack spacing={1}>
-									<InputLabel>Cuenta principal</InputLabel>
-									<Switch checked={field.value} onChange={field.onChange} name={field.name} />
+									<InputLabel sx={{ ml: 1 }}>Cuenta principal</InputLabel>
+									<IOSSwitch checked={field.value} onChange={field.onChange} name={field.name} sx={{ m: 1 }} />
 								</Stack>
+							</FormControl>
+						)}
+					/>
+				</Grid2>
+				<Grid2
+					size={{
+						md: 3,
+						xs: 12,
+					}}
+				>
+					<Controller
+						name="isActive"
+						control={control}
+						defaultValue={false}
+						render={({ field }) => (
+							<FormControl fullWidth error={Boolean(errors.isActive)} disabled={!isCreated} required>
+								<Stack spacing={1}>
+									<InputLabel sx={{ ml: 1 }}>Activo</InputLabel>
+									<IOSSwitch checked={field.value} onChange={field.onChange} name={field.name} sx={{ m: 1 }} />
+								</Stack>
+								{errors.isActive ? <FormHelperText>{errors.isActive.message}</FormHelperText> : null}
 							</FormControl>
 						)}
 					/>
@@ -366,3 +394,63 @@ export function PaymentAccountInformation({ paymentAccount }) {
 		</Box>
 	);
 }
+
+const IOSSwitch = styled((props) => <Switch focusVisibleClassName=".Mui-focusVisible" disableRipple {...props} />)(
+	({ theme }) => ({
+		width: 42,
+		height: 26,
+		padding: 0,
+		"& .MuiSwitch-switchBase": {
+			padding: 0,
+			margin: 2,
+			transitionDuration: "300ms",
+			"&.Mui-checked": {
+				transform: "translateX(16px)",
+				color: "#fff",
+				"& + .MuiSwitch-track": {
+					backgroundColor: "#4E36F5",
+					opacity: 1,
+					border: 0,
+					...theme.applyStyles("dark", {
+						backgroundColor: "#2ECA45",
+					}),
+				},
+				"&.Mui-disabled + .MuiSwitch-track": {
+					opacity: 0.5,
+				},
+			},
+			"&.Mui-focusVisible .MuiSwitch-thumb": {
+				color: "#33cf4d",
+				border: "6px solid #fff",
+			},
+			"&.Mui-disabled .MuiSwitch-thumb": {
+				color: theme.palette.grey[100],
+				...theme.applyStyles("dark", {
+					color: theme.palette.grey[600],
+				}),
+			},
+			"&.Mui-disabled + .MuiSwitch-track": {
+				opacity: 0.7,
+				...theme.applyStyles("dark", {
+					opacity: 0.3,
+				}),
+			},
+		},
+		"& .MuiSwitch-thumb": {
+			boxSizing: "border-box",
+			width: 22,
+			height: 22,
+		},
+		"& .MuiSwitch-track": {
+			borderRadius: 26 / 2,
+			backgroundColor: "#E9E9EA",
+			opacity: 1,
+			transition: theme.transitions.create(["background-color"], {
+				duration: 500,
+			}),
+			...theme.applyStyles("dark", {
+				backgroundColor: "#39393D",
+			}),
+		},
+	})
+);

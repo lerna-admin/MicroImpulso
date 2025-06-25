@@ -10,8 +10,8 @@ export async function createPaymentInformation(data) {
 	return await res.json();
 }
 
-export async function getAllPaymentsInformation() {
-	const res = await fetch(`${BASE_URL}/payment-accounts`);
+export async function getAllPaymentsInformation(active) {
+	const res = await fetch(`${BASE_URL}/payment-accounts?active=${active}`);
 	if (!res.ok) throw new Error("Error al obtener todas las cuentas de pago");
 	return await res.json();
 }

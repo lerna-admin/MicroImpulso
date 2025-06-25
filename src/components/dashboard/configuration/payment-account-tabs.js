@@ -85,6 +85,7 @@ export function PaymentAccountTabs({ tabsInfo }) {
 		} finally {
 			notificationAlert.handleOpen();
 			modalDeleteAccount.handleClose();
+			setTabSelected(1);
 			router.refresh();
 		}
 	};
@@ -142,7 +143,7 @@ export function PaymentAccountTabs({ tabsInfo }) {
 			{/* Modal para eliminar cuenta de pago	 */}
 			<Dialog
 				fullWidth
-				maxWidth={"sm"}
+				maxWidth={"xs"}
 				open={modalDeleteAccount.open}
 				onClose={modalDeleteAccount.handleClose}
 				aria-labelledby="alert-dialog-title"
