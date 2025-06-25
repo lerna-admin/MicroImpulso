@@ -50,8 +50,8 @@ export const paths = {
 		},
 		configuration: {
 			permissions: "/dashboard/configuration/permissions",
-			amountManagment: "/dashboard/configuration/amountManagment",
-			paymentInformation: "/dashboard/configuration/paymentInformation",
+			amountManagment: "/dashboard/configuration/amount-managment",
+			paymentInformation: "/dashboard/configuration/payment-information",
 		},
 		crypto: "/dashboard/crypto",
 		customers: {

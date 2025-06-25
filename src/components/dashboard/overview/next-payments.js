@@ -40,7 +40,7 @@ export function NextPayments({ payments }) {
 			<Divider />
 			<CardActions>
 				<Button color="secondary" endIcon={<ArrowRightIcon />} size="small">
-					Ver todos los pagos
+					Ver todas las solicitudes
 				</Button>
 			</CardActions>
 		</Card>
@@ -77,9 +77,9 @@ function PaymentItem({ payment }) {
 					</Typography>
 				}
 			/>
-			<IconButton>
+			{/* <IconButton>
 				<CalendarBlankIcon />
-			</IconButton>
+			</IconButton> */}
 		</ListItem>
 	);
 }

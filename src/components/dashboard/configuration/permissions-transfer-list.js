@@ -24,7 +24,7 @@ import { z as zod } from "zod";
 import { usePopover } from "@/hooks/use-popover";
 import { NotificationAlert } from "@/components/widgets/notifications/notification-alert";
 
-export function PermissionTransferList({ permissions }) {
+export function PermissionTransferList({ permissions, userLogged }) {
 	const popoverAlert = usePopover();
 	const [alertMsg, setAlertMsg] = React.useState("");
 	const [alertSeverity, setAlertSeverity] = React.useState("success");
@@ -75,14 +75,8 @@ export function PermissionTransferList({ permissions }) {
 	} = useForm({ defaultValues, resolver: zodResolver(schema) });
 
 	const onSubmit = React.useCallback(async (dataForm) => {
-		console.log(dataForm.user);
-		console.log("right", right);
-		console.log("left", left);
-
 		try {
 			const permissionsToSave = right.map((item) => ({ id: item.id, granted: true }));
-			console.log(permissionsToSave);
-
 			await savePermission(dataForm.user.id, permissionsToSave);
 			setAlertMsg("¡Se ha guardado exitosamente!");
 			setAlertSeverity("success");
@@ -99,7 +93,7 @@ export function PermissionTransferList({ permissions }) {
 	const fetchOptions = async (query) => {
 		setLoading(true);
 		try {
-			const { data } = await getAllUsers({ name: query });
+			const { data } = await getAllUsers({ name: query, role: userLogged.role === "ADMIN" ? "AGENT" : "" });
 			const dataFormatted = data.map((user) => ({ label: user.name, id: user.id }));
 			setOptions(dataFormatted);
 		} catch (error) {
@@ -144,7 +138,6 @@ export function PermissionTransferList({ permissions }) {
 		const cleanLeft = left.filter(
 			(leftItem) => !permissionsFormatted.some((rightItem) => rightItem.id === leftItem.id)
 		);
-		console.log(cleanLeft);
 		setLeft(cleanLeft);
 	};
 

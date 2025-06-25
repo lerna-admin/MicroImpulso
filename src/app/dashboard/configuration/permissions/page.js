@@ -5,16 +5,21 @@ import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 
 import { appConfig } from "@/config/app";
+import { getUser } from "@/lib/custom-auth/server";
 import { PermissionTransferList } from "@/components/dashboard/configuration/permissions-transfer-list";
 
 import { getPermissions } from "../../requests/hooks/use-permissions";
 
-export const metadata = { title: `Reportes | Dashboard | ${appConfig.name}` };
+export const metadata = { title: `Permisos | Dashboard | ${appConfig.name}` };
 
 export default async function Page() {
+	const {
+		data: { user },
+	} = await getUser();
+
 	const permissions = await getPermissions();
 	const permissionsFormatted = permissions.map((permission) => ({ id: permission.id, label: permission.label }));
-	
+
 	return (
 		<Box
 			sx={{
@@ -32,7 +37,7 @@ export default async function Page() {
 				</Stack>
 				<Stack>
 					<Card>
-						<PermissionTransferList permissions={permissionsFormatted} />
+						<PermissionTransferList permissions={permissionsFormatted} userLogged={user} />
 					</Card>
 				</Stack>
 			</Stack>

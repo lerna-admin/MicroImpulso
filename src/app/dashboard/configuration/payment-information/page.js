@@ -1,13 +1,29 @@
 import * as React from "react";
+import { Card } from "@mui/material";
 import Box from "@mui/material/Box";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 
 import { appConfig } from "@/config/app";
+import { PaymentAccountTabs } from "@/components/dashboard/configuration/payment-account-tabs";
 
-export const metadata = { title: `Reportes | Dashboard | ${appConfig.name}` };
+import { getAllPaymentsInformation } from "./hooks/use-payments-information";
 
-export default function Page() {
+export const metadata = { title: `Información de pago | Dashboard | ${appConfig.name}` };
+
+export default async function Page() {
+	let count = 1;
+
+	const data = await getAllPaymentsInformation();
+	const tabsInfo = data.map((element) => {
+		return {
+			id: count++,
+			label: element.bankName,
+			isPrimary: element.isPrimary,
+			paymentAccount: { ...element },
+		};
+	});
+
 	return (
 		<Box
 			sx={{
@@ -20,10 +36,15 @@ export default function Page() {
 			<Stack spacing={4}>
 				<Stack direction={{ xs: "column", sm: "row" }} spacing={3} sx={{ alignItems: "flex-start" }}>
 					<Box sx={{ flex: "1 1 auto" }}>
-						<Typography variant="h4">Informacion de pago</Typography>
+						<Typography variant="h4" padding={3}>
+							Información de pago
+						</Typography>
 					</Box>
 				</Stack>
 			</Stack>
+			<Card>
+				<PaymentAccountTabs tabsInfo={tabsInfo} />
+			</Card>
 		</Box>
 	);
 }

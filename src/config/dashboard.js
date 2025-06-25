@@ -45,6 +45,21 @@ export const dashboardConfig = {
 						{ key: "clients:create", title: "Crear cliente", href: paths.dashboard.customers.create },
 					],
 				},
+				{
+					key: "configuration",
+					title: "Configuración",
+					icon: "gear",
+					matcher: { type: "startsWith", href: "/dashboard/permissions" },
+					items: [
+						{ key: "permissions", title: "Permisos", href: paths.dashboard.configuration.permissions },
+						{ key: "amountManagment", title: "Gestion de montos", href: paths.dashboard.configuration.amountManagment },
+						{
+							key: "paymentInformation",
+							title: "Información de pago",
+							href: paths.dashboard.configuration.paymentInformation,
+						},
+					],
+				},
 			],
 		},
 
@@ -70,21 +85,6 @@ export const dashboardConfig = {
 					],
 				},
 				{
-					key: "configuration",
-					title: "Configuración",
-					icon: "gear",
-					matcher: { type: "startsWith", href: "/dashboard/permissions" },
-					items: [
-						{ key: "permissions", title: "Permisos", href: paths.dashboard.configuration.permissions },
-						{ key: "amountManagment", title: "Gestion de montos", href: paths.dashboard.configuration.amountManagment },
-						{
-							key: "paymentInformation",
-							title: "Información de pago",
-							href: paths.dashboard.configuration.paymentInformation,
-						},
-					],
-				},
-				{
 					key: "cash_flow",
 					title: "Movimientos de caja",
 					icon: "cash-register",
@@ -99,6 +99,15 @@ export const dashboardConfig = {
 					items: [
 						{ key: "requests", title: "Lista de solicitudes", href: paths.dashboard.requests.list },
 						{ key: "requests:create", title: "Crear solicitud", href: paths.dashboard.requests.create },
+					],
+				},
+				{
+					key: "configuration",
+					title: "Configuración",
+					icon: "gear",
+					matcher: { type: "startsWith", href: "/dashboard/permissions" },
+					items: [
+						{ key: "permissions", title: "Permisos", href: paths.dashboard.configuration.permissions },
 					],
 				},
 			],

@@ -86,7 +86,7 @@ export function CashFlowHeader({ user }) {
 		branch: { id: branchId },
 	} = user;
 
-	const onSubmit = React.useCallback(async (dataForm) => {
+	const onSubmit = async (dataForm) => {
 		setIsPending(true);
 
 		try {
@@ -111,7 +111,7 @@ export function CashFlowHeader({ user }) {
 		popoverAlert.handleOpen();
 		setIsPending(false);
 		router.refresh();
-	});
+	};
 
 	return (
 		<React.Fragment>

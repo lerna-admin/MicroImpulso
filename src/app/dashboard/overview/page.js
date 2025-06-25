@@ -37,25 +37,25 @@ export default async function Page() {
 		};
 	});
 
-	const { latestRequests, topAgentsByUndisbursed, recentPayments } = await getManagerSummary();
+	const { latestRequests, topAgentsByUndisbursed, upcomingPayments } = await getManagerSummary();
 	const latestRequestsFormatted = latestRequests.map((item) => ({
 		id: item.id,
 		name: item.client.name,
 		amount: item.amount,
 		status: item.status,
 	}));
-
+	
 	const topAgentsByUndisbursedFormatted = topAgentsByUndisbursed.map((item) => ({
 		id: item.agentId,
 		name: item.agentName,
 		pendings: item.undisbursedCount,
 	}));
 
-	const recentPaymentsFormatted = recentPayments.map((item) => ({
-		id: item.transactionId,
+	const upcomingPaymentsFormatted = upcomingPayments.map((item) => ({
+		id: item.loanRequestId,
 		name: item.clientName,
-		typePayment: "Bisemanal",
-		endDateAt: dayjs(new Date(2025, 3, 21)),
+		typePayment: item.type,
+		endDateAt: item.endDateAt,
 	}));
 
 	const requestsByYear = generateMonthlyOverview(reqStatsMonthHistory);
@@ -159,7 +159,7 @@ export default async function Page() {
 							xs: 12,
 						}}
 					>
-						<NextPayments payments={recentPaymentsFormatted} />
+						<NextPayments payments={upcomingPaymentsFormatted} />
 					</Grid>
 					<Grid
 						size={{
@@ -167,7 +167,7 @@ export default async function Page() {
 							xs: 12,
 						}}
 					>
-						<AppLimits usage={70} />
+						{/* <AppLimits usage={70} /> Por ahora se oculta */}
 					</Grid>
 				</Grid>
 			</Stack>
