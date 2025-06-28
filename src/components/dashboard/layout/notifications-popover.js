@@ -184,9 +184,6 @@ function NotificationContent({ notification }) {
 	if (notification.type === "agent.closed_day") {
 		return (
 			<Stack direction="row" spacing={2} sx={{ alignItems: "flex-start" }}>
-				{/* <Avatar src={notification.author.avatar}>
-					<UserIcon />
-				</Avatar> */}
 				<Avatar {...stringAvatar(notification.author.name)} />
 				<div>
 					<Typography variant="body2">
