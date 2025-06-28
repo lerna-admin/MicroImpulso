@@ -143,8 +143,8 @@ export function ChatProvider({
 			setContacts((prev) => (JSON.stringify(prev) === JSON.stringify(newContacts) ? prev : newContacts));
 			setThreads((prev) => (JSON.stringify(prev) === JSON.stringify(newThreads) ? prev : newThreads));
 			setMessages((prev) => (areMessagesEqual(prev, newMessageMap) ? prev : newMessageMap));
-		} catch (err) {
-			console.error("❌ Error fetching chat data:", err);
+		} catch (error) {
+			console.error("❌ Error fetching chat data:", error);
 		}
 	}, [user.id, user.name]);
 
@@ -219,7 +219,7 @@ export function ChatProvider({
 		async (params) => {
 			const { participants } = threads.find((thread) => thread.id === params.threadId);
 
-			const resp = await sendMessageToClient(params.content, participants[1].id);
+			await sendMessageToClient(params.content, participants[1].id);
 
 			const newMsg = {
 				id: `MSG-${Date.now()}`,
