@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { stringAvatar } from "@/helpers/avatar-colors";
+import { Badge } from "@mui/material";
 import Avatar from "@mui/material/Avatar";
 import Box from "@mui/material/Box";
 import IconButton from "@mui/material/IconButton";
@@ -9,6 +10,7 @@ import Stack from "@mui/material/Stack";
 import Tooltip from "@mui/material/Tooltip";
 import { Bell as BellIcon, List as ListIcon } from "@phosphor-icons/react/dist/ssr";
 
+import { getNotificationsByUser } from "@/hooks/use-notifications";
 import { usePopover } from "@/hooks/use-popover";
 import { useAuth } from "@/components/auth/custom/auth-context";
 
@@ -79,12 +81,52 @@ export function MainNav({ items }) {
 
 function NotificationsButton() {
 	const popover = usePopover();
+	const { user } = useAuth();
+
+	const [notificationsCount, setNotificationsCount] = React.useState([]);
+
+	const fetchNotifications = React.useCallback(async () => {
+		try {
+			const xhr = new XMLHttpRequest();
+			xhr.open("GET", "/auth/profile", true);
+			xhr.addEventListener("readystatechange", () => {
+				if (xhr.readyState === 4) {
+					if (xhr.status === 200) {
+						try {
+							const { user } = JSON.parse(xhr.responseText);
+							const promise = getNotificationsByUser(user.id);
+							promise.then((resp) => {
+								const noLeidas = resp.filter((n) => !n.isRead).length;
+								setNotificationsCount(noLeidas);
+							});
+						} catch (error) {
+							console.error("Invalid JSON:", xhr.responseText, error);
+						}
+					} else {
+						console.error("asd");
+					}
+				}
+			});
+			xhr.send();
+		} catch (error) {
+			console.error("❌ Error fetching chat data:", error);
+		}
+	}, [user.id, user.name]);
+
+	React.useEffect(() => {
+		if (!user?.id) return;
+		fetchNotifications(); // First load
+		const interval = setInterval(fetchNotifications, 3000);
+		return () => clearInterval(interval);
+	}, [fetchNotifications, user?.id]);
 
 	return (
 		<React.Fragment>
 			<Tooltip title="Notificaciones">
 				<IconButton onClick={popover.handleOpen} ref={popover.anchorRef}>
-					<BellIcon />
+					<Badge badgeContent={notificationsCount} color="error">
+						<BellIcon />
+					</Badge>
 				</IconButton>
 			</Tooltip>
 			<NotificationsPopover anchorEl={popover.anchorRef.current} onClose={popover.handleClose} open={popover.open} />

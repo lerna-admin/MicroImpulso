@@ -31,8 +31,9 @@ export function DetailBalanceList({ dataBalance, user }) {
 		{ id: 5, name: "Nuevos $ (#)", value: "" },
 	]);
 
-	const [errorMsg, setErrorMsg] = React.useState("");
-	const [responseStatus, setResponseStatus] = React.useState(null);
+	const popoverAlert = usePopover();
+	const [alertMsg, setAlertMsg] = React.useState("");
+	const [alertSeverity, setAlertSeverity] = React.useState("");
 
 	const totalAmount = dataBalance.valorRenovados + dataBalance.valorNuevos;
 	const totalRequests = dataBalance.renovados + dataBalance.nuevos;
@@ -40,7 +41,6 @@ export function DetailBalanceList({ dataBalance, user }) {
 	const today = dayjs();
 	const formattedDate = `${today.format("DD")} ${today.format("MMMM").toUpperCase()} ${today.format("YYYY, hh:mm A")}`;
 
-	const popoverError = usePopover();
 	const popover = usePopover();
 
 	React.useEffect(() => {
@@ -61,14 +61,18 @@ export function DetailBalanceList({ dataBalance, user }) {
 
 	const handleRoadClousure = async () => {
 		popover.handleClose();
-		const { message, statusCode } = await closeDay(user.id);
-		if (statusCode === 400) {
-			setResponseStatus(statusCode);
-			setErrorMsg(message);
-			popoverError.handleOpen();
-		}
 
-		Cookies.set("isAgentClosed", true);
+		try {
+			await closeDay(user.id);
+			setAlertMsg("¡Se ha cerrado el dia exitosamente!");
+			setAlertSeverity("success");
+		} catch (error) {
+			setAlertMsg(error.message);
+			setAlertSeverity("error");
+		} finally {
+			popoverAlert.handleOpen();
+			Cookies.set("isAgentClosed", true);
+		}
 	};
 
 	return (
@@ -152,10 +156,10 @@ export function DetailBalanceList({ dataBalance, user }) {
 				</Dialog>
 			</Box>
 			<NotificationAlert
-				openAlert={popoverError.open}
-				onClose={popoverError.handleClose}
-				msg={errorMsg}
-				severity={responseStatus === 400 ? "error" : "success"}
+				openAlert={popoverAlert.open}
+				onClose={popoverAlert.handleClose}
+				msg={alertMsg}
+				severity={alertSeverity}
 			></NotificationAlert>
 		</Card>
 	);

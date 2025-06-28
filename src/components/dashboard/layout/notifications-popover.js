@@ -4,26 +4,55 @@ import * as React from "react";
 import { stringAvatar } from "@/helpers/avatar-colors";
 import Avatar from "@mui/material/Avatar";
 import Box from "@mui/material/Box";
-import IconButton from "@mui/material/IconButton";
-import Link from "@mui/material/Link";
 import List from "@mui/material/List";
 import ListItem from "@mui/material/ListItem";
 import Popover from "@mui/material/Popover";
 import Stack from "@mui/material/Stack";
-import Tooltip from "@mui/material/Tooltip";
 import Typography from "@mui/material/Typography";
-import { ChatText as ChatTextIcon } from "@phosphor-icons/react/dist/ssr/ChatText";
+
 // import { EnvelopeSimple as EnvelopeSimpleIcon } from "@phosphor-icons/react/dist/ssr/EnvelopeSimple";
-import { User as UserIcon } from "@phosphor-icons/react/dist/ssr/User";
-import { X as XIcon } from "@phosphor-icons/react/dist/ssr/X";
 
 // import { getUser } from "@/lib/custom-auth/server";
 import { dayjs } from "@/lib/dayjs";
-import { getNotificationsByUser } from "@/hooks/use-notifications";
+import { getNotificationsByUser, markAsReadNotification } from "@/hooks/use-notifications";
 import { useAuth } from "@/components/auth/custom/auth-context";
 
-export function NotificationsPopover({ anchorEl, onClose, onRemoveOne, open = false }) {
+export function NotificationsPopover({ anchorEl, onClose, open = false }) {
 	const { user } = useAuth();
+
+	// const notifications = [
+	// 	{
+	// 		id: "EV-004",
+	// 		createdAt: dayjs().subtract(7, "minute").subtract(5, "hour").subtract(1, "day").toDate(),
+	// 		read: false,
+	// 		type: "new_job",
+	// 		author: { name: "Jie Yan", avatar: "/assets/avatar-8.png" },
+	// 		job: { title: "Remote React / React Native Developer" },
+	// 	},
+	// 	{
+	// 		id: "EV-003",
+	// 		createdAt: dayjs().subtract(18, "minute").subtract(3, "hour").subtract(5, "day").toDate(),
+	// 		read: true,
+	// 		type: "new_job",
+	// 		author: { name: "Fran Perez", avatar: "/assets/avatar-5.png" },
+	// 		job: { title: "Senior Golang Backend Engineer" },
+	// 	},
+	// 	{
+	// 		id: "EV-002",
+	// 		createdAt: dayjs().subtract(4, "minute").subtract(5, "hour").subtract(7, "day").toDate(),
+	// 		read: true,
+	// 		type: "new_feature",
+	// 		description: "Logistics management is now available",
+	// 	},
+	// 	{
+	// 		id: "EV-001",
+	// 		createdAt: dayjs().subtract(7, "minute").subtract(8, "hour").subtract(7, "day").toDate(),
+	// 		read: true,
+	// 		type: "new_company",
+	// 		author: { name: "Jie Yan", avatar: "/assets/avatar-8.png" },
+	// 		company: { name: "Stripe" },
+	// 	},
+	// ];
 
 	const [notifications, setNotifications] = React.useState([]);
 
@@ -38,17 +67,18 @@ export function NotificationsPopover({ anchorEl, onClose, onRemoveOne, open = fa
 							const { user } = JSON.parse(xhr.responseText);
 							const promise = getNotificationsByUser(user.id);
 							promise.then((resp) => {
-								console.log(resp);
+								// console.log("resp", resp);
 
 								const notificationsFormatted = resp.map((notify) => ({
 									id: notify.id,
 									createdAt: notify.createdAt,
 									read: notify.isRead,
 									type: notify.type,
-									author: { name: notify.payload.actor.name },
+									description: notify.description,
+									author: { name: notify.payload.author?.name ?? "New Client" },
 								}));
 
-								console.log(notificationsFormatted);
+								// console.log("notificationsFormatted", notificationsFormatted);
 
 								setNotifications(notificationsFormatted);
 							});
@@ -66,23 +96,18 @@ export function NotificationsPopover({ anchorEl, onClose, onRemoveOne, open = fa
 		}
 	}, [user.id, user.name]);
 
+	const handleRemoveOne = (notificationId) => {
+		console.log(notificationId);
+		const nuevosItems = notifications.filter((item) => item.id !== notificationId);
+		setNotifications(nuevosItems);
+	};
+
 	React.useEffect(() => {
 		if (!user?.id) return;
 		fetchNotifications(); // First load
-		const interval = setInterval(fetchNotifications, 5000);
+		const interval = setInterval(fetchNotifications, 10_000);
 		return () => clearInterval(interval);
 	}, [fetchNotifications, user?.id]);
-
-	// const notifications = [
-	// 	{
-	// 		id: "EV-004",
-	// 		createdAt: dayjs().subtract(7, "minute").subtract(5, "hour").subtract(1, "day").toDate(),
-	// 		read: false,
-	// 		type: "new_job",
-	// 		author: { name: "Jie Yan", avatar: "/assets/avatar-8.png" },
-	// 		job: { title: "Remote React / React Native Developer" },
-	// 	},
-	// ];
 
 	return (
 		<Popover
@@ -114,7 +139,7 @@ export function NotificationsPopover({ anchorEl, onClose, onRemoveOne, open = fa
 								key={notification.id}
 								notification={notification}
 								onRemove={() => {
-									onRemoveOne?.(notification.id);
+									handleRemoveOne(notification.id);
 								}}
 							/>
 						))}
@@ -125,72 +150,81 @@ export function NotificationsPopover({ anchorEl, onClose, onRemoveOne, open = fa
 	);
 }
 
-function NotificationItem({ divider, notification, onRemove }) {
+function NotificationItem({ divider, notification }) {
 	return (
-		<ListItem divider={divider} sx={{ alignItems: "flex-start", justifyContent: "space-between", pb: "2rem" }}>
+		<ListItem divider={divider} sx={{ alignItems: "flex-start", justifyContent: "space-between", pb: "1rem" }}>
 			<NotificationContent notification={notification} />
-			<Tooltip title="Remove">
+			{/* <Tooltip title="Remove">
 				<IconButton edge="end" onClick={onRemove} size="small">
 					<XIcon />
 				</IconButton>
-			</Tooltip>
+			</Tooltip> */}
 		</ListItem>
 	);
 }
 
 function NotificationContent({ notification }) {
-	if (notification.type === "new_feature") {
-		return (
-			<Stack direction="row" spacing={2} sx={{ alignItems: "flex-start" }}>
-				<Avatar>
-					<ChatTextIcon fontSize="var(--Icon-fontSize)" />
-				</Avatar>
-				<div>
-					<Typography variant="subtitle2">New feature!</Typography>
-					<Typography variant="body2">{notification.description}</Typography>
-					<Typography color="text.secondary" variant="caption">
-						{dayjs(notification.createdAt).format("MMM D, hh:mm A")}
-					</Typography>
-				</div>
-			</Stack>
-		);
-	}
+	const [isRead, setIsRead] = React.useState(notification.read);
 
-	if (notification.type === "new_company") {
-		return (
-			<Stack direction="row" spacing={2} sx={{ alignItems: "flex-start" }}>
-				<Avatar src={notification.author.avatar}>
-					<UserIcon />
-				</Avatar>
-				<div>
-					<Typography variant="body2">
-						<Typography component="span" variant="subtitle2">
-							{notification.author.name}
-						</Typography>{" "}
-						created{" "}
-						<Link underline="always" variant="body2">
-							{notification.company.name}
-						</Link>{" "}
-						company
-					</Typography>
-					<Typography color="text.secondary" variant="caption">
-						{dayjs(notification.createdAt).format("MMM D, hh:mm A")}
-					</Typography>
-				</div>
-			</Stack>
-		);
-	}
+	const handleMarkAsRead = async (notificationId) => {
+		try {
+			await markAsReadNotification(notificationId);
+			setIsRead(true);
+		} catch (error) {
+			console.error(error.message);
+		}
+	};
 
 	if (notification.type === "agent.closed_day") {
 		return (
-			<Stack direction="row" spacing={2} sx={{ alignItems: "flex-start" }}>
+			<Stack
+				direction="row"
+				spacing={2}
+				sx={{
+					cursor: "pointer",
+					alignItems: "flex-start",
+					p: 2,
+					"&:hover": {
+						backgroundColor: "#f5f5f5",
+					},
+				}}
+				onClick={() => handleMarkAsRead(notification.id)}
+			>
 				<Avatar {...stringAvatar(notification.author.name)} />
 				<div>
 					<Typography variant="body2">
-						<Typography component="span" variant="subtitle2">
-							{notification.author.name}
-						</Typography>{" "}
-						hizo el cierre del dia.
+						<Typography component="span" variant="inherit" fontWeight={isRead ? 300 : 500}>
+							{`${notification.description}`}
+						</Typography>
+					</Typography>
+					<Typography color="text.secondary" variant="caption">
+						{dayjs(notification.createdAt).format("MMM D, hh:mm A")}
+					</Typography>
+				</div>
+			</Stack>
+		);
+	}
+	if (notification.type === "loan.approved") {
+		return (
+			<Stack
+				direction="row"
+				spacing={2}
+				sx={{
+					cursor: "pointer",
+					alignItems: "flex-start",
+					p: 2,
+					"&:hover": {
+						backgroundColor: "#f5f5f5",
+					},
+				}}
+				onClick={() => handleMarkAsRead(notification.id)}
+			>
+				<Avatar {...stringAvatar(notification.author.name)} />
+				<div>
+					<Typography variant="body2">
+						<Typography component="span" variant="inherit" fontWeight={isRead ? 300 : 500}>
+							{`${notification.description} `}
+						</Typography>
 					</Typography>
 					<Typography color="text.secondary" variant="caption">
 						{dayjs(notification.createdAt).format("MMM D, hh:mm A")}
