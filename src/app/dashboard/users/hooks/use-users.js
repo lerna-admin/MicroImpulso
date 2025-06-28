@@ -6,7 +6,7 @@ export async function getAllUsers({ page = 1, limit = 10, branchId = "", name = 
 	params.append("page", page.toString());
 	params.append("limit", limit.toString());
 
-	if (branchId) params.append("branchId", branchId);
+	if (branchId && rol !== "") params.append("branchId", branchId);
 	if (name) params.append("name", name);
 	if (document) params.append("document", document);
 	if (role) params.append("role", role);
