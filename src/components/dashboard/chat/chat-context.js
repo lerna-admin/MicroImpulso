@@ -4,6 +4,8 @@ import * as React from "react";
 import { getAllConversationsByAgent, sendMessageToClient } from "@/app/dashboard/chat/hooks/use-conversations";
 
 import { useAuth } from "@/components/auth/custom/auth-context";
+import { useEnableAudio } from '@/app/dashboard/chat/hooks/useEnableAudio'; // ajusta el path si es distinto
+
 
 function noop() {
 	// No operation placeholder
@@ -65,6 +67,8 @@ export function ChatProvider({
 	threads: initialLabels = [],
 	messages: initialMessages = [],
 }) {
+	useEnableAudio();
+
 	const { user } = useAuth();
 
 	const [contacts, setContacts] = React.useState([]);
