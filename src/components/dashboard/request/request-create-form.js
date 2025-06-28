@@ -1,586 +1,330 @@
 "use client";
 
 import * as React from "react";
-import { useRouter } from "next/navigation";
+import RouterLink from "next/link";
+import { getAllCustomers } from "@/app/dashboard/customers/hooks/use-customers";
+import { createRequest } from "@/app/dashboard/requests/hooks/use-requests";
+import { deleteAlphabeticals, formatCurrency } from "@/helpers/format-currency";
 import { zodResolver } from "@hookform/resolvers/zod";
-import Box from "@mui/material/Box";
+import { Autocomplete, CircularProgress, Divider, MenuItem, TextField } from "@mui/material";
 import Button from "@mui/material/Button";
 import Card from "@mui/material/Card";
 import CardActions from "@mui/material/CardActions";
 import CardContent from "@mui/material/CardContent";
-import Checkbox from "@mui/material/Checkbox";
-import Divider from "@mui/material/Divider";
 import FormControl from "@mui/material/FormControl";
-import FormControlLabel from "@mui/material/FormControlLabel";
 import FormHelperText from "@mui/material/FormHelperText";
 import Grid from "@mui/material/Grid2";
-import IconButton from "@mui/material/IconButton";
-import InputAdornment from "@mui/material/InputAdornment";
 import InputLabel from "@mui/material/InputLabel";
 import OutlinedInput from "@mui/material/OutlinedInput";
 import Select from "@mui/material/Select";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
+import { debounce } from "@mui/material/utils";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
-import { PencilSimple as PencilSimpleIcon } from "@phosphor-icons/react/dist/ssr/PencilSimple";
-import { PlusCircle as PlusCircleIcon } from "@phosphor-icons/react/dist/ssr/PlusCircle";
 import { Controller, useForm } from "react-hook-form";
 import { z as zod } from "zod";
 
 import { paths } from "@/paths";
 import { dayjs } from "@/lib/dayjs";
-import { logger } from "@/lib/default-logger";
-import { DataTable } from "@/components/core/data-table";
-import { Option } from "@/components/core/option";
-import { toast } from "@/components/core/toaster";
+import { usePopover } from "@/hooks/use-popover";
+import { NotificationAlert } from "@/components/widgets/notifications/notification-alert";
 
-function calculateSubtotal(lineItems) {
-	const subtotal = lineItems.reduce((acc, lineItem) => acc + lineItem.quantity * lineItem.unitPrice, 0);
-	return Number.parseFloat(subtotal.toFixed(2));
-}
-
-function calculateTotalWithoutTaxes(subtotal, discount, shippingRate) {
-	return subtotal - discount + shippingRate;
-}
-
-function calculateTax(totalWithoutTax, taxRate) {
-	const tax = totalWithoutTax * (taxRate / 100);
-	return Number.parseFloat(tax.toFixed(2));
-}
-
-function calculateTotal(totalWithoutTax, taxes) {
-	return totalWithoutTax + taxes;
-}
-
-// You could memoize this function to avoid re-creating the columns on every render.
-function getLineItemColumns({ onEdit }) {
-	return [
-		{
-			formatter: (row) => {
-				return (
-					<Stack direction="row" spacing={2} sx={{ alignItems: "center" }}>
-						<Box
-							sx={{
-								backgroundImage: `url(${row.image})`,
-								backgroundPosition: "center",
-								backgroundSize: "cover",
-								bgcolor: "var(--mui-palette-background-level2)",
-								borderRadius: 1,
-								flex: "0 0 auto",
-								height: "40px",
-								width: "40px",
-							}}
-						/>
-						<Typography variant="subtitle2">{row.product}</Typography>
-					</Stack>
-				);
-			},
-			name: "Product",
-			width: "220px",
-		},
-		{
-			formatter: (row) => (
-				<Typography variant="inherit">{new Intl.NumberFormat("en-US").format(row.quantity)}</Typography>
-			),
-			name: "Quantity",
-			width: "100px",
-		},
-		{
-			formatter: (row) => (
-				<Typography variant="inherit">
-					{new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(row.unitPrice)}
-				</Typography>
-			),
-			name: "Unit Price",
-			width: "100px",
-		},
-		{
-			formatter: (row) => (
-				<IconButton
-					onClick={() => {
-						onEdit?.(row.id);
-					}}
-				>
-					<PencilSimpleIcon />
-				</IconButton>
-			),
-			name: "Actions",
-			hideName: true,
-			width: "100px",
-			align: "right",
-		},
-	];
-}
-
-const schema = zod.object({
-	number: zod.string().max(255),
-	issueDate: zod.date(),
-	customer: zod.string().min(1, "Customer is required").max(255),
-	billingAddress: zod.object({
-		country: zod.string().min(1, "Country is required").max(255),
-		state: zod.string().min(1, "State is required").max(255),
-		city: zod.string().min(1, "City is required").max(255),
-		zipCode: zod.string().min(1, "Zip code is required").max(255),
-		line1: zod.string().min(1, "Street line 1 is required").max(255),
-		line2: zod.string().max(255).optional(),
-	}),
-	taxId: zod.string().max(255).optional(),
-	deliveryNotes: zod.string().max(255).optional(),
-	lineItems: zod.array(
-		zod.object({
-			id: zod.string(),
-			product: zod.string().max(255),
-			image: zod.string(),
-			quantity: zod.number().min(1, "Quantity must be greater than or equal to 1"),
-			unitPrice: zod.number().min(0, "Unit price must be greater than or equal to 0"),
-		})
-	),
-	discount: zod
-		.number()
-		.min(0, "Discount must be greater than or equal to 0")
-		.max(100, "Discount must be less than or equal to 100"),
-	shippingRate: zod.number().min(0, "Shipping rate must be greater than or equal to 0"),
-	taxRate: zod
-		.number()
-		.min(0, "Tax rate must be greater than or equal to 0")
-		.max(100, "Tax rate must be less than or equal to 100"),
-});
-
-const defaultValues = {
-	number: "ORD-001",
-	issueDate: new Date(),
-	customer: "",
-	billingAddress: { country: "", state: "", city: "", zipCode: "", line1: "", line2: "" },
-	taxId: "",
-	deliveryNotes: "",
-	lineItems: [
-		{ id: "LI-001", product: "Erbology Aloe Vera", image: "/assets/product-1.png", quantity: 1, unitPrice: 24 },
-	],
-	discount: 0,
-	shippingRate: 0,
-	taxRate: 0,
+const determinarAgent = (user) => {
+	if (user.role === "AGENT") {
+		return user.id;
+	}
+	return null;
 };
 
-export function RequestCreateForm() {
-	const router = useRouter();
+export function RequestCreateForm({ user }) {
+	const popoverAlert = usePopover();
+	const [alertMsg, setAlertMsg] = React.useState("");
+	const [alertSeverity, setAlertSeverity] = React.useState("success");
+
+	const [inputValue, setInputValue] = React.useState("");
+	const [options, setOptions] = React.useState([]);
+	const [loading, setLoading] = React.useState(false);
+
+	const schema = zod.object({
+		customer: zod
+			.unknown() // Acepta cualquier cosa inicialmente, incluso {}
+			.refine(
+				(val) =>
+					typeof val === "object" &&
+					val !== null &&
+					"id" in val &&
+					typeof val.id === "number" &&
+					val.id > 0 &&
+					"label" in val &&
+					typeof val.label === "string" &&
+					val.label.trim() !== "",
+				{
+					message: "Debes seleccionar un cliente",
+				}
+			),
+		amount: zod
+			.number({ invalid_type_error: "El monto debe ser un número" })
+			.min(1, { message: "El monto es obligatorio" })
+			.max(5_000_000, { message: "El monto no puede superar los 5.000.000" }),
+		typePayment: zod.enum(["QUINCENAL", "MENSUAL"], { errorMap: () => ({ message: "Debes elegir un tipo de pago" }) }),
+		datePayment: zod.enum(["15-30", "5-20", "10-25"], {
+			errorMap: () => ({ message: "Debes elegir una fecha de pago" }),
+		}),
+		selectedDate: zod
+			.custom((val) => dayjs.isDayjs(val) && val.isValid(), {
+				message: "La fecha es obligatoria",
+			})
+			.refine((val) => dayjs(val).isAfter(dayjs(), "day"), {
+				message: "La fecha debe ser posterior a hoy",
+			}),
+	});
+
+	const defaultValues = {
+		customer: {},
+		amount: 0,
+		typePayment: "",
+		datePayment: "",
+		selectedDate: dayjs(),
+	};
 
 	const {
 		control,
 		handleSubmit,
 		formState: { errors },
-		watch,
+		reset,
 	} = useForm({ defaultValues, resolver: zodResolver(schema) });
 
-	const onSubmit = React.useCallback(
-		async (_) => {
-			try {
-				// Make API request
-				toast.success("Order created");
-				router.push(paths.dashboard.requests.list);
-			} catch (error) {
-				logger.error(error);
-				toast.error("Something went wrong!");
-			}
-		},
-		[router]
+	const onSubmit = React.useCallback(async (dataForm) => {
+		try {
+			const bodyRequest = {
+				client: dataForm.customer.id,
+				agent: determinarAgent(user),
+				status: "new",
+				requestedAmount: dataForm.amount,
+				endDateAt: dataForm.selectedDate,
+				amount: 0,
+				paymentDay: dataForm.datePayment,
+				type: dataForm.typePayment,
+			};
+			await createRequest(bodyRequest);
+			setAlertMsg("¡Creado exitosamente!");
+			setAlertSeverity("success");
+		} catch (error) {
+			setAlertMsg(error.message);
+			setAlertSeverity("error");
+		} finally {
+			popoverAlert.handleOpen();
+			reset();
+		}
+	});
+
+	const fetchOptions = async (query) => {
+		setLoading(true);
+		try {
+			const { data } = await getAllCustomers({ name: query });
+			const dataFormatted = data.map(({ client }) => ({ label: client.name, id: client.id }));
+			setOptions(dataFormatted);
+		} catch (error) {
+			console.error("Error fetching autocomplete options:", error);
+		} finally {
+			setLoading(false);
+		}
+	};
+
+	const debounced = React.useMemo(
+		() =>
+			debounce((value) => {
+				if (value.trim()) {
+					fetchOptions(value);
+				} else {
+					setOptions([]);
+				}
+			}, 700), // Espera 700ms después del último tipo
+		[]
 	);
 
-	const lineItems = watch("lineItems");
-	const discount = watch("discount");
-	const shippingRate = watch("shippingRate");
-	const taxRate = watch("taxRate");
-
-	const subtotal = calculateSubtotal(lineItems);
-	const totalWithoutTaxes = calculateTotalWithoutTaxes(subtotal, discount, shippingRate);
-	const tax = calculateTax(totalWithoutTaxes, taxRate);
-	const total = calculateTotal(totalWithoutTaxes, tax);
+	React.useEffect(() => {
+		debounced(inputValue);
+		// Cleanup del debounce para evitar efectos secundarios
+		return () => {
+			debounced.clear();
+		};
+	}, [inputValue, debounced]);
 
 	return (
 		<form onSubmit={handleSubmit(onSubmit)}>
 			<Card>
 				<CardContent>
-					<Stack divider={<Divider />} spacing={4}>
-						<Stack spacing={3}>
-							<Typography variant="h6">Basic information</Typography>
-							<Grid container spacing={3}>
-								<Grid
-									size={{
-										md: 6,
-										xs: 12,
-									}}
-								>
-									<Controller
-										control={control}
-										name="customer"
-										render={({ field }) => (
-											<FormControl error={Boolean(errors.customer)} fullWidth>
-												<InputLabel>Customer</InputLabel>
-												<OutlinedInput {...field} />
-												{errors.customer ? <FormHelperText>{errors.customer.message}</FormHelperText> : null}
-											</FormControl>
-										)}
-									/>
-								</Grid>
-								<Grid
-									size={{
-										md: 6,
-										xs: 12,
-									}}
-								>
-									<Controller
-										control={control}
-										name="number"
-										render={({ field }) => (
-											<FormControl disabled fullWidth>
-												<InputLabel>Number</InputLabel>
-												<OutlinedInput {...field} />
-											</FormControl>
-										)}
-									/>
-								</Grid>
-								<Grid
-									size={{
-										md: 6,
-										xs: 12,
-									}}
-								>
-									<Controller
-										control={control}
-										name="issueDate"
-										render={({ field }) => (
-											<DatePicker
-												{...field}
-												format="MMM D, YYYY"
-												label="Issue date"
-												onChange={(date) => {
-													field.onChange(date?.toDate());
-												}}
-												slotProps={{
-													textField: {
-														error: Boolean(errors.issueDate),
-														fullWidth: true,
-														helperText: errors.issueDate?.message,
-													},
-												}}
-												value={dayjs(field.value)}
-											/>
-										)}
-									/>
-								</Grid>
-							</Grid>
-						</Stack>
-						<Stack spacing={3}>
-							<Typography variant="h6">Billing information</Typography>
-							<Grid container spacing={3}>
-								<Grid
-									size={{
-										md: 6,
-										xs: 12,
-									}}
-								>
-									<Controller
-										control={control}
-										name="billingAddress.country"
-										render={({ field }) => (
-											<FormControl error={Boolean(errors.billingAddress?.country)} fullWidth>
-												<InputLabel required>Country</InputLabel>
-												<Select {...field}>
-													<Option value="">Choose a country</Option>
-													<Option value="us">United States</Option>
-													<Option value="de">Germany</Option>
-													<Option value="es">Spain</Option>
-												</Select>
-												{errors.billingAddress?.country ? (
-													<FormHelperText>{errors.billingAddress?.country?.message}</FormHelperText>
-												) : null}
-											</FormControl>
-										)}
-									/>
-								</Grid>
-								<Grid
-									size={{
-										md: 6,
-										xs: 12,
-									}}
-								>
-									<Controller
-										control={control}
-										name="billingAddress.state"
-										render={({ field }) => (
-											<FormControl error={Boolean(errors.billingAddress?.state)} fullWidth>
-												<InputLabel required>State</InputLabel>
-												<OutlinedInput {...field} />
-												{errors.billingAddress?.state ? (
-													<FormHelperText>{errors.billingAddress?.state?.message}</FormHelperText>
-												) : null}
-											</FormControl>
-										)}
-									/>
-								</Grid>
-								<Grid
-									size={{
-										md: 6,
-										xs: 12,
-									}}
-								>
-									<Controller
-										control={control}
-										name="billingAddress.city"
-										render={({ field }) => (
-											<FormControl error={Boolean(errors.billingAddress?.city)} fullWidth>
-												<InputLabel required>City</InputLabel>
-												<OutlinedInput {...field} />
-												{errors.billingAddress?.city ? (
-													<FormHelperText>{errors.billingAddress?.city?.message}</FormHelperText>
-												) : null}
-											</FormControl>
-										)}
-									/>
-								</Grid>
-								<Grid
-									size={{
-										md: 6,
-										xs: 12,
-									}}
-								>
-									<Controller
-										control={control}
-										name="billingAddress.zipCode"
-										render={({ field }) => (
-											<FormControl error={Boolean(errors.billingAddress?.zipCode)} fullWidth>
-												<InputLabel required>Zip code</InputLabel>
-												<OutlinedInput {...field} />
-												{errors.billingAddress?.zipCode ? (
-													<FormHelperText>{errors.billingAddress?.zipCode?.message}</FormHelperText>
-												) : null}
-											</FormControl>
-										)}
-									/>
-								</Grid>
-								<Grid
-									size={{
-										md: 6,
-										xs: 12,
-									}}
-								>
-									<Controller
-										control={control}
-										name="billingAddress.line1"
-										render={({ field }) => (
-											<FormControl error={Boolean(errors.billingAddress?.line1)} fullWidth>
-												<InputLabel required>Address</InputLabel>
-												<OutlinedInput {...field} />
-												{errors.billingAddress?.line1 ? (
-													<FormHelperText>{errors.billingAddress?.line1?.message}</FormHelperText>
-												) : null}
-											</FormControl>
-										)}
-									/>
-								</Grid>
-								<Grid
-									size={{
-										md: 6,
-										xs: 12,
-									}}
-								>
-									<Controller
-										control={control}
-										name="taxId"
-										render={({ field }) => (
-											<FormControl error={Boolean(errors.taxId)} fullWidth>
-												<InputLabel>Tax ID</InputLabel>
-												<OutlinedInput {...field} placeholder="e.g EU372054390" />
-												{errors.taxId ? <FormHelperText>{errors.taxId.message}</FormHelperText> : null}
-											</FormControl>
-										)}
-									/>
-								</Grid>
-							</Grid>
-						</Stack>
-						<Stack spacing={3}>
-							<Typography variant="h6">Shipping information</Typography>
-							<Stack spacing={3}>
-								<div>
-									<FormControlLabel control={<Checkbox defaultChecked />} label="Same as billing address" />
-								</div>
-								<Controller
-									control={control}
-									name="deliveryNotes"
-									render={({ field }) => (
-										<FormControl error={Boolean(errors.deliveryNotes)} fullWidth>
-											<InputLabel>Delivery notes</InputLabel>
-											<OutlinedInput {...field} multiline placeholder="e.g Leave package at the door" rows={3} />
-											{errors.deliveryNotes ? <FormHelperText>{errors.deliveryNotes.message}</FormHelperText> : null}
-										</FormControl>
-									)}
-								/>
-							</Stack>
-						</Stack>
-						<Stack spacing={3}>
-							<Typography variant="h6">Line items</Typography>
-							<Stack spacing={2}>
-								<Card sx={{ borderRadius: 1 }} variant="outlined">
-									<DataTable columns={getLineItemColumns({})} rows={lineItems} />
-								</Card>
-								<div>
-									<Button color="secondary" startIcon={<PlusCircleIcon />} variant="outlined">
-										Add item
-									</Button>
-								</div>
-							</Stack>
-						</Stack>
+					<Typography variant="h5" paddingTop={3}>
+						Crear solicitud
+					</Typography>
+
+					<Stack spacing={3} paddingTop={3} divider={<Divider />}>
 						<Grid container spacing={3}>
 							<Grid
 								size={{
-									md: 4,
+									md: 6,
 									xs: 12,
 								}}
 							>
 								<Controller
 									control={control}
-									name="discount"
+									name="customer"
+									render={({ field }) => {
+										return (
+											<FormControl error={Boolean(errors.customer)} fullWidth>
+												<InputLabel required sx={{ marginBottom: "0.5rem" }}>
+													Cliente
+												</InputLabel>
+												<Autocomplete
+													freeSolo
+													options={options}
+													loading={loading}
+													inputValue={inputValue}
+													value={field.value || null}
+													onInputChange={(event, newInputValue) => {
+														setInputValue(newInputValue);
+													}}
+													onChange={(event, newValue) => {
+														field.onChange(newValue);
+													}}
+													getOptionLabel={(option) => (typeof option === "string" ? option : option?.label || "")}
+													isOptionEqualToValue={(option, value) => option?.label === value?.label}
+													renderInput={(params) => (
+														<TextField
+															{...params}
+															placeholder="Escribe su nombre"
+															variant="outlined"
+															slotProps={{
+																input: {
+																	...params.InputProps,
+																	endAdornment: (
+																		<React.Fragment>
+																			{loading ? <CircularProgress color="inherit" size={20} /> : null}
+																			{params.InputProps.endAdornment}
+																		</React.Fragment>
+																	),
+																},
+															}}
+														/>
+													)}
+												/>
+												{errors.customer ? <FormHelperText>{errors.customer.message}</FormHelperText> : null}
+											</FormControl>
+										);
+									}}
+								/>
+							</Grid>
+						</Grid>
+						<Grid container spacing={3}>
+							<Grid
+								size={{
+									md: 6,
+									xs: 12,
+								}}
+							>
+								<Controller
+									control={control}
+									name="amount"
+									render={({ field }) => {
+										return (
+											<FormControl error={Boolean(errors.amount)} fullWidth>
+												<InputLabel required>Monto solicitado</InputLabel>
+												<OutlinedInput
+													{...field}
+													value={field.value !== undefined && field.value !== null ? formatCurrency(field.value) : ""}
+													onChange={(e) => {
+														const raw = deleteAlphabeticals(e.target.value);
+														const numericValue = raw ? Number.parseInt(raw, 10) : 0;
+														field.onChange(numericValue);
+													}}
+													inputProps={{ inputMode: "numeric" }}
+												/>
+												{errors.amount ? <FormHelperText>{errors.amount.message}</FormHelperText> : null}
+											</FormControl>
+										);
+									}}
+								/>
+							</Grid>
+							<Grid
+								size={{
+									md: 6,
+									xs: 12,
+								}}
+							>
+								<Controller
+									control={control}
+									name="typePayment"
 									render={({ field }) => (
-										<FormControl error={Boolean(errors.discount)} fullWidth>
-											<InputLabel>Discount</InputLabel>
-											<OutlinedInput
-												{...field}
-												inputProps={{ step: 0.01 }}
-												onChange={(event) => {
-													const value = event.target.valueAsNumber;
-
-													if (Number.isNaN(value)) {
-														field.onChange("");
-														return;
-													}
-
-													field.onChange(Number.parseFloat(value.toFixed(2)));
-												}}
-												startAdornment={<InputAdornment position="start">$</InputAdornment>}
-												type="number"
-											/>
-											{errors.discount ? <FormHelperText>{errors.discount.message}</FormHelperText> : null}
+										<FormControl error={Boolean(errors.typePayment)} fullWidth>
+											<InputLabel required>Tipo de pago</InputLabel>
+											<Select {...field}>
+												<MenuItem value="QUINCENAL">Quincenal</MenuItem>
+												<MenuItem value="MENSUAL">Mensual</MenuItem>
+											</Select>
+											{errors.typePayment ? <FormHelperText>{errors.typePayment.message}</FormHelperText> : null}
 										</FormControl>
 									)}
 								/>
 							</Grid>
 							<Grid
 								size={{
-									md: 4,
+									md: 6,
 									xs: 12,
 								}}
 							>
 								<Controller
 									control={control}
-									name="shippingRate"
+									name="datePayment"
 									render={({ field }) => (
-										<FormControl error={Boolean(errors.shippingRate)} fullWidth>
-											<InputLabel>Shipping rate</InputLabel>
-											<OutlinedInput
-												{...field}
-												inputProps={{ step: 0.01 }}
-												onChange={(event) => {
-													const value = event.target.valueAsNumber;
-
-													if (Number.isNaN(value)) {
-														field.onChange("");
-														return;
-													}
-
-													field.onChange(Number.parseFloat(value.toFixed(2)));
-												}}
-												startAdornment={<InputAdornment position="start">$</InputAdornment>}
-												type="number"
-											/>
-											{errors.shippingRate ? <FormHelperText>{errors.shippingRate.message}</FormHelperText> : null}
+										<FormControl error={Boolean(errors.datePayment)} fullWidth>
+											<InputLabel required>Fecha de pago</InputLabel>
+											<Select {...field}>
+												<MenuItem value="15-30">15 - 30</MenuItem>
+												<MenuItem value="5-20">5 - 20</MenuItem>
+												<MenuItem value="10-25">10 - 25</MenuItem>
+											</Select>
+											{errors.datePayment ? <FormHelperText>{errors.datePayment.message}</FormHelperText> : null}
 										</FormControl>
 									)}
 								/>
 							</Grid>
 							<Grid
 								size={{
-									md: 4,
+									md: 6,
 									xs: 12,
 								}}
 							>
 								<Controller
 									control={control}
-									name="taxRate"
+									name="selectedDate"
 									render={({ field }) => (
-										<FormControl error={Boolean(errors.taxRate)} fullWidth>
-											<InputLabel>Tax rate (%)</InputLabel>
-											<OutlinedInput
-												{...field}
-												inputProps={{ step: 0.01 }}
-												onChange={(event) => {
-													const value = event.target.valueAsNumber;
-
-													if (Number.isNaN(value)) {
-														field.onChange("");
-														return;
-													}
-
-													if (value > 100) {
-														field.onChange(100);
-														return;
-													}
-
-													field.onChange(Number.parseFloat(value.toFixed(2)));
-												}}
-												type="number"
-											/>
-											{errors.taxRate ? <FormHelperText>{errors.taxRate.message}</FormHelperText> : null}
+										<FormControl error={Boolean(errors.selectedDate)} fullWidth>
+											<InputLabel required>Dia a pagar</InputLabel>
+											<DatePicker {...field} minDate={dayjs()} sx={{ marginTop: "0.5rem" }} />
+											{errors.selectedDate ? <FormHelperText>{errors.selectedDate.message}</FormHelperText> : null}
 										</FormControl>
 									)}
 								/>
 							</Grid>
 						</Grid>
-						<Box sx={{ display: "flex", justifyContent: "flex-end" }}>
-							<Stack spacing={2} sx={{ width: "300px", maxWidth: "100%" }}>
-								<Stack direction="row" spacing={3} sx={{ justifyContent: "space-between" }}>
-									<Typography variant="body2">Subtotal</Typography>
-									<Typography variant="body2">
-										{new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(subtotal)}
-									</Typography>
-								</Stack>
-								<Stack direction="row" spacing={3} sx={{ justifyContent: "space-between" }}>
-									<Typography variant="body2">Discount</Typography>
-									<Typography variant="body2">
-										{discount
-											? new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(discount)
-											: "-"}
-									</Typography>
-								</Stack>
-								<Stack direction="row" spacing={3} sx={{ justifyContent: "space-between" }}>
-									<Typography variant="body2">Shipping</Typography>
-									<Typography variant="body2">
-										{shippingRate
-											? new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(shippingRate)
-											: "-"}
-									</Typography>
-								</Stack>
-								<Stack direction="row" spacing={3} sx={{ justifyContent: "space-between" }}>
-									<Typography variant="body2">Taxes</Typography>
-									<Typography variant="body2">
-										{tax ? new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(tax) : "-"}
-									</Typography>
-								</Stack>
-								<Stack direction="row" spacing={3} sx={{ justifyContent: "space-between" }}>
-									<Typography variant="subtitle1">Total</Typography>
-									<Typography variant="subtitle1">
-										{new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(total)}
-									</Typography>
-								</Stack>
-							</Stack>
-						</Box>
 					</Stack>
 				</CardContent>
 				<CardActions sx={{ justifyContent: "flex-end" }}>
-					<Button color="secondary">Cancel</Button>
-					<Button type="submit" variant="contained">
-						Create request
+					<Button variant="outlined" component={RouterLink} href={paths.dashboard.customers.list}>
+						Cancelar
+					</Button>
+					<Button variant="contained" type="submit">
+						Guardar
 					</Button>
 				</CardActions>
 			</Card>
+			<NotificationAlert
+				openAlert={popoverAlert.open}
+				onClose={popoverAlert.handleClose}
+				msg={alertMsg}
+				severity={alertSeverity}
+			></NotificationAlert>
 		</form>
 	);
 }

@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
+import { Divider, InputLabel, MenuItem, Select, Stack } from "@mui/material";
 import Tab from "@mui/material/Tab";
 import Tabs from "@mui/material/Tabs";
 
@@ -17,9 +18,11 @@ const tabs = [
 	{ label: "Desembolsadas", value: "funded" },
 ];
 
-export function RequestsFilters({ filters = {} }) {
+export function RequestsFilters({ filters = {}, allBranches, userBranch }) {
 	const router = useRouter();
-	const { status, limit } = filters;
+	const { status } = filters;
+
+	const [branchSelected, setBranchSelected] = React.useState(userBranch);
 
 	const updateSearchParams = React.useCallback(
 		(newFilters) => {
@@ -34,6 +37,9 @@ export function RequestsFilters({ filters = {} }) {
 			if (newFilters.limit) {
 				searchParams.set("limit", newFilters.limit);
 			}
+			if (newFilters.branch) {
+				searchParams.set("branch", newFilters.branch);
+			}
 
 			router.push(`${paths.dashboard.requests.list}?${searchParams.toString()}`);
 		},
@@ -42,7 +48,16 @@ export function RequestsFilters({ filters = {} }) {
 
 	const handleStatusChange = React.useCallback(
 		(_, value) => {
-			updateSearchParams({ ...filters, status: value, page: 1, limit: limit });
+			updateSearchParams({ ...filters, status: value, page: 1 });
+		},
+		[updateSearchParams, filters]
+	);
+
+	const handleBranchChange = React.useCallback(
+		({ target }) => {
+			const { value } = target;
+			setBranchSelected(value);
+			updateSearchParams({ ...filters, branch: value, page: 1 });
 		},
 		[updateSearchParams, filters]
 	);
@@ -61,6 +76,27 @@ export function RequestsFilters({ filters = {} }) {
 					/>
 				))}
 			</Tabs>
+			<Divider />
+			<Stack
+				direction="row"
+				spacing={2}
+				sx={{ alignItems: "center", justifyContent: "end", flexWrap: "wrap", px: 3, py: 2 }}
+			>
+				<InputLabel id="branch-label">Sede: </InputLabel>
+				<Select
+					labelId="branch-label"
+					name="branchSelected"
+					onChange={handleBranchChange}
+					sx={{ maxWidth: "100%", width: "170px", marginTop: "0 !important" }}
+					value={branchSelected}
+				>
+					{allBranches.map((sede) => (
+						<MenuItem key={sede.id} value={sede.id}>
+							{sede.name}
+						</MenuItem>
+					))}
+				</Select>
+			</Stack>
 		</div>
 	);
 }

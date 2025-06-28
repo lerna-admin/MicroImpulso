@@ -1,4 +1,5 @@
 import * as React from "react";
+import { getAllBranches } from "@/app/dashboard/requests/hooks/use-branches";
 import { ROLES } from "@/constants/roles";
 import Box from "@mui/material/Box";
 import Card from "@mui/material/Card";
@@ -19,7 +20,7 @@ import { getAllRequests, getRequestsByAgent } from "./hooks/use-requests";
 export const metadata = { title: `Solicitudes | Dashboard | ${appConfig.name}` };
 
 export default async function Page({ searchParams }) {
-	const { previewId, status, page, limit } = await searchParams;
+	const { previewId, status, page, limit, branch } = await searchParams;
 
 	const {
 		data: { user },
@@ -34,7 +35,9 @@ export default async function Page({ searchParams }) {
 		totalItems: requestTotalItems,
 	} = user.role === ROLES.AGENTE
 		? await getRequestsByAgent(user.id, { page, limit, status })
-		: await getAllRequests({ page, limit, status, branchId: user.branch.id });
+		: await getAllRequests({ page, limit, status, branchId: branch ?? user.branch.id });
+
+	const branches = await getAllBranches();
 
 	return (
 		<React.Fragment>
@@ -54,14 +57,18 @@ export default async function Page({ searchParams }) {
 					</Stack>
 					<RequestsSelectionProvider requests={requests}>
 						<Card>
-							<RequestsFilters filters={{ status, page, limit }} />
+							<RequestsFilters
+								filters={{ status, page, limit, branch }}
+								allBranches={branches}
+								userBranch={user.branch.id}
+							/>
 							<Divider />
 							<Box sx={{ overflowX: "auto" }}>
 								<RequestsTable rows={requests} permissions={permissions} role={user.role} />
 							</Box>
 							<Divider />
 							<RequestsPagination
-								filters={{ status, page, limit }}
+								filters={{ status, page, limit, branch }}
 								requestTotalItems={requestTotalItems}
 								requestsPage={requestsPage - 1}
 								requestLimit={requestLimit}

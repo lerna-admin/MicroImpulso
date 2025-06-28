@@ -1,5 +1,6 @@
 import * as React from "react";
 import RouterLink from "next/link";
+import { getAllBranches } from "@/app/dashboard/requests/hooks/use-branches";
 import Box from "@mui/material/Box";
 import Link from "@mui/material/Link";
 import Stack from "@mui/material/Stack";
@@ -8,14 +9,29 @@ import { ArrowLeft as ArrowLeftIcon } from "@phosphor-icons/react/dist/ssr/Arrow
 import { appConfig } from "@/config/app";
 import { paths } from "@/paths";
 import { getUser } from "@/lib/custom-auth/server";
-import { CustomerCreateForm } from "@/components/dashboard/customer/customer-create-form";
+import { getAllConfigParams } from "@/hooks/use-config.js";
+import { UserCreateForm } from "@/components/dashboard/users/user-create-form";
 
-export const metadata = { title: `Crear | Clientes | Dashboard | ${appConfig.name}` };
+export const metadata = { title: `Crear | Usuarios | Dashboard | ${appConfig.name}` };
 
 export default async function Page() {
 	const {
-		data: { user },
+		data: { user: userLogged },
 	} = await getUser();
+	const branches = await getAllBranches();
+
+	const configParams = await getAllConfigParams();
+
+	const rolesAllowed = new Set(["ADMIN", "AGENT", "CENTRAL", "MANAGER"]);
+
+	const roles = configParams.filter(({ key }) => rolesAllowed.has(key));
+
+	const rolesFiltered = roles.filter((role) => {
+		if (userLogged.role === "ADMIN") {
+			return role.key === "AGENT";
+		}
+		return role;
+	});
 
 	return (
 		<Box
@@ -32,16 +48,16 @@ export default async function Page() {
 						<Link
 							color="text.primary"
 							component={RouterLink}
-							href={paths.dashboard.customers.list}
+							href={paths.dashboard.users.list}
 							sx={{ alignItems: "center", display: "inline-flex", gap: 1 }}
 							variant="subtitle2"
 						>
 							<ArrowLeftIcon fontSize="var(--icon-fontSize-md)" />
-							Clientes
+							Usuarios
 						</Link>
 					</div>
 				</Stack>
-				<CustomerCreateForm user={{ id: user.id, role: user.role }} />
+				<UserCreateForm roles={rolesFiltered} branches={branches} userLogged={userLogged} />
 			</Stack>
 		</Box>
 	);

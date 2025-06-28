@@ -24,5 +24,5 @@ export function getProtectedRoutes() {
 
 export function getFirstRolePath(role) {
 	const { items } = dashboardConfig.navItems.find((item) => item.key === role);
-	return items[0].href;
+	return items[0].href ? items[0].href : items[0].items[0].href;
 }

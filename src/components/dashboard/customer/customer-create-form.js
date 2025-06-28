@@ -3,175 +3,169 @@
 import * as React from "react";
 import RouterLink from "next/link";
 import { useRouter } from "next/navigation";
+import { createCustomer } from "@/app/dashboard/customers/hooks/use-customers";
+import { createRequest } from "@/app/dashboard/requests/hooks/use-requests";
+import { deleteAlphabeticals, formatCurrency } from "@/helpers/format-currency";
 import { zodResolver } from "@hookform/resolvers/zod";
-import Autocomplete from "@mui/material/Autocomplete";
-import Avatar from "@mui/material/Avatar";
-import Box from "@mui/material/Box";
+import { MenuItem, Typography } from "@mui/material";
 import Button from "@mui/material/Button";
 import Card from "@mui/material/Card";
 import CardActions from "@mui/material/CardActions";
 import CardContent from "@mui/material/CardContent";
-import Checkbox from "@mui/material/Checkbox";
-import Divider from "@mui/material/Divider";
 import FormControl from "@mui/material/FormControl";
-import FormControlLabel from "@mui/material/FormControlLabel";
 import FormHelperText from "@mui/material/FormHelperText";
 import Grid from "@mui/material/Grid2";
 import InputLabel from "@mui/material/InputLabel";
 import OutlinedInput from "@mui/material/OutlinedInput";
 import Select from "@mui/material/Select";
 import Stack from "@mui/material/Stack";
-import Typography from "@mui/material/Typography";
-import { Camera as CameraIcon } from "@phosphor-icons/react/dist/ssr/Camera";
+import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { Controller, useForm } from "react-hook-form";
 import { z as zod } from "zod";
 
 import { paths } from "@/paths";
+import { dayjs } from "@/lib/dayjs";
 import { logger } from "@/lib/default-logger";
-import { Option } from "@/components/core/option";
-import { toast } from "@/components/core/toaster";
-
-const countryOptions = [
-	{ label: "United States", value: "us" },
-	{ label: "Germany", value: "de" },
-	{ label: "Spain", value: "es" },
-];
-
-function fileToBase64(file) {
-	return new Promise((resolve, reject) => {
-		const reader = new FileReader();
-		reader.readAsDataURL(file);
-		reader.addEventListener("load", () => {
-			resolve(reader.result);
-		});
-		reader.addEventListener("error", () => {
-			reject(new Error("Error converting file to base64"));
-		});
-	});
-}
+import { usePopover } from "@/hooks/use-popover";
+import { NotificationAlert } from "@/components/widgets/notifications/notification-alert";
 
 const schema = zod.object({
-	avatar: zod.string().optional(),
-	name: zod.string().min(1, "Name is required").max(255),
-	email: zod.string().email("Must be a valid email").min(1, "Email is required").max(255),
-	phone: zod.string().min(1, "Phone is required").max(15),
-	company: zod.string().max(255),
-	billingAddress: zod.object({
-		country: zod.string().min(1, "Country is required").max(255),
-		state: zod.string().min(1, "State is required").max(255),
-		city: zod.string().min(1, "City is required").max(255),
-		zipCode: zod.string().min(1, "Zip code is required").max(255),
-		line1: zod.string().min(1, "Street line 1 is required").max(255),
-		line2: zod.string().max(255).optional(),
+	name: zod
+		.string()
+		.min(3, { message: "Debe tener al menos 3 caracteres" })
+		.max(100, { message: "Máximo 100 caracteres" })
+		.regex(/^[A-Za-zÀ-ÿ\u00F1\u00D1]+(?: [A-Za-zÀ-ÿ\u00F1\u00D1]+)+$/, {
+			message: "Debe ingresar nombre y apellido, solo letras y espacios",
+		}),
+	email: zod
+		.string()
+		.email("Debe ser un correo válido")
+		.min(5, "El correo es obligatorio")
+		.max(255, "El correo es muy largo"),
+
+	phone: zod.string().min(7, "El celular es obligatorio").max(10, "El celular es muy largo").regex(/^\d+$/, {
+		message: "El celular debe contener solo números",
 	}),
-	taxId: zod.string().max(255).optional(),
-	timezone: zod.string().min(1, "Timezone is required").max(255),
-	language: zod.string().min(1, "Language is required").max(255),
-	currency: zod.string().min(1, "Currency is required").max(255),
+
+	documentType: zod.enum(["CC", "CE", "TE"], {
+		errorMap: () => ({ message: "Debes elegir un tipo de documento" }),
+	}),
+	document: zod
+		.string()
+		.min(5, { message: "El documento es obligatorio" })
+		.max(20, { message: "El documento es muy largo" })
+		.regex(/^\d+$/, {
+			message: "El documento debe contener solo números",
+		}),
+
+	address: zod
+		.string()
+		.min(5, { message: "La dirección es obligatoria" })
+		.max(255, { message: "La dirección es muy larga" }),
+	amount: zod
+		.number({ invalid_type_error: "El monto debe ser un número" })
+		.min(1, { message: "El monto es obligatorio" })
+		.max(5_000_000, { message: "El monto no puede superar los 5.000.000" }),
+	typePayment: zod.enum(["QUINCENAL", "MENSUAL"], { errorMap: () => ({ message: "Debes elegir un tipo de pago" }) }),
+	datePayment: zod.enum(["15-30", "5-20", "10-25"], {
+		errorMap: () => ({ message: "Debes elegir una fecha de pago" }),
+	}),
+	selectedDate: zod
+		.custom((val) => dayjs.isDayjs(val) && val.isValid(), {
+			message: "La fecha es obligatoria",
+		})
+		.refine((val) => dayjs(val).isAfter(dayjs(), "day"), {
+			message: "La fecha debe ser posterior a hoy",
+		}),
 });
 
 const defaultValues = {
-	avatar: "",
 	name: "",
 	email: "",
 	phone: "",
-	company: "",
-	billingAddress: { country: "us", state: "", city: "", zipCode: "", line1: "", line2: "" },
-	taxId: "",
-	timezone: "new_york",
-	language: "en",
-	currency: "USD",
+	documentType: "",
+	document: "",
+	address: "",
+	amount: 0,
+	typePayment: "",
+	datePayment: "",
+	selectedDate: dayjs(),
 };
 
-export function CustomerCreateForm() {
+const determinarAgent = (user) => {
+	if (user.role === "AGENT") {
+		return user.id;
+	}
+	return null;
+};
+
+export function CustomerCreateForm({ user }) {
 	const router = useRouter();
+	const popoverAlert = usePopover();
 
 	const {
 		control,
 		handleSubmit,
 		formState: { errors },
-		setValue,
-		watch,
+		reset,
 	} = useForm({ defaultValues, resolver: zodResolver(schema) });
 
+	const [alertMsg, setAlertMsg] = React.useState("");
+	const [alertSeverity, setAlertSeverity] = React.useState("success");
+
 	const onSubmit = React.useCallback(
-		async (_) => {
-			try {
-				// Make API request
-				toast.success("Customer updated");
-				router.push(paths.dashboard.customers.details("1"));
-			} catch (error) {
-				logger.error(error);
-				toast.error("Something went wrong!");
-			}
+		async (dataForm) => {
+			const bodyCustomer = {
+				name: dataForm.name,
+				email: dataForm.email,
+				phone: dataForm.phone,
+				documentType: dataForm.documentType,
+				document: dataForm.document,
+				address: dataForm.address,
+				status: "PROSPECT",
+			};
+			createCustomer(bodyCustomer)
+				.then(({ id: newClientId }) => {
+					const bodyRequest = {
+						client: newClientId,
+						agent: determinarAgent(user),
+						status: "new",
+						requestedAmount: dataForm.amount,
+						endDateAt: dataForm.selectedDate,
+						amount: 0,
+						paymentDay: dataForm.datePayment,
+						type: dataForm.typePayment,
+					};
+					return createRequest(bodyRequest);
+				})
+				.then(() => {
+					setAlertMsg("¡Creado exitosamente!");
+					setAlertSeverity("success");
+				})
+				.catch((error) => {
+					setAlertMsg(error.message);
+					setAlertSeverity("error");
+					logger.error(error);
+				})
+				.finally(() => {
+					popoverAlert.handleOpen();
+					reset();
+				});
 		},
 		[router]
 	);
 
-	const avatarInputRef = React.useRef(null);
-	const avatar = watch("avatar");
-
-	const handleAvatarChange = React.useCallback(
-		async (event) => {
-			const file = event.target.files?.[0];
-
-			if (file) {
-				const url = await fileToBase64(file);
-				setValue("avatar", url);
-			}
-		},
-		[setValue]
-	);
-
 	return (
 		<form onSubmit={handleSubmit(onSubmit)}>
-			<Card>
-				<CardContent>
-					<Stack divider={<Divider />} spacing={4}>
-						<Stack spacing={3}>
-							<Typography variant="h6">Account information</Typography>
+			<Stack spacing={4}>
+				<Card>
+					<CardContent>
+						<Typography variant="h5" paddingTop={3}>
+							Crear cliente
+						</Typography>
+
+						<Stack spacing={3} paddingTop={3}>
 							<Grid container spacing={3}>
-								<Grid size={12}>
-									<Stack direction="row" spacing={3} sx={{ alignItems: "center" }}>
-										<Box
-											sx={{
-												border: "1px dashed var(--mui-palette-divider)",
-												borderRadius: "50%",
-												display: "inline-flex",
-												p: "4px",
-											}}
-										>
-											<Avatar
-												src={avatar}
-												sx={{
-													"--Avatar-size": "100px",
-													"--Icon-fontSize": "var(--icon-fontSize-lg)",
-													alignItems: "center",
-													bgcolor: "var(--mui-palette-background-level1)",
-													color: "var(--mui-palette-text-primary)",
-													display: "flex",
-													justifyContent: "center",
-												}}
-											>
-												<CameraIcon fontSize="var(--Icon-fontSize)" />
-											</Avatar>
-										</Box>
-										<Stack spacing={1} sx={{ alignItems: "flex-start" }}>
-											<Typography variant="subtitle1">Avatar</Typography>
-											<Typography variant="caption">Min 400x400px, PNG or JPEG</Typography>
-											<Button
-												color="secondary"
-												onClick={() => {
-													avatarInputRef.current?.click();
-												}}
-												variant="outlined"
-											>
-												Select
-											</Button>
-											<input hidden onChange={handleAvatarChange} ref={avatarInputRef} type="file" />
-										</Stack>
-									</Stack>
-								</Grid>
 								<Grid
 									size={{
 										md: 6,
@@ -183,7 +177,7 @@ export function CustomerCreateForm() {
 										name="name"
 										render={({ field }) => (
 											<FormControl error={Boolean(errors.name)} fullWidth>
-												<InputLabel required>Name</InputLabel>
+												<InputLabel required>Nombre completo</InputLabel>
 												<OutlinedInput {...field} />
 												{errors.name ? <FormHelperText>{errors.name.message}</FormHelperText> : null}
 											</FormControl>
@@ -201,9 +195,49 @@ export function CustomerCreateForm() {
 										name="email"
 										render={({ field }) => (
 											<FormControl error={Boolean(errors.email)} fullWidth>
-												<InputLabel required>Email address</InputLabel>
+												<InputLabel required>Correo</InputLabel>
 												<OutlinedInput {...field} type="email" />
 												{errors.email ? <FormHelperText>{errors.email.message}</FormHelperText> : null}
+											</FormControl>
+										)}
+									/>
+								</Grid>
+								<Grid
+									size={{
+										md: 6,
+										xs: 12,
+									}}
+								>
+									<Controller
+										control={control}
+										name="documentType"
+										render={({ field }) => (
+											<FormControl error={Boolean(errors.documentType)} fullWidth>
+												<InputLabel required>Tipo de documento</InputLabel>
+												<Select {...field}>
+													<MenuItem value="CC">Cedula de Ciudadania</MenuItem>
+													<MenuItem value="CE">Cedula de Extranjeria</MenuItem>
+													<MenuItem value="TE">Tarjeta de extranjería</MenuItem>
+												</Select>
+												{errors.documentType ? <FormHelperText>{errors.documentType.message}</FormHelperText> : null}
+											</FormControl>
+										)}
+									/>
+								</Grid>
+								<Grid
+									size={{
+										md: 6,
+										xs: 12,
+									}}
+								>
+									<Controller
+										control={control}
+										name="document"
+										render={({ field }) => (
+											<FormControl error={Boolean(errors.document)} fullWidth>
+												<InputLabel required>N. de documento</InputLabel>
+												<OutlinedInput {...field} />
+												{errors.document ? <FormHelperText>{errors.document.message}</FormHelperText> : null}
 											</FormControl>
 										)}
 									/>
@@ -219,7 +253,7 @@ export function CustomerCreateForm() {
 										name="phone"
 										render={({ field }) => (
 											<FormControl error={Boolean(errors.phone)} fullWidth>
-												<InputLabel required>Phone number</InputLabel>
+												<InputLabel required>N. de celular</InputLabel>
 												<OutlinedInput {...field} />
 												{errors.phone ? <FormHelperText>{errors.phone.message}</FormHelperText> : null}
 											</FormControl>
@@ -234,20 +268,27 @@ export function CustomerCreateForm() {
 								>
 									<Controller
 										control={control}
-										name="company"
+										name="address"
 										render={({ field }) => (
-											<FormControl error={Boolean(errors.company)} fullWidth>
-												<InputLabel>Company</InputLabel>
+											<FormControl error={Boolean(errors.address)} fullWidth>
+												<InputLabel required>Dirección</InputLabel>
 												<OutlinedInput {...field} />
-												{errors.company ? <FormHelperText>{errors.company.message}</FormHelperText> : null}
+												{errors.address ? <FormHelperText>{errors.address.message}</FormHelperText> : null}
 											</FormControl>
 										)}
 									/>
 								</Grid>
 							</Grid>
 						</Stack>
-						<Stack spacing={3}>
-							<Typography variant="h6">Billing information</Typography>
+					</CardContent>
+				</Card>
+				<Card>
+					<CardContent>
+						<Typography variant="h5" paddingTop={3}>
+							Crear solicitud
+						</Typography>
+
+						<Stack spacing={3} paddingTop={3}>
 							<Grid container spacing={3}>
 								<Grid
 									size={{
@@ -257,34 +298,25 @@ export function CustomerCreateForm() {
 								>
 									<Controller
 										control={control}
-										name="billingAddress.country"
-										render={({ field }) => (
-											<Autocomplete
-												{...field}
-												getOptionLabel={(option) => option.label}
-												onChange={(_, value) => {
-													if (value) {
-														field.onChange(value.value);
-													}
-												}}
-												options={countryOptions}
-												renderInput={(params) => (
-													<FormControl error={Boolean(errors.billingAddress?.country)} fullWidth>
-														<InputLabel required>Country</InputLabel>
-														<OutlinedInput inputProps={params.inputProps} ref={params.InputProps.ref} />
-														{errors.billingAddress?.country ? (
-															<FormHelperText>{errors.billingAddress?.country?.message}</FormHelperText>
-														) : null}
-													</FormControl>
-												)}
-												renderOption={(props, option) => (
-													<Option {...props} key={option.value} value={option.value}>
-														{option.label}
-													</Option>
-												)}
-												value={countryOptions.find((option) => option.value === field.value)}
-											/>
-										)}
+										name="amount"
+										render={({ field }) => {
+											return (
+												<FormControl error={Boolean(errors.amount)} fullWidth>
+													<InputLabel required>Monto solicitado</InputLabel>
+													<OutlinedInput
+														{...field}
+														value={field.value !== undefined && field.value !== null ? formatCurrency(field.value) : ""}
+														onChange={(e) => {
+															const raw = deleteAlphabeticals(e.target.value);
+															const numericValue = raw ? Number.parseInt(raw, 10) : 0;
+															field.onChange(numericValue);
+														}}
+														inputProps={{ inputMode: "numeric" }}
+													/>
+													{errors.amount ? <FormHelperText>{errors.amount.message}</FormHelperText> : null}
+												</FormControl>
+											);
+										}}
 									/>
 								</Grid>
 								<Grid
@@ -295,14 +327,15 @@ export function CustomerCreateForm() {
 								>
 									<Controller
 										control={control}
-										name="billingAddress.state"
+										name="typePayment"
 										render={({ field }) => (
-											<FormControl error={Boolean(errors.billingAddress?.state)} fullWidth>
-												<InputLabel required>State</InputLabel>
-												<OutlinedInput {...field} />
-												{errors.billingAddress?.state ? (
-													<FormHelperText>{errors.billingAddress?.state?.message}</FormHelperText>
-												) : null}
+											<FormControl error={Boolean(errors.typePayment)} fullWidth>
+												<InputLabel required>Tipo de pago</InputLabel>
+												<Select {...field}>
+													<MenuItem value="QUINCENAL">Quincenal</MenuItem>
+													<MenuItem value="MENSUAL">Mensual</MenuItem>
+												</Select>
+												{errors.typePayment ? <FormHelperText>{errors.typePayment.message}</FormHelperText> : null}
 											</FormControl>
 										)}
 									/>
@@ -315,14 +348,16 @@ export function CustomerCreateForm() {
 								>
 									<Controller
 										control={control}
-										name="billingAddress.city"
+										name="datePayment"
 										render={({ field }) => (
-											<FormControl error={Boolean(errors.billingAddress?.city)} fullWidth>
-												<InputLabel required>City</InputLabel>
-												<OutlinedInput {...field} />
-												{errors.billingAddress?.city ? (
-													<FormHelperText>{errors.billingAddress?.city?.message}</FormHelperText>
-												) : null}
+											<FormControl error={Boolean(errors.datePayment)} fullWidth>
+												<InputLabel required>Fecha de pago</InputLabel>
+												<Select {...field}>
+													<MenuItem value="15-30">15 - 30</MenuItem>
+													<MenuItem value="5-20">5 - 20</MenuItem>
+													<MenuItem value="10-25">10 - 25</MenuItem>
+												</Select>
+												{errors.datePayment ? <FormHelperText>{errors.datePayment.message}</FormHelperText> : null}
 											</FormControl>
 										)}
 									/>
@@ -335,147 +370,36 @@ export function CustomerCreateForm() {
 								>
 									<Controller
 										control={control}
-										name="billingAddress.zipCode"
+										name="selectedDate"
 										render={({ field }) => (
-											<FormControl error={Boolean(errors.billingAddress?.zipCode)} fullWidth>
-												<InputLabel required>Zip code</InputLabel>
-												<OutlinedInput {...field} />
-												{errors.billingAddress?.zipCode ? (
-													<FormHelperText>{errors.billingAddress?.zipCode?.message}</FormHelperText>
-												) : null}
-											</FormControl>
-										)}
-									/>
-								</Grid>
-								<Grid
-									size={{
-										md: 6,
-										xs: 12,
-									}}
-								>
-									<Controller
-										control={control}
-										name="billingAddress.line1"
-										render={({ field }) => (
-											<FormControl error={Boolean(errors.billingAddress?.line1)} fullWidth>
-												<InputLabel required>Address</InputLabel>
-												<OutlinedInput {...field} />
-												{errors.billingAddress?.line1 ? (
-													<FormHelperText>{errors.billingAddress?.line1?.message}</FormHelperText>
-												) : null}
-											</FormControl>
-										)}
-									/>
-								</Grid>
-								<Grid
-									size={{
-										md: 6,
-										xs: 12,
-									}}
-								>
-									<Controller
-										control={control}
-										name="taxId"
-										render={({ field }) => (
-											<FormControl error={Boolean(errors.taxId)} fullWidth>
-												<InputLabel>Tax ID</InputLabel>
-												<OutlinedInput {...field} placeholder="e.g EU372054390" />
-												{errors.taxId ? <FormHelperText>{errors.taxId.message}</FormHelperText> : null}
+											<FormControl error={Boolean(errors.selectedDate)} fullWidth>
+												<InputLabel required>Dia a pagar</InputLabel>
+												<DatePicker {...field} minDate={dayjs()} sx={{ marginTop: "0.5rem" }} />
+												{errors.selectedDate ? <FormHelperText>{errors.selectedDate.message}</FormHelperText> : null}
 											</FormControl>
 										)}
 									/>
 								</Grid>
 							</Grid>
 						</Stack>
-						<Stack spacing={3}>
-							<Typography variant="h6">Shipping information</Typography>
-							<FormControlLabel control={<Checkbox defaultChecked />} label="Same as billing address" />
-						</Stack>
-						<Stack spacing={3}>
-							<Typography variant="h6">Additional information</Typography>
-							<Grid container spacing={3}>
-								<Grid
-									size={{
-										md: 6,
-										xs: 12,
-									}}
-								>
-									<Controller
-										control={control}
-										name="timezone"
-										render={({ field }) => (
-											<FormControl error={Boolean(errors.timezone)} fullWidth>
-												<InputLabel required>Timezone</InputLabel>
-												<Select {...field}>
-													<Option value="">Select a timezone</Option>
-													<Option value="new_york">US - New York</Option>
-													<Option value="california">US - California</Option>
-													<Option value="london">UK - London</Option>
-												</Select>
-												{errors.timezone ? <FormHelperText>{errors.timezone.message}</FormHelperText> : null}
-											</FormControl>
-										)}
-									/>
-								</Grid>
-								<Grid
-									size={{
-										md: 6,
-										xs: 12,
-									}}
-								>
-									<Controller
-										control={control}
-										name="language"
-										render={({ field }) => (
-											<FormControl error={Boolean(errors.language)} fullWidth>
-												<InputLabel required>Language</InputLabel>
-												<Select {...field}>
-													<Option value="">Select a language</Option>
-													<Option value="en">English</Option>
-													<Option value="es">Spanish</Option>
-													<Option value="de">German</Option>
-												</Select>
-												{errors.language ? <FormHelperText>{errors.language.message}</FormHelperText> : null}
-											</FormControl>
-										)}
-									/>
-								</Grid>
-								<Grid
-									size={{
-										md: 6,
-										xs: 12,
-									}}
-								>
-									<Controller
-										control={control}
-										name="currency"
-										render={({ field }) => (
-											<FormControl error={Boolean(errors.currency)} fullWidth>
-												<InputLabel>Currency</InputLabel>
-												<Select {...field}>
-													<Option value="">Select a currency</Option>
-													<Option value="USD">USD</Option>
-													<Option value="EUR">EUR</Option>
-													<Option value="RON">RON</Option>
-												</Select>
-												{errors.currency ? <FormHelperText>{errors.currency.message}</FormHelperText> : null}
-											</FormControl>
-										)}
-									/>
-								</Grid>
-							</Grid>
-						</Stack>
-					</Stack>
-				</CardContent>
-				<CardActions sx={{ justifyContent: "flex-end" }}>
-					<Button color="secondary" component={RouterLink} href={paths.dashboard.customers.list}>
-						Cancel
-					</Button>
-					<Button type="submit" variant="contained">
-						Create customer
-					</Button>
-				</CardActions>
-			</Card>
+					</CardContent>
+					<CardActions sx={{ justifyContent: "flex-end" }}>
+						<Button variant="outlined" component={RouterLink} href={paths.dashboard.customers.list}>
+							Cancelar
+						</Button>
+						<Button variant="contained" type="subnmit">
+							Guardar
+						</Button>
+					</CardActions>
+				</Card>
+			</Stack>
+
+			<NotificationAlert
+				openAlert={popoverAlert.open}
+				onClose={popoverAlert.handleClose}
+				msg={alertMsg}
+				severity={alertSeverity}
+			></NotificationAlert>
 		</form>
 	);
 }

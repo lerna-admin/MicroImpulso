@@ -5,7 +5,7 @@ export const NotificationAlert = ({ openAlert, onClose, msg, severity }) => {
 	return (
 		<Snackbar
 			open={openAlert}
-			autoHideDuration={2000}
+			autoHideDuration={3000}
 			onClose={onClose}
 			anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
 		>

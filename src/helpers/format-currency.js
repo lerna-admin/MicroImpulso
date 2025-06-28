@@ -12,3 +12,8 @@ export const formatCurrency = (value) => {
 export const unformatCurrency = (formatted) => {
 	return Number.parseInt(formatted.replaceAll(/\D/g, ""), 10) || 0;
 };
+
+export const deleteAlphabeticals = (value) => {
+	// Elimina cualquier carácter que no sea número
+	return Number(value.replaceAll(/[^0-9]/g, ""));
+};

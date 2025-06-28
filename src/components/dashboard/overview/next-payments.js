@@ -15,19 +15,13 @@ import ListItemText from "@mui/material/ListItemText";
 import Typography from "@mui/material/Typography";
 import { ArrowRight as ArrowRightIcon } from "@phosphor-icons/react/dist/ssr/ArrowRight";
 import { CalendarBlank as CalendarBlankIcon } from "@phosphor-icons/react/dist/ssr/CalendarBlank";
-// import { DotsThree as DotsThreeIcon } from "@phosphor-icons/react/dist/ssr/DotsThree";
 
 import { dayjs } from "@/lib/dayjs";
 
-export function Events({ events }) {
+export function NextPayments({ payments }) {
 	return (
 		<Card>
 			<CardHeader
-				// action={
-				// 	<IconButton>
-				// 		<DotsThreeIcon weight="bold" />
-				// 	</IconButton>
-				// }
 				avatar={
 					<Avatar>
 						<CalendarBlankIcon fontSize="var(--Icon-fontSize)" />
@@ -38,24 +32,24 @@ export function Events({ events }) {
 			/>
 			<CardContent sx={{ py: "8px" }}>
 				<List disablePadding>
-					{events.map((event) => (
-						<EventItem event={event} key={event.id} />
+					{payments.map((payment) => (
+						<PaymentItem payment={payment} key={payment.id} />
 					))}
 				</List>
 			</CardContent>
 			<Divider />
 			<CardActions>
 				<Button color="secondary" endIcon={<ArrowRightIcon />} size="small">
-					Ver todos los pagos
+					Ver todas las solicitudes
 				</Button>
 			</CardActions>
 		</Card>
 	);
 }
 
-function EventItem({ event }) {
+function PaymentItem({ payment }) {
 	return (
-		<ListItem disableGutters key={event.id}>
+		<ListItem disableGutters key={payment.id}>
 			<ListItemAvatar>
 				<Box
 					sx={{
@@ -66,26 +60,26 @@ function EventItem({ event }) {
 						textAlign: "center",
 					}}
 				>
-					<Typography variant="caption">{dayjs(event.createdAt).format("MMM").toUpperCase()}</Typography>
-					<Typography variant="h6">{dayjs(event.createdAt).format("D")}</Typography>
+					<Typography variant="caption">{dayjs(payment.endDateAt).format("MMM").toUpperCase()}</Typography>
+					<Typography variant="h6">{dayjs(payment.endDateAt).format("D")}</Typography>
 				</Box>
 			</ListItemAvatar>
 			<ListItemText
 				disableTypography
 				primary={
 					<Typography noWrap variant="subtitle2">
-						{event.title}
+						{payment.name}
 					</Typography>
 				}
 				secondary={
 					<Typography color="text.secondary" noWrap variant="body2">
-						{event.description}
+						{payment.typePayment}
 					</Typography>
 				}
 			/>
-			<IconButton>
+			{/* <IconButton>
 				<CalendarBlankIcon />
-			</IconButton>
+			</IconButton> */}
 		</ListItem>
 	);
 }

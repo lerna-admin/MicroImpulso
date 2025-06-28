@@ -1,4 +1,5 @@
 import * as React from "react";
+import { formatCurrency } from "@/helpers/format-currency";
 import Avatar from "@mui/material/Avatar";
 import Button from "@mui/material/Button";
 import Card from "@mui/material/Card";
@@ -7,23 +8,23 @@ import CardContent from "@mui/material/CardContent";
 import CardHeader from "@mui/material/CardHeader";
 import Chip from "@mui/material/Chip";
 import Divider from "@mui/material/Divider";
-import IconButton from "@mui/material/IconButton";
 import List from "@mui/material/List";
 import ListItem from "@mui/material/ListItem";
 import ListItemAvatar from "@mui/material/ListItemAvatar";
 import ListItemText from "@mui/material/ListItemText";
 import Typography from "@mui/material/Typography";
+import { CardsThree as CardsThreeIcon } from "@phosphor-icons/react/dist/ssr";
 import { ArrowRight as ArrowRightIcon } from "@phosphor-icons/react/dist/ssr/ArrowRight";
-import { ContactlessPayment as ContactlessPaymentIcon } from "@phosphor-icons/react/dist/ssr/ContactlessPayment";
-import { DotsThree as DotsThreeIcon } from "@phosphor-icons/react/dist/ssr/DotsThree";
 
-export function Subscriptions({ subscriptions }) {
+import { paths } from "@/paths";
+
+export function LatestRequests({ subscriptions }) {
 	return (
 		<Card>
 			<CardHeader
 				avatar={
 					<Avatar>
-						<ContactlessPaymentIcon fontSize="var(--Icon-fontSize)" />
+						<CardsThreeIcon fontSize="var(--Icon-fontSize)" />
 					</Avatar>
 				}
 				title="Ultimas solicitudes"
@@ -31,13 +32,13 @@ export function Subscriptions({ subscriptions }) {
 			<CardContent sx={{ pb: "8px" }}>
 				<List disablePadding>
 					{subscriptions.map((subscription) => (
-						<SubscriptionItem key={subscription.id} subscription={subscription} />
+						<LatestItem key={subscription.id} subscription={subscription} />
 					))}
 				</List>
 			</CardContent>
 			<Divider />
 			<CardActions>
-				<Button color="secondary" endIcon={<ArrowRightIcon />} size="small">
+				<Button color="secondary" endIcon={<ArrowRightIcon />} size="small" href={paths.dashboard.requests.list}>
 					Ver todas las solicitudes
 				</Button>
 			</CardActions>
@@ -45,45 +46,33 @@ export function Subscriptions({ subscriptions }) {
 	);
 }
 
-function SubscriptionItem({ subscription }) {
+function LatestItem({ subscription }) {
 	const { label, color } = {
-		aprobado: { label: "Aprobado", color: "success" },
-		cancelado: { label: "Cancelado", color: "error" },
-		pendiente: { label: "Pendiente", color: "warning" },
+		new: { label: "Nueva", color: "info" },
+		under_review: { label: "En estudio", color: "warning" },
+		approved: { label: "Aprobada", color: "info" },
+		rejected: { label: "Rechazada", color: "error" },
+		canceled: { label: "Cancelada", color: "error" },
+		completed: { label: "Completada", color: "success" },
+		funded: { label: "Desembolsada", color: "warning" },
 	}[subscription.status];
 
 	return (
 		<ListItem disableGutters>
-			<ListItemAvatar>
-				<Avatar
-					src={subscription.icon}
-					sx={{
-						bgcolor: "var(--mui-palette-background-paper)",
-						boxShadow: "var(--mui-shadows-8)",
-						color: "var(--mui-palette-text-primary)",
-					}}
-				/>
-			</ListItemAvatar>
 			<ListItemText
 				disableTypography
 				primary={
 					<Typography noWrap variant="subtitle2">
-						{subscription.title}
+						{subscription.name}
 					</Typography>
 				}
 				secondary={
 					<Typography sx={{ whiteSpace: "nowrap" }} variant="body2">
-						{subscription.costs}{" "}
-						<Typography color="text.secondary" component="span" variant="inherit">
-							{subscription.billingCycle}
-						</Typography>
+						{formatCurrency(subscription.amount)}
 					</Typography>
 				}
 			/>
 			<Chip color={color} label={label} size="small" variant="soft" />
-			{/* <IconButton>
-				<DotsThreeIcon weight="bold" />
-			</IconButton> */}
 		</ListItem>
 	);
 }

@@ -1,9 +1,19 @@
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export async function getAllUsers({ page = 1, limit = 10, branchId = "", name = "", document = "", role = "" }) {
-	const res = await fetch(
-		`${BASE_URL}/users?page=${page}&limit=${limit}&branchId=${branchId}&name=${name}&document=${document}&role=${role}`
-	);
+	const params = new URLSearchParams();
+
+	params.append("page", page.toString());
+	params.append("limit", limit.toString());
+
+	if (branchId) params.append("branchId", branchId);
+	if (name) params.append("name", name);
+	if (document) params.append("document", document);
+	if (role) params.append("role", role);
+
+	const url = `${BASE_URL}/users?${params.toString()}`;
+	const res = await fetch(url);
+
 	if (!res.ok) throw new Error("Error al obtener usuarios");
 	return await res.json();
 }
@@ -26,7 +36,7 @@ export async function createUser(data) {
 
 export async function updateUser(data) {
 	const res = await fetch(`${BASE_URL}/users/${data.id}`, {
-		method: "PUT",
+		method: "PATCH",
 		headers: { "Content-Type": "application/json" },
 		body: JSON.stringify(data),
 	});
