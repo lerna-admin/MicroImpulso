@@ -11,7 +11,12 @@ export async function closeDay(agentId) {
 		method: "POST",
 		headers: { "Content-Type": "application/json" },
 	});
-	return await res.json();
+
+	const data = await res.json();
+
+	if (data.statusCode === 400) throw new Error("El usuario ya cerro ruta");
+	if (!res.ok) throw new Error("Error al cerrar la ruta");
+	return data;
 }
 
 export async function deleteCloseDay(agentId) {
