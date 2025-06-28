@@ -23,12 +23,14 @@ export default async function Page({ searchParams }) {
 		data: { user },
 	} = await getUser();
 
+	const roleToFilter = user.role === "MANAGER" ? "" : "AGENT";
+
 	const {
 		data: users,
 		total: userTotalItems,
 		page: usersPage,
 		limit: userLimit,
-	} = await getAllUsers({ page, limit, branchId: user.branch.id, name, document, role: "AGENT" });
+	} = await getAllUsers({ page, limit, branchId: user.branch.id, name, document, role: roleToFilter });
 
 	return (
 		<Box

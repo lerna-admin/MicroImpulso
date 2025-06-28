@@ -1,34 +1,30 @@
 "use client";
 
 import * as React from "react";
+import RouterLink from "next/link";
 import { deleteCloseDay } from "@/app/dashboard/balance/hooks/use-balance";
-import { savePermission } from "@/app/dashboard/configuration/permissions/hooks/use-permissions";
-import { getUserById } from "@/app/dashboard/users/hooks/use-users";
 import {
 	Button,
-	Checkbox,
 	Dialog,
 	DialogContent,
 	DialogContentText,
 	DialogTitle,
-	FormControlLabel,
-	FormGroup,
+	Link,
 	ListItemIcon,
 	Menu,
 	MenuItem,
 	Tooltip,
 } from "@mui/material";
 import Box from "@mui/material/Box";
-import Grid from "@mui/material/Grid2";
 import IconButton from "@mui/material/IconButton";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 import {
 	ArrowCounterClockwise as ArrowCounterClockwiseIcon,
 	DotsThree as DotsThreeIcon,
-	ListChecks as ListChecksIcon,
 } from "@phosphor-icons/react/dist/ssr";
 
+import { paths } from "@/paths";
 import { dayjs } from "@/lib/dayjs";
 import { usePopover } from "@/hooks/use-popover";
 import { DataTable } from "@/components/core/data-table";
@@ -40,7 +36,16 @@ export function UsersTable({ rows }) {
 			formatter: (row) => (
 				<Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
 					<div>
-						<Typography variant="subtitle2">{row.name}</Typography>
+						<Link
+							color="inherit"
+							component={RouterLink}
+							variant="subtitle2"
+							href={paths.dashboard.users.details(row.id)}
+							sx={{ whiteSpace: "nowrap" }}
+						>
+							{row.name}
+						</Link>
+
 						<Typography color="text.secondary" variant="body2">
 							{row.email}
 						</Typography>
@@ -92,42 +97,15 @@ export function UsersTable({ rows }) {
 
 export function ActionsCell({ row }) {
 	const popover = usePopover();
-	const modalAcciones = usePopover();
 	const modalRevertirCierre = usePopover();
 	const notificationAlert = usePopover();
 	const [alertMsg, setAlertMsg] = React.useState("");
 	const [alertSeverity, setAlertSeverity] = React.useState("");
 	const [anchorEl, setAnchorEl] = React.useState(null);
-	const [permissions, setPermissions] = React.useState([]);
 
 	const handleOptions = (event) => {
 		setAnchorEl(event.currentTarget);
 		popover.handleOpen();
-	};
-
-	const handleActions = async () => {
-		try {
-			const { permissions } = await getUserById(row.id);
-			setPermissions(permissions);
-		} catch (error) {
-			setAlertMsg(error.message);
-			setAlertSeverity("error");
-		}
-		modalAcciones.handleOpen();
-	};
-
-	const handleSaveChanges = async () => {
-		try {
-			const permissionsToSave = permissions.map((permission) => ({ id: permission.id, granted: permission.granted }));
-			await savePermission(row.id, permissionsToSave);
-			setAlertMsg("¡Se ha guardado exitosamente!");
-			setAlertSeverity("success");
-		} catch (error) {
-			setAlertMsg(error.message);
-			setAlertSeverity("error");
-		}
-		notificationAlert.handleOpen();
-		modalAcciones.handleClose();
 	};
 
 	const handleRevertClosingDay = async () => {
@@ -143,10 +121,6 @@ export function ActionsCell({ row }) {
 		modalRevertirCierre.handleClose();
 	};
 
-	const handleChange = (id, checked) => {
-		setPermissions((prev) => prev.map((perm) => (perm.id === id ? { ...perm, granted: checked } : perm)));
-	};
-
 	return (
 		<React.Fragment>
 			<Tooltip title="Más opciones">
@@ -160,12 +134,6 @@ export function ActionsCell({ row }) {
 				onClose={popover.handleClose}
 				slotProps={{ paper: { elevation: 0 } }}
 			>
-				<MenuItem onClick={handleActions}>
-					<ListItemIcon>
-						<ListChecksIcon />
-					</ListItemIcon>
-					<Typography>Permisos</Typography>
-				</MenuItem>
 				<MenuItem onClick={modalRevertirCierre.handleOpen}>
 					<ListItemIcon>
 						<ArrowCounterClockwiseIcon />
@@ -173,74 +141,6 @@ export function ActionsCell({ row }) {
 					<Typography>Revertir cierre del dia</Typography>
 				</MenuItem>
 			</Menu>
-
-			{/* Modal para acciones del usuario seleccionado */}
-			<Dialog
-				fullWidth
-				maxWidth={"xs"}
-				open={modalAcciones.open}
-				onClose={modalAcciones.handleClose}
-				aria-labelledby="alert-dialog-title"
-				aria-describedby="alert-dialog-description"
-			>
-				<DialogTitle id="alert-dialog-title" textAlign={"center"} sx={{ pt: 4, pb: 4 }}>
-					{"Permisos"}
-				</DialogTitle>
-
-				<DialogContent>
-					<Grid container spacing={3}>
-						<Grid
-							size={{
-								md: 12,
-								xs: 12,
-							}}
-						>
-							<FormGroup>
-								{permissions.map((permission) => (
-									<FormControlLabel
-										key={permission.id}
-										control={
-											<Checkbox
-												checked={permission.granted}
-												onChange={(event) => handleChange(permission.id, event.target.checked)}
-												inputProps={{ "aria-label": "controlled" }}
-											/>
-										}
-										label={
-											<Tooltip key={permission.id} title={permission.description ?? "No tiene descripción"}>
-												{permission.label}
-											</Tooltip>
-										}
-									/>
-								))}
-							</FormGroup>
-						</Grid>
-
-						<Grid
-							size={{
-								md: 12,
-								xs: 12,
-							}}
-							display={"flex"}
-							justifyContent={"flex-end"}
-							gap={2}
-						>
-							<Button variant="contained" onClick={handleSaveChanges} autoFocus>
-								Guardar
-							</Button>
-							<Button
-								variant="outlined"
-								onClick={() => {
-									popover.handleClose();
-									modalAcciones.handleClose();
-								}}
-							>
-								Cancelar
-							</Button>
-						</Grid>
-					</Grid>
-				</DialogContent>
-			</Dialog>
 
 			{/* Modal para revertir cierre del dia */}
 			<Dialog

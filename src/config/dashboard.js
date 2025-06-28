@@ -46,6 +46,16 @@ export const dashboardConfig = {
 					],
 				},
 				{
+					key: "users",
+					title: "Usuarios",
+					icon: "identification-badge",
+					matcher: { type: "startsWith", href: "/dashboard/users" },
+					items: [
+						{ key: "users", title: "Lista de Usuarios", href: paths.dashboard.users.list },
+						{ key: "users:create", title: "Crear usuario", href: paths.dashboard.users.create },
+					],
+				},
+				{
 					key: "configuration",
 					title: "Configuración",
 					icon: "gear",
@@ -68,11 +78,14 @@ export const dashboardConfig = {
 			title: "Administrador",
 			items: [
 				{
-					key: "agents",
-					title: "Agentes",
-					icon: "identification-badge",
-					href: paths.dashboard.users,
-					matcher: { type: "startsWith", href: "/dashboard/users" },
+					key: "requests",
+					title: "Solicitudes",
+					icon: "cards-three",
+					matcher: { type: "startsWith", href: "/dashboard/requests" },
+					items: [
+						{ key: "requests", title: "Lista de solicitudes", href: paths.dashboard.requests.list },
+						{ key: "requests:create", title: "Crear solicitud", href: paths.dashboard.requests.create },
+					],
 				},
 				{
 					key: "clients",
@@ -85,6 +98,16 @@ export const dashboardConfig = {
 					],
 				},
 				{
+					key: "users",
+					title: "Usuarios",
+					icon: "identification-badge",
+					matcher: { type: "startsWith", href: "/dashboard/users" },
+					items: [
+						{ key: "users", title: "Lista de Usuarios", href: paths.dashboard.users.list },
+						{ key: "users:create", title: "Crear usuario", href: paths.dashboard.users.create },
+					],
+				},
+				{
 					key: "cash_flow",
 					title: "Movimientos de caja",
 					icon: "cash-register",
@@ -92,23 +115,11 @@ export const dashboardConfig = {
 					matcher: { type: "startsWith", href: "/dashboard/cash_flow" },
 				},
 				{
-					key: "requests",
-					title: "Solicitudes",
-					icon: "cards-three",
-					matcher: { type: "startsWith", href: "/dashboard/requests" },
-					items: [
-						{ key: "requests", title: "Lista de solicitudes", href: paths.dashboard.requests.list },
-						{ key: "requests:create", title: "Crear solicitud", href: paths.dashboard.requests.create },
-					],
-				},
-				{
 					key: "configuration",
 					title: "Configuración",
 					icon: "gear",
 					matcher: { type: "startsWith", href: "/dashboard/permissions" },
-					items: [
-						{ key: "permissions", title: "Permisos", href: paths.dashboard.configuration.permissions },
-					],
+					items: [{ key: "permissions", title: "Permisos", href: paths.dashboard.configuration.permissions }],
 				},
 			],
 		},
@@ -117,13 +128,13 @@ export const dashboardConfig = {
 			key: ROLES.AGENTE,
 			title: "Agentes",
 			items: [
-				{
-					key: "chat",
-					title: "Chat",
-					href: paths.dashboard.chat.base,
-					icon: "chats-circle",
-					matcher: { type: "startsWith", href: "/dashboard/chat" },
-				},
+				// {
+				// 	key: "chat",
+				// 	title: "Chat",
+				// 	href: paths.dashboard.chat.base,
+				// 	icon: "chats-circle",
+				// 	matcher: { type: "startsWith", href: "/dashboard/chat" },
+				// },
 				{
 					key: "clients",
 					title: "Clientes",

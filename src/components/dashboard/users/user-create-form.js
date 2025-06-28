@@ -1,177 +1,120 @@
 "use client";
 
 import * as React from "react";
-import RouterLink from "next/link";
-import { useRouter } from "next/navigation";
+import { createUser } from "@/app/dashboard/users/hooks/use-users";
+import { capitalizeWord } from "@/helpers/format-words";
 import { zodResolver } from "@hookform/resolvers/zod";
-import Autocomplete from "@mui/material/Autocomplete";
-import Avatar from "@mui/material/Avatar";
-import Box from "@mui/material/Box";
-import Button from "@mui/material/Button";
+import { Button, CardActions, MenuItem, Typography } from "@mui/material";
 import Card from "@mui/material/Card";
-import CardActions from "@mui/material/CardActions";
 import CardContent from "@mui/material/CardContent";
-import Checkbox from "@mui/material/Checkbox";
-import Divider from "@mui/material/Divider";
 import FormControl from "@mui/material/FormControl";
-import FormControlLabel from "@mui/material/FormControlLabel";
 import FormHelperText from "@mui/material/FormHelperText";
 import Grid from "@mui/material/Grid2";
 import InputLabel from "@mui/material/InputLabel";
 import OutlinedInput from "@mui/material/OutlinedInput";
 import Select from "@mui/material/Select";
 import Stack from "@mui/material/Stack";
-import Typography from "@mui/material/Typography";
-import { Camera as CameraIcon } from "@phosphor-icons/react/dist/ssr/Camera";
-import { Controller, useForm } from "react-hook-form";
+import { Eye as EyeIcon, EyeSlash as EyeSlashIcon } from "@phosphor-icons/react/dist/ssr";
+import { Controller, useForm, useWatch } from "react-hook-form";
 import { z as zod } from "zod";
 
 import { paths } from "@/paths";
-import { logger } from "@/lib/default-logger";
-import { Option } from "@/components/core/option";
-import { toast } from "@/components/core/toaster";
+import { usePopover } from "@/hooks/use-popover";
+import { NotificationAlert } from "@/components/widgets/notifications/notification-alert";
 
-const countryOptions = [
-	{ label: "United States", value: "us" },
-	{ label: "Germany", value: "de" },
-	{ label: "Spain", value: "es" },
-];
+export function UserCreateForm({ roles, branches, userLogged }) {
+	const [showPassword, setShowPassword] = React.useState();
 
-function fileToBase64(file) {
-	return new Promise((resolve, reject) => {
-		const reader = new FileReader();
-		reader.readAsDataURL(file);
-		reader.addEventListener("load", () => {
-			resolve(reader.result);
-		});
-		reader.addEventListener("error", () => {
-			reject(new Error("Error converting file to base64"));
-		});
+	const schema = zod.object({
+		name: zod
+			.string()
+			.min(3, { message: "Debe tener al menos 3 caracteres" })
+			.max(100, { message: "Máximo 100 caracteres" })
+			.regex(/^[A-Za-zÀ-ÿ\u00F1\u00D1]+(?: [A-Za-zÀ-ÿ\u00F1\u00D1]+)+$/, {
+				message: "Debe ingresar nombre y apellido, solo letras y espacios",
+			}),
+		document: zod
+			.string()
+			.min(5, { message: "El documento es obligatorio" })
+			.max(20, { message: "El documento es muy largo" })
+			.regex(/^\d+$/, {
+				message: "El documento debe contener solo números",
+			}),
+		password: zod
+			.string()
+			.min(6, "La contraseña debe tener al menos 6 caracteres")
+			.refine((val) => /[a-zA-Z]/.test(val), {
+				message: "La contraseña debe contener al menos una letra",
+			})
+			.refine((val) => /[0-9]/.test(val), {
+				message: "La contraseña debe contener al menos un número",
+			}),
+		email: zod
+			.string()
+			.email("Debe ser un correo válido")
+			.min(5, "El correo es obligatorio")
+			.max(255, "El correo es muy largo"),
+
+		role: zod.string().min(1, "Debes seleccionar un rol"),
+		branchId: zod
+			.string()
+			.or(zod.number().transform(String))
+			.transform(String)
+			.refine((val) => val.length > 0, {
+				message: "Debes seleccionar una sede",
+			}),
 	});
-}
-
-const schema = zod.object({
-	avatar: zod.string().optional(),
-	name: zod.string().min(1, "Name is required").max(255),
-	email: zod.string().email("Must be a valid email").min(1, "Email is required").max(255),
-	phone: zod.string().min(1, "Phone is required").max(15),
-	company: zod.string().max(255),
-	billingAddress: zod.object({
-		country: zod.string().min(1, "Country is required").max(255),
-		state: zod.string().min(1, "State is required").max(255),
-		city: zod.string().min(1, "City is required").max(255),
-		zipCode: zod.string().min(1, "Zip code is required").max(255),
-		line1: zod.string().min(1, "Street line 1 is required").max(255),
-		line2: zod.string().max(255).optional(),
-	}),
-	taxId: zod.string().max(255).optional(),
-	timezone: zod.string().min(1, "Timezone is required").max(255),
-	language: zod.string().min(1, "Language is required").max(255),
-	currency: zod.string().min(1, "Currency is required").max(255),
-});
-
-const defaultValues = {
-	avatar: "",
-	name: "",
-	email: "",
-	phone: "",
-	company: "",
-	billingAddress: { country: "us", state: "", city: "", zipCode: "", line1: "", line2: "" },
-	taxId: "",
-	timezone: "new_york",
-	language: "en",
-	currency: "USD",
-};
-
-export function CustomerCreateForm() {
-	const router = useRouter();
 
 	const {
 		control,
 		handleSubmit,
 		formState: { errors },
-		setValue,
-		watch,
-	} = useForm({ defaultValues, resolver: zodResolver(schema) });
-
-	const onSubmit = React.useCallback(
-		async (_) => {
-			try {
-				// Make API request
-				toast.success("Customer updated");
-				router.push(paths.dashboard.customers.details("1"));
-			} catch (error) {
-				logger.error(error);
-				toast.error("Something went wrong!");
-			}
+		reset,
+	} = useForm({
+		defaultValues: {
+			name: "",
+			document: "",
+			password: "",
+			email: "",
+			role: "",
+			branchId: userLogged.branchId,
 		},
-		[router]
-	);
+		resolver: zodResolver(schema),
+	});
 
-	const avatarInputRef = React.useRef(null);
-	const avatar = watch("avatar");
+	const role = useWatch({
+		control,
+		name: "role",
+	});
 
-	const handleAvatarChange = React.useCallback(
-		async (event) => {
-			const file = event.target.files?.[0];
+	const popoverAlert = usePopover();
+	const [alertMsg, setAlertMsg] = React.useState("");
+	const [alertSeverity, setAlertSeverity] = React.useState("success");
 
-			if (file) {
-				const url = await fileToBase64(file);
-				setValue("avatar", url);
-			}
-		},
-		[setValue]
-	);
+	const onSubmit = React.useCallback(async (dataForm) => {
+		try {
+			await createUser(dataForm);
+			setAlertMsg("¡Creado exitosamente!");
+		} catch (error) {
+			setAlertMsg(error.message);
+			setAlertSeverity("error");
+		} finally {
+			popoverAlert.handleOpen();
+			reset();
+		}
+	});
 
 	return (
 		<form onSubmit={handleSubmit(onSubmit)}>
-			<Card>
-				<CardContent>
-					<Stack divider={<Divider />} spacing={4}>
-						<Stack spacing={3}>
-							<Typography variant="h6">Account information</Typography>
+			<Stack spacing={4}>
+				<Card>
+					<CardContent>
+						<Typography variant="h5" paddingTop={3}>
+							Crear usuario
+						</Typography>
+
+						<Stack spacing={3} paddingTop={3}>
 							<Grid container spacing={3}>
-								<Grid size={12}>
-									<Stack direction="row" spacing={3} sx={{ alignItems: "center" }}>
-										<Box
-											sx={{
-												border: "1px dashed var(--mui-palette-divider)",
-												borderRadius: "50%",
-												display: "inline-flex",
-												p: "4px",
-											}}
-										>
-											<Avatar
-												src={avatar}
-												sx={{
-													"--Avatar-size": "100px",
-													"--Icon-fontSize": "var(--icon-fontSize-lg)",
-													alignItems: "center",
-													bgcolor: "var(--mui-palette-background-level1)",
-													color: "var(--mui-palette-text-primary)",
-													display: "flex",
-													justifyContent: "center",
-												}}
-											>
-												<CameraIcon fontSize="var(--Icon-fontSize)" />
-											</Avatar>
-										</Box>
-										<Stack spacing={1} sx={{ alignItems: "flex-start" }}>
-											<Typography variant="subtitle1">Avatar</Typography>
-											<Typography variant="caption">Min 400x400px, PNG or JPEG</Typography>
-											<Button
-												color="secondary"
-												onClick={() => {
-													avatarInputRef.current?.click();
-												}}
-												variant="outlined"
-											>
-												Select
-											</Button>
-											<input hidden onChange={handleAvatarChange} ref={avatarInputRef} type="file" />
-										</Stack>
-									</Stack>
-								</Grid>
 								<Grid
 									size={{
 										md: 6,
@@ -183,9 +126,67 @@ export function CustomerCreateForm() {
 										name="name"
 										render={({ field }) => (
 											<FormControl error={Boolean(errors.name)} fullWidth>
-												<InputLabel required>Name</InputLabel>
+												<InputLabel required>Nombre completo</InputLabel>
 												<OutlinedInput {...field} />
 												{errors.name ? <FormHelperText>{errors.name.message}</FormHelperText> : null}
+											</FormControl>
+										)}
+									/>
+								</Grid>
+								<Grid
+									size={{
+										md: 6,
+										xs: 12,
+									}}
+								>
+									<Controller
+										control={control}
+										name="document"
+										render={({ field }) => (
+											<FormControl error={Boolean(errors.document)} fullWidth>
+												<InputLabel required>N. de documento</InputLabel>
+												<OutlinedInput {...field} />
+												{errors.document ? <FormHelperText>{errors.document.message}</FormHelperText> : null}
+											</FormControl>
+										)}
+									/>
+								</Grid>
+								<Grid
+									size={{
+										md: 6,
+										xs: 12,
+									}}
+								>
+									<Controller
+										control={control}
+										name="password"
+										render={({ field }) => (
+											<FormControl error={Boolean(errors.password)} fullWidth>
+												<InputLabel required>Contraseña</InputLabel>
+												<OutlinedInput
+													{...field}
+													endAdornment={
+														showPassword ? (
+															<EyeIcon
+																cursor="pointer"
+																fontSize="var(--icon-fontSize-md)"
+																onClick={() => {
+																	setShowPassword(false);
+																}}
+															/>
+														) : (
+															<EyeSlashIcon
+																cursor="pointer"
+																fontSize="var(--icon-fontSize-md)"
+																onClick={() => {
+																	setShowPassword(true);
+																}}
+															/>
+														)
+													}
+													type={showPassword ? "text" : "password"}
+												/>
+												{errors.password ? <FormHelperText>{errors.password.message}</FormHelperText> : null}
 											</FormControl>
 										)}
 									/>
@@ -201,7 +202,7 @@ export function CustomerCreateForm() {
 										name="email"
 										render={({ field }) => (
 											<FormControl error={Boolean(errors.email)} fullWidth>
-												<InputLabel required>Email address</InputLabel>
+												<InputLabel required>Correo</InputLabel>
 												<OutlinedInput {...field} type="email" />
 												{errors.email ? <FormHelperText>{errors.email.message}</FormHelperText> : null}
 											</FormControl>
@@ -216,12 +217,18 @@ export function CustomerCreateForm() {
 								>
 									<Controller
 										control={control}
-										name="phone"
+										name="role"
 										render={({ field }) => (
-											<FormControl error={Boolean(errors.phone)} fullWidth>
-												<InputLabel required>Phone number</InputLabel>
-												<OutlinedInput {...field} />
-												{errors.phone ? <FormHelperText>{errors.phone.message}</FormHelperText> : null}
+											<FormControl error={Boolean(errors.role)} fullWidth>
+												<InputLabel required>Rol</InputLabel>
+												<Select {...field}>
+													{roles.map((rol) => (
+														<MenuItem key={rol.id} value={rol.key}>
+															{capitalizeWord(rol.value)}
+														</MenuItem>
+													))}
+												</Select>
+												{errors.role ? <FormHelperText>{errors.role.message}</FormHelperText> : null}
 											</FormControl>
 										)}
 									/>
@@ -234,248 +241,43 @@ export function CustomerCreateForm() {
 								>
 									<Controller
 										control={control}
-										name="company"
+										name="branchId"
 										render={({ field }) => (
-											<FormControl error={Boolean(errors.company)} fullWidth>
-												<InputLabel>Company</InputLabel>
-												<OutlinedInput {...field} />
-												{errors.company ? <FormHelperText>{errors.company.message}</FormHelperText> : null}
+											<FormControl error={Boolean(errors.branchId)} fullWidth>
+												<InputLabel required>Sede</InputLabel>
+												<Select {...field} disabled={userLogged.role === "ADMIN"}>
+													{!(role === "MANAGER" || role === "CENTRAL") &&
+														branches.map((branch) => (
+															<MenuItem key={branch.id} value={branch.id}>
+																{branch.name}
+															</MenuItem>
+														))}
+												</Select>
+												{errors.branchId ? <FormHelperText>{errors.branchId.message}</FormHelperText> : null}
 											</FormControl>
 										)}
 									/>
 								</Grid>
 							</Grid>
 						</Stack>
-						<Stack spacing={3}>
-							<Typography variant="h6">Billing information</Typography>
-							<Grid container spacing={3}>
-								<Grid
-									size={{
-										md: 6,
-										xs: 12,
-									}}
-								>
-									<Controller
-										control={control}
-										name="billingAddress.country"
-										render={({ field }) => (
-											<Autocomplete
-												{...field}
-												getOptionLabel={(option) => option.label}
-												onChange={(_, value) => {
-													if (value) {
-														field.onChange(value.value);
-													}
-												}}
-												options={countryOptions}
-												renderInput={(params) => (
-													<FormControl error={Boolean(errors.billingAddress?.country)} fullWidth>
-														<InputLabel required>Country</InputLabel>
-														<OutlinedInput inputProps={params.inputProps} ref={params.InputProps.ref} />
-														{errors.billingAddress?.country ? (
-															<FormHelperText>{errors.billingAddress?.country?.message}</FormHelperText>
-														) : null}
-													</FormControl>
-												)}
-												renderOption={(props, option) => (
-													<Option {...props} key={option.value} value={option.value}>
-														{option.label}
-													</Option>
-												)}
-												value={countryOptions.find((option) => option.value === field.value)}
-											/>
-										)}
-									/>
-								</Grid>
-								<Grid
-									size={{
-										md: 6,
-										xs: 12,
-									}}
-								>
-									<Controller
-										control={control}
-										name="billingAddress.state"
-										render={({ field }) => (
-											<FormControl error={Boolean(errors.billingAddress?.state)} fullWidth>
-												<InputLabel required>State</InputLabel>
-												<OutlinedInput {...field} />
-												{errors.billingAddress?.state ? (
-													<FormHelperText>{errors.billingAddress?.state?.message}</FormHelperText>
-												) : null}
-											</FormControl>
-										)}
-									/>
-								</Grid>
-								<Grid
-									size={{
-										md: 6,
-										xs: 12,
-									}}
-								>
-									<Controller
-										control={control}
-										name="billingAddress.city"
-										render={({ field }) => (
-											<FormControl error={Boolean(errors.billingAddress?.city)} fullWidth>
-												<InputLabel required>City</InputLabel>
-												<OutlinedInput {...field} />
-												{errors.billingAddress?.city ? (
-													<FormHelperText>{errors.billingAddress?.city?.message}</FormHelperText>
-												) : null}
-											</FormControl>
-										)}
-									/>
-								</Grid>
-								<Grid
-									size={{
-										md: 6,
-										xs: 12,
-									}}
-								>
-									<Controller
-										control={control}
-										name="billingAddress.zipCode"
-										render={({ field }) => (
-											<FormControl error={Boolean(errors.billingAddress?.zipCode)} fullWidth>
-												<InputLabel required>Zip code</InputLabel>
-												<OutlinedInput {...field} />
-												{errors.billingAddress?.zipCode ? (
-													<FormHelperText>{errors.billingAddress?.zipCode?.message}</FormHelperText>
-												) : null}
-											</FormControl>
-										)}
-									/>
-								</Grid>
-								<Grid
-									size={{
-										md: 6,
-										xs: 12,
-									}}
-								>
-									<Controller
-										control={control}
-										name="billingAddress.line1"
-										render={({ field }) => (
-											<FormControl error={Boolean(errors.billingAddress?.line1)} fullWidth>
-												<InputLabel required>Address</InputLabel>
-												<OutlinedInput {...field} />
-												{errors.billingAddress?.line1 ? (
-													<FormHelperText>{errors.billingAddress?.line1?.message}</FormHelperText>
-												) : null}
-											</FormControl>
-										)}
-									/>
-								</Grid>
-								<Grid
-									size={{
-										md: 6,
-										xs: 12,
-									}}
-								>
-									<Controller
-										control={control}
-										name="taxId"
-										render={({ field }) => (
-											<FormControl error={Boolean(errors.taxId)} fullWidth>
-												<InputLabel>Tax ID</InputLabel>
-												<OutlinedInput {...field} placeholder="e.g EU372054390" />
-												{errors.taxId ? <FormHelperText>{errors.taxId.message}</FormHelperText> : null}
-											</FormControl>
-										)}
-									/>
-								</Grid>
-							</Grid>
-						</Stack>
-						<Stack spacing={3}>
-							<Typography variant="h6">Shipping information</Typography>
-							<FormControlLabel control={<Checkbox defaultChecked />} label="Same as billing address" />
-						</Stack>
-						<Stack spacing={3}>
-							<Typography variant="h6">Additional information</Typography>
-							<Grid container spacing={3}>
-								<Grid
-									size={{
-										md: 6,
-										xs: 12,
-									}}
-								>
-									<Controller
-										control={control}
-										name="timezone"
-										render={({ field }) => (
-											<FormControl error={Boolean(errors.timezone)} fullWidth>
-												<InputLabel required>Timezone</InputLabel>
-												<Select {...field}>
-													<Option value="">Select a timezone</Option>
-													<Option value="new_york">US - New York</Option>
-													<Option value="california">US - California</Option>
-													<Option value="london">UK - London</Option>
-												</Select>
-												{errors.timezone ? <FormHelperText>{errors.timezone.message}</FormHelperText> : null}
-											</FormControl>
-										)}
-									/>
-								</Grid>
-								<Grid
-									size={{
-										md: 6,
-										xs: 12,
-									}}
-								>
-									<Controller
-										control={control}
-										name="language"
-										render={({ field }) => (
-											<FormControl error={Boolean(errors.language)} fullWidth>
-												<InputLabel required>Language</InputLabel>
-												<Select {...field}>
-													<Option value="">Select a language</Option>
-													<Option value="en">English</Option>
-													<Option value="es">Spanish</Option>
-													<Option value="de">German</Option>
-												</Select>
-												{errors.language ? <FormHelperText>{errors.language.message}</FormHelperText> : null}
-											</FormControl>
-										)}
-									/>
-								</Grid>
-								<Grid
-									size={{
-										md: 6,
-										xs: 12,
-									}}
-								>
-									<Controller
-										control={control}
-										name="currency"
-										render={({ field }) => (
-											<FormControl error={Boolean(errors.currency)} fullWidth>
-												<InputLabel>Currency</InputLabel>
-												<Select {...field}>
-													<Option value="">Select a currency</Option>
-													<Option value="USD">USD</Option>
-													<Option value="EUR">EUR</Option>
-													<Option value="RON">RON</Option>
-												</Select>
-												{errors.currency ? <FormHelperText>{errors.currency.message}</FormHelperText> : null}
-											</FormControl>
-										)}
-									/>
-								</Grid>
-							</Grid>
-						</Stack>
-					</Stack>
-				</CardContent>
-				<CardActions sx={{ justifyContent: "flex-end" }}>
-					<Button color="secondary" component={RouterLink} href={paths.dashboard.customers.list}>
-						Cancel
-					</Button>
-					<Button type="submit" variant="contained">
-						Create customer
-					</Button>
-				</CardActions>
-			</Card>
+					</CardContent>
+					<CardActions sx={{ justifyContent: "flex-end" }}>
+						<Button variant="outlined" href={paths.dashboard.users.list}>
+							Cancelar
+						</Button>
+						<Button variant="contained" type="subnmit">
+							Guardar
+						</Button>
+					</CardActions>
+				</Card>
+			</Stack>
+
+			<NotificationAlert
+				openAlert={popoverAlert.open}
+				onClose={popoverAlert.handleClose}
+				msg={alertMsg}
+				severity={alertSeverity}
+			></NotificationAlert>
 		</form>
 	);
 }

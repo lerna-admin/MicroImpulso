@@ -10,8 +10,14 @@ export async function updateConfigParam(key, value) {
 	return await res.json();
 }
 
-export async function getAllConfigParams(key) {
-	const res = await fetch(`${BASE_URL}/config/${key}`);
+export async function getAllConfigParams() {
+	const res = await fetch(`${BASE_URL}/config`);
 	if (!res.ok) throw new Error("Error al obtener los parametros");
+	return await res.json();
+}
+
+export async function getConfigParamsByKey(key) {
+	const res = await fetch(`${BASE_URL}/config/${key}`);
+	if (!res.ok) throw new Error("Error al obtener los parametros por llave");
 	return await res.json();
 }
