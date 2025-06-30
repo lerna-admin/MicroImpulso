@@ -139,15 +139,23 @@ export const dashboardConfig = {
 					key: "clients",
 					title: "Clientes",
 					icon: "users",
-					href: paths.dashboard.customers.list,
 					matcher: { type: "startsWith", href: "/dashboard/customers" },
+					items: [
+						{ key: "clients", title: "Lista de clientes", href: paths.dashboard.customers.list },
+						{ key: "clients:create", title: "Crear cliente", href: paths.dashboard.customers.create },
+					],
+
 				},
 				{
 					key: "requests",
 					title: "Solicitudes",
 					icon: "cards-three",
-					href: paths.dashboard.requests.list,
 					matcher: { type: "startsWith", href: "/dashboard/requests" },
+					items: [
+						{ key: "requests", title: "Lista de solicitudes", href: paths.dashboard.requests.list },
+						{ key: "requests:create", title: "Crear solicitud", href: paths.dashboard.requests.create },
+					],
+
 				},
 				{
 					key: "balance",

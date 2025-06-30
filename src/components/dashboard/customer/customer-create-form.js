@@ -132,7 +132,7 @@ export function CustomerCreateForm({ user }) {
 						status: "new",
 						requestedAmount: dataForm.amount,
 						endDateAt: dataForm.selectedDate,
-						amount: 0,
+						amount: dataForm.amount*1.2,
 						paymentDay: dataForm.datePayment,
 						type: dataForm.typePayment,
 					};
