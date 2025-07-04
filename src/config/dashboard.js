@@ -62,11 +62,27 @@ export const dashboardConfig = {
 					matcher: { type: "startsWith", href: "/dashboard/permissions" },
 					items: [
 						{ key: "permissions", title: "Permisos", href: paths.dashboard.configuration.permissions },
-						{ key: "amountManagment", title: "Gestion de montos", href: paths.dashboard.configuration.amountManagment },
+						{ key: "amountManagment", title: "Gestión de montos", href: paths.dashboard.configuration.amountManagment },
 						{
 							key: "paymentInformation",
 							title: "Información de pago",
 							href: paths.dashboard.configuration.paymentInformation,
+						},
+						{
+							key: "branchManagment",
+							title: "Gestión de sedes",
+							items: [
+								{
+									key: "branchManagment",
+									title: "Lista de sedes",
+									href: paths.dashboard.configuration.branchManagment.list,
+								},
+								{
+									key: "branchManagment:create",
+									title: "Crear sede",
+									href: paths.dashboard.configuration.branchManagment.create,
+								},
+							],
 						},
 					],
 				},
@@ -144,7 +160,6 @@ export const dashboardConfig = {
 						{ key: "clients", title: "Lista de clientes", href: paths.dashboard.customers.list },
 						{ key: "clients:create", title: "Crear cliente", href: paths.dashboard.customers.create },
 					],
-
 				},
 				{
 					key: "requests",
@@ -155,7 +170,6 @@ export const dashboardConfig = {
 						{ key: "requests", title: "Lista de solicitudes", href: paths.dashboard.requests.list },
 						{ key: "requests:create", title: "Crear solicitud", href: paths.dashboard.requests.create },
 					],
-
 				},
 				{
 					key: "balance",

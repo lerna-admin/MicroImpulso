@@ -1,5 +1,5 @@
 import * as React from "react";
-import { getAllBranches } from "@/app/dashboard/requests/hooks/use-branches";
+
 import { ROLES } from "@/constants/roles";
 import Box from "@mui/material/Box";
 import Card from "@mui/material/Card";
@@ -17,6 +17,7 @@ import { RequestsTable } from "@/components/dashboard/request/requests-table";
 
 import { getAllUsers } from "../users/hooks/use-users";
 import { getAllRequests, getRequestsByAgent } from "./hooks/use-requests";
+import { getAllBranches } from "../configuration/branch-managment/hooks/use-branches";
 
 export const metadata = { title: `Solicitudes | Dashboard | ${appConfig.name}` };
 

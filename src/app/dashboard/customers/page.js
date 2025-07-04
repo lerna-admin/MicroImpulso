@@ -15,8 +15,9 @@ import { CustomersPagination } from "@/components/dashboard/customer/customers-p
 import { CustomersSelectionProvider } from "@/components/dashboard/customer/customers-selection-context";
 import { CustomersTable } from "@/components/dashboard/customer/customers-table";
 
-import { getAllBranches } from "../requests/hooks/use-branches";
+
 import { getAllCustomers } from "./hooks/use-customers";
+import { getAllBranches } from "../configuration/branch-managment/hooks/use-branches";
 
 export const metadata = { title: `Clientes | Dashboard | ${appConfig.name}` };
 
