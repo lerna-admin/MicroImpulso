@@ -5,14 +5,15 @@ import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 
 import { appConfig } from "@/config/app";
-import { getAllConfigParams } from "@/hooks/use-config";
+import { getConfigParamsByKey } from "@/hooks/use-config";
 import { AmountManagment } from "@/components/dashboard/configuration/amount-managment";
 
 export const metadata = { title: `Gestión de montos | Dashboard | ${appConfig.name}` };
 
 export default async function Page() {
-	const fundedLimit = await getAllConfigParams("fundedLimit");
-	const invoiceLimit = await getAllConfigParams("invoiceLimit");
+	
+	const fundedLimit = await getConfigParamsByKey("fundedLimit");
+	const invoiceLimit = await getConfigParamsByKey("invoiceLimit");
 
 	return (
 		<Box
