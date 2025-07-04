@@ -13,8 +13,6 @@ export const metadata = { title: `Gestión de sedes | Dashboard | ${appConfig.na
 
 export default async function Page() {
 	const data = await getAllBranches();
-	console.log(data);
-	
 
 	return (
 		<Box
