@@ -14,7 +14,7 @@ import { UsersTable } from "@/components/dashboard/users/users-table";
 
 import { getAllUsers } from "./hooks/use-users";
 
-export const metadata = { title: `Agentes | Dashboard | ${appConfig.name}` };
+export const metadata = { title: `Usuarios | Dashboard | ${appConfig.name}` };
 
 export default async function Page({ searchParams }) {
 	const { name, document, page, limit } = await searchParams;
@@ -44,7 +44,7 @@ export default async function Page({ searchParams }) {
 			<Stack spacing={4}>
 				<Stack direction={{ xs: "column", sm: "row" }} spacing={3} sx={{ alignItems: "flex-start" }}>
 					<Box sx={{ flex: "1 1 auto" }}>
-						<Typography variant="h4"> {`${roleToFilter == "" ? "Usuarios" : "Agentes"} `}</Typography>
+						<Typography variant="h4">Usuarios</Typography>
 					</Box>
 				</Stack>
 				<UsersSelectionProvider users={users}>

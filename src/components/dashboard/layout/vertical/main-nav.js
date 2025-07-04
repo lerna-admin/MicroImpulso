@@ -116,7 +116,7 @@ function NotificationsButton() {
 	React.useEffect(() => {
 		if (!user?.id) return;
 		fetchNotifications(); // First load
-		const interval = setInterval(fetchNotifications, 3000);
+		const interval = setInterval(fetchNotifications, 30_000);
 		return () => clearInterval(interval);
 	}, [fetchNotifications, user?.id]);
 

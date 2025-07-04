@@ -1,4 +1,5 @@
 import * as React from "react";
+import { getAllUsers } from "@/app/dashboard/users/hooks/use-users";
 import { ROLES } from "@/constants/roles";
 import Box from "@mui/material/Box";
 import Card from "@mui/material/Card";
@@ -14,16 +15,24 @@ import { CustomersPagination } from "@/components/dashboard/customer/customers-p
 import { CustomersSelectionProvider } from "@/components/dashboard/customer/customers-selection-context";
 import { CustomersTable } from "@/components/dashboard/customer/customers-table";
 
-import { getAllCustomers, getCustomersByAgent } from "./hooks/use-customers";
+import { getAllBranches } from "../requests/hooks/use-branches";
+import { getAllCustomers } from "./hooks/use-customers";
 
 export const metadata = { title: `Clientes | Dashboard | ${appConfig.name}` };
 
 export default async function Page({ searchParams }) {
-	const { status, page, limit, type, paymentDay } = await searchParams;
+	const { status, page, limit, type, paymentDay, branch, agent } = await searchParams;
 
 	const {
 		data: { user },
 	} = await getUser();
+
+	const getCustomers = (role) => {
+		if (role === ROLES.AGENTE) return getAllCustomers({ page, limit, status, type, paymentDay, agent: user.id });
+		if (role === ROLES.GERENTE) return getAllCustomers({ page, limit, status, type, paymentDay, branch, agent });
+		if (role === ROLES.ADMIN)
+			return getAllCustomers({ page, limit, status, type, paymentDay, branch: user.branchId, agent });
+	};
 
 	const {
 		data: customers,
@@ -36,9 +45,9 @@ export default async function Page({ searchParams }) {
 		mora15,
 		critical20,
 		noPayment30,
-	} = user.role === ROLES.AGENTE
-		? await getCustomersByAgent(user.id, { page, limit, status, type, paymentDay })
-		: await getAllCustomers({ page, limit, status, type, paymentDay });
+	} = await getCustomers(user.role);
+
+	const { data } = await getAllUsers({ branchId: user.branchId, role: "AGENT" });
 
 	const statistics = {
 		totalActiveAmountBorrowed,
@@ -48,6 +57,8 @@ export default async function Page({ searchParams }) {
 		critical20,
 		noPayment30,
 	};
+
+	const branches = await getAllBranches();
 
 	return (
 		<Box
@@ -67,7 +78,12 @@ export default async function Page({ searchParams }) {
 				</Stack>
 				<CustomersSelectionProvider customers={customers}>
 					<Card>
-						<CustomersFilters filters={{ status, page, limit, type, paymentDay }} />
+						<CustomersFilters
+							filters={{ status, page, limit, type, paymentDay, branch, agent }}
+							allBranches={branches}
+							user={user}
+							allAgents={data}
+						/>
 						<Divider />
 						<Box sx={{ overflowX: "auto" }}>
 							<CustomersTable rows={customers} />

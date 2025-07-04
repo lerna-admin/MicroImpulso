@@ -128,13 +128,13 @@ export const dashboardConfig = {
 			key: ROLES.AGENTE,
 			title: "Agentes",
 			items: [
-				// {
-				// 	key: "chat",
-				// 	title: "Chat",
-				// 	href: paths.dashboard.chat.base,
-				// 	icon: "chats-circle",
-				// 	matcher: { type: "startsWith", href: "/dashboard/chat" },
-				// },
+				{
+					key: "chat",
+					title: "Chat",
+					href: paths.dashboard.chat.base,
+					icon: "chats-circle",
+					matcher: { type: "startsWith", href: "/dashboard/chat" },
+				},
 				{
 					key: "clients",
 					title: "Clientes",

@@ -2,7 +2,9 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
-import { Divider, InputLabel, MenuItem, Select, Stack } from "@mui/material";
+import { getAllUsers } from "@/app/dashboard/users/hooks/use-users";
+import { ROLES } from "@/constants/roles";
+import { Button, Divider, InputLabel, MenuItem, Select, Stack } from "@mui/material";
 import Tab from "@mui/material/Tab";
 import Tabs from "@mui/material/Tabs";
 
@@ -18,11 +20,14 @@ const tabs = [
 	{ label: "Desembolsadas", value: "funded" },
 ];
 
-export function RequestsFilters({ filters = {}, allBranches, userBranch }) {
+export function RequestsFilters({ filters = {}, allBranches, allAgents, user }) {
 	const router = useRouter();
-	const { status } = filters;
+	const { status, branch, agent } = filters;
 
-	const [branchSelected, setBranchSelected] = React.useState(userBranch);
+	const [agents, setAgents] = React.useState(allAgents);
+	const [agentSelected, setAgentSelected] = React.useState("");
+	const [branchSelected, setBranchSelected] = React.useState(user.role === ROLES.GERENTE ? "" : user.branchId);
+	const hasFilters = branch || agent;
 
 	const updateSearchParams = React.useCallback(
 		(newFilters) => {
@@ -40,6 +45,9 @@ export function RequestsFilters({ filters = {}, allBranches, userBranch }) {
 			if (newFilters.branch) {
 				searchParams.set("branch", newFilters.branch);
 			}
+			if (newFilters.agent) {
+				searchParams.set("agent", newFilters.agent);
+			}
 
 			router.push(`${paths.dashboard.requests.list}?${searchParams.toString()}`);
 		},
@@ -53,14 +61,37 @@ export function RequestsFilters({ filters = {}, allBranches, userBranch }) {
 		[updateSearchParams, filters]
 	);
 
+	const filterAgentsByBranch = async (branch) => {
+		const { data } = await getAllUsers({ branchId: branch, role: "AGENT" });
+		setAgents(data);
+	};
+
 	const handleBranchChange = React.useCallback(
 		({ target }) => {
 			const { value } = target;
 			setBranchSelected(value);
+			filterAgentsByBranch(value);
 			updateSearchParams({ ...filters, branch: value, page: 1 });
 		},
 		[updateSearchParams, filters]
 	);
+
+	const handleAgentChange = ({ target }) => {
+		const { value } = target;
+		setAgentSelected(value);
+		updateSearchParams({ ...filters, agent: value, page: 1 });
+	};
+
+	const handleClearFilters = () => {
+		if (user.role === ROLES.GERENTE) {
+			setAgentSelected("");
+			setBranchSelected("");
+			updateSearchParams({});
+		} else if (user.role === ROLES.ADMIN) {
+			setAgentSelected("");
+			updateSearchParams({ branch: user.branchId, page: 1 });
+		}
+	};
 
 	return (
 		<div>
@@ -76,27 +107,51 @@ export function RequestsFilters({ filters = {}, allBranches, userBranch }) {
 					/>
 				))}
 			</Tabs>
-			<Divider />
-			<Stack
-				direction="row"
-				spacing={2}
-				sx={{ alignItems: "center", justifyContent: "end", flexWrap: "wrap", px: 3, py: 2 }}
-			>
-				<InputLabel id="branch-label">Sede: </InputLabel>
-				<Select
-					labelId="branch-label"
-					name="branchSelected"
-					onChange={handleBranchChange}
-					sx={{ maxWidth: "100%", width: "170px", marginTop: "0 !important" }}
-					value={branchSelected}
-				>
-					{allBranches.map((sede) => (
-						<MenuItem key={sede.id} value={sede.id}>
-							{sede.name}
-						</MenuItem>
-					))}
-				</Select>
-			</Stack>
+			{user.role === ROLES.AGENTE ? null : (
+				<>
+					<Divider />
+					<Stack
+						direction="row"
+						spacing={2}
+						sx={{ alignItems: "center", justifyContent: "end", flexWrap: "wrap", px: 3, py: 2 }}
+					>
+						{hasFilters ? <Button onClick={handleClearFilters}>Borrar filtros</Button> : null}
+
+						<InputLabel id="agent-label" disabled={!branchSelected}>
+							Agente:{" "}
+						</InputLabel>
+						<Select
+							disabled={!branchSelected}
+							labelId="agent-label"
+							name="agentSelected"
+							onChange={handleAgentChange}
+							sx={{ marginTop: "0 !important" }}
+							value={agentSelected}
+						>
+							{agents.map((agent) => (
+								<MenuItem key={agent.id} value={agent.id}>
+									{agent.name}
+								</MenuItem>
+							))}
+						</Select>
+						<InputLabel id="branch-label">Sede: </InputLabel>
+						<Select
+							disabled={user.role === ROLES.ADMIN}
+							labelId="branch-label"
+							name="branchSelected"
+							onChange={handleBranchChange}
+							sx={{ marginTop: "0 !important" }}
+							value={branchSelected}
+						>
+							{allBranches.map((sede) => (
+								<MenuItem key={sede.id} value={sede.id}>
+									{sede.name}
+								</MenuItem>
+							))}
+						</Select>
+					</Stack>
+				</>
+			)}
 		</div>
 	);
 }
