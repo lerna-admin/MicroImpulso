@@ -1,5 +1,5 @@
 import * as React from "react";
-import { getAllBranches } from "@/app/dashboard/requests/hooks/use-branches";
+
 import { ROLES } from "@/constants/roles";
 import Box from "@mui/material/Box";
 import Card from "@mui/material/Card";
@@ -15,12 +15,14 @@ import { RequestsPagination } from "@/components/dashboard/request/requests-pagi
 import { RequestsSelectionProvider } from "@/components/dashboard/request/requests-selection-context";
 import { RequestsTable } from "@/components/dashboard/request/requests-table";
 
+import { getAllUsers } from "../users/hooks/use-users";
 import { getAllRequests, getRequestsByAgent } from "./hooks/use-requests";
+import { getAllBranches } from "../configuration/branch-managment/hooks/use-branches";
 
 export const metadata = { title: `Solicitudes | Dashboard | ${appConfig.name}` };
 
 export default async function Page({ searchParams }) {
-	const { previewId, status, page, limit, branch } = await searchParams;
+	const { previewId, status, page, limit, branch, agent } = await searchParams;
 
 	const {
 		data: { user },
@@ -35,9 +37,10 @@ export default async function Page({ searchParams }) {
 		totalItems: requestTotalItems,
 	} = user.role === ROLES.AGENTE
 		? await getRequestsByAgent(user.id, { page, limit, status })
-		: await getAllRequests({ page, limit, status, branchId: branch ?? user.branch.id });
+		: await getAllRequests({ page, limit, status, branchId: branch ?? user.branch.id, agentId: agent });
 
 	const branches = await getAllBranches();
+	const { data } = await getAllUsers({ branchId: user.branchId, role: "AGENT" });
 
 	return (
 		<React.Fragment>
@@ -58,9 +61,10 @@ export default async function Page({ searchParams }) {
 					<RequestsSelectionProvider requests={requests}>
 						<Card>
 							<RequestsFilters
-								filters={{ status, page, limit, branch }}
+								filters={{ status, page, limit, branch, agent }}
 								allBranches={branches}
-								userBranch={user.branch.id}
+								allAgents={data}
+								user={user}
 							/>
 							<Divider />
 							<Box sx={{ overflowX: "auto" }}>

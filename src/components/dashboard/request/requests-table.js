@@ -59,15 +59,6 @@ export function RequestsTable({ rows, permissions, role }) {
 		},
 		{ formatter: (row) => <p>{row.client.document}</p>, name: "Identificación", width: "130px" },
 		{
-			formatter(row) {
-				return new Intl.NumberFormat("en-US", { style: "currency", currency: "COP", minimumFractionDigits: 0 }).format(
-					row.requestedAmount
-				);
-			},
-			name: "Monto solicitado",
-			width: "160px",
-		},
-		{
 			formatter: (row) => (
 				<Stack direction="column" spacing={1} sx={{ alignItems: "center" }}>
 					<Typography color="inherit" variant="body2">
@@ -88,7 +79,22 @@ export function RequestsTable({ rows, permissions, role }) {
 			name: "Fecha Ult. Pago",
 			width: "150px",
 		},
-
+		{
+			formatter(row) {
+				return row.agent.name;
+			},
+			name: "Agente",
+			width: "150px",
+		},
+		{
+			formatter(row) {
+				return new Intl.NumberFormat("en-US", { style: "currency", currency: "COP", minimumFractionDigits: 0 }).format(
+					row.requestedAmount
+				);
+			},
+			name: "Monto solicitado",
+			width: "160px",
+		},
 		{
 			formatter: (row) => {
 				const mapping = {

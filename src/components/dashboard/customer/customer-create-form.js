@@ -387,7 +387,7 @@ export function CustomerCreateForm({ user }) {
 						<Button variant="outlined" component={RouterLink} href={paths.dashboard.customers.list}>
 							Cancelar
 						</Button>
-						<Button variant="contained" type="subnmit">
+						<Button variant="contained" type="submit">
 							Guardar
 						</Button>
 					</CardActions>

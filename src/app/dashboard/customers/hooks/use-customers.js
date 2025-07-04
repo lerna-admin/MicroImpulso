@@ -13,7 +13,16 @@ const BASE_URL = process.env.NEXT_PUBLIC_API_URL;
  *
  * @returns {Client[]}
  */
-export async function getAllCustomers({ page = 1, limit = 10, status = "", type = "", paymentDay = "", name = "" }) {
+export async function getAllCustomers({
+	page = 1,
+	limit = 10,
+	status = "",
+	type = "",
+	paymentDay = "",
+	name = "",
+	branch = "",
+	agent = "",
+}) {
 	const params = new URLSearchParams();
 
 	params.append("page", page.toString());
@@ -23,6 +32,8 @@ export async function getAllCustomers({ page = 1, limit = 10, status = "", type 
 	if (type) params.append("type", type);
 	if (paymentDay) params.append("paymentDay", paymentDay);
 	if (name) params.append("name", name);
+	if (branch) params.append("branch", branch);
+	if (agent) params.append("agent", agent);
 
 	const url = `${BASE_URL}/clients?${params.toString()}`;
 	const res = await fetch(url);
@@ -31,17 +42,17 @@ export async function getAllCustomers({ page = 1, limit = 10, status = "", type 
 	return await res.json();
 }
 
-/**
- *
- * @returns {Client[]}
- */
-export async function getCustomersByAgent(id, { page = 1, limit = 10, status = "", type = "", paymentDay = "" }) {
-	const res = await fetch(
-		`${BASE_URL}/clients/agent/${id}?page=${page}&limit=${limit}&status=${status}&type=${type}&paymentDay=${paymentDay}`
-	);
-	if (!res.ok) throw new Error("Error al obtener clientes");
-	return res.json();
-}
+// /**
+//  *
+//  * @returns {Client[]}
+//  */
+// export async function getCustomersByAgent(id, { page = 1, limit = 10, status = "", type = "", paymentDay = "" }) {
+// 	const res = await fetch(
+// 		`${BASE_URL}/clients/agent/${id}?page=${page}&limit=${limit}&status=${status}&type=${type}&paymentDay=${paymentDay}`
+// 	);
+// 	if (!res.ok) throw new Error("Error al obtener clientes por agente");
+// 	return res.json();
+// }
 
 /**
  *

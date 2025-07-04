@@ -21,6 +21,7 @@ import { z as zod } from "zod";
 import { paths } from "@/paths";
 import { usePopover } from "@/hooks/use-popover";
 import { NotificationAlert } from "@/components/widgets/notifications/notification-alert";
+import { ROLES } from "@/constants/roles";
 
 export function UserCreateForm({ roles, branches, userLogged }) {
 	const [showPassword, setShowPassword] = React.useState();
@@ -77,7 +78,7 @@ export function UserCreateForm({ roles, branches, userLogged }) {
 			password: "",
 			email: "",
 			role: "",
-			branchId: userLogged.branchId,
+			branchId: userLogged.role === ROLES.GERENTE ? "": userLogged.branchId,
 		},
 		resolver: zodResolver(schema),
 	});

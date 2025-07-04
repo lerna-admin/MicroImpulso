@@ -71,10 +71,10 @@ export function CustomersTable({ rows }) {
 			formatter: (row) => (
 				<Stack direction="column" spacing={1} sx={{ alignItems: "center" }}>
 					<Typography color="inherit" variant="body2">
-						{dayjs(row.loanRequest.createdAt).format("MMM D, YYYY")}
+						{dayjs(row.loanRequest.createdAt).format("MMM D, YYYY").toUpperCase()}
 					</Typography>
 					<Typography color="inherit" variant="body2">
-						{dayjs(row.loanRequest.endDateAt).format("MMM D, YYYY")}
+						{dayjs(row.loanRequest.endDateAt).format("MMM D, YYYY").toUpperCase()}
 					</Typography>
 				</Stack>
 			),
@@ -82,12 +82,19 @@ export function CustomersTable({ rows }) {
 			align: "center",
 			width: "120px",
 		},
-
 		{
 			formatter(row) {
-				return dayjs(row.loanRequest.updatedAt).format("MMM D, YYYY");
+				return dayjs(row.loanRequest.updatedAt).format("MMM D, YYYY").toUpperCase();
 			},
 			name: "Fecha Ult. Pago",
+			align: "center",
+			width: "135px",
+		},
+		{
+			formatter(row) {
+				return row.agent.name;
+			},
+			name: "Agente",
 			align: "center",
 			width: "135px",
 		},

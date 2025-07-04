@@ -1,6 +1,6 @@
 import * as React from "react";
 import RouterLink from "next/link";
-import { getAllBranches } from "@/app/dashboard/requests/hooks/use-branches";
+
 import Box from "@mui/material/Box";
 import Link from "@mui/material/Link";
 import Stack from "@mui/material/Stack";
@@ -13,6 +13,7 @@ import { getAllConfigParams } from "@/hooks/use-config.js";
 import { UserEditForm } from "@/components/dashboard/users/users-edit-form";
 
 import { getUserById } from "../hooks/use-users";
+import { getAllBranches } from "../../configuration/branch-managment/hooks/use-branches";
 
 export const metadata = { title: `Crear | Usuarios | Dashboard | ${appConfig.name}` };
 

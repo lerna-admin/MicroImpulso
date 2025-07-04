@@ -16,7 +16,7 @@ import { paths } from "@/paths";
 
 export function CustomerStatistics({ statistics, filters = {} }) {
 	const router = useRouter();
-	const { limit } = filters;
+	const { limit, type, paymentDay } = filters;
 	const [activeType, setActiveType] = React.useState(null);
 	const [activePaymentDay, setActivePaymentDay] = React.useState(null);
 	const theme = useTheme();
@@ -34,6 +34,15 @@ export function CustomerStatistics({ statistics, filters = {} }) {
 		{ id: 9, action: true, label: "10-25", icon: <CalendarDotsIcon />, value: "" },
 		{ id: 10, action: true, label: "15-30", icon: <CalendarDotsIcon />, value: "" },
 	]);
+
+	React.useEffect(() => {
+		if (type === undefined) {
+			setActiveType(null);
+		}
+		if (paymentDay === undefined) {
+			setActivePaymentDay(null);
+		}
+	}, [type, paymentDay]);
 
 	React.useEffect(() => {
 		const updates = [
@@ -109,7 +118,7 @@ export function CustomerStatistics({ statistics, filters = {} }) {
 				paymentDay: newPaymentDay,
 			});
 		},
-		[updateSearchParams, filters]
+		[activeType, activePaymentDay, updateSearchParams, filters, limit]
 	);
 
 	return (
