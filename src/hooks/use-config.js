@@ -18,6 +18,14 @@ export async function getAllConfigParams() {
 
 export async function getConfigParamsByKey(key) {
 	const res = await fetch(`${BASE_URL}/config/${key}`);
+	if (res.status === 404)
+		return {
+			id: null,
+			key: null,
+			value: null,
+			createdAt: null,
+			updatedAt: null,
+		};
 	if (!res.ok) throw new Error("Error al obtener los parametros por llave");
 	return await res.json();
 }

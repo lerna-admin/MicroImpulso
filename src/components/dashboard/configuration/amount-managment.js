@@ -27,8 +27,14 @@ export function AmountManagment({ params }) {
 	const notificationAlert = usePopover();
 	const [alertMsg, setAlertMsg] = React.useState("");
 	const [alertSeverity, setAlertSeverity] = React.useState("success");
-	const [isDisabled, setIsDisabled] = React.useState(true);
+	const [isDisabled, setIsDisabled] = React.useState(false);
 	const { fundedLimit, invoiceLimit } = params;
+
+	React.useEffect(() => {
+		if (fundedLimit.value && invoiceLimit.value) {
+			setIsDisabled(true);
+		}
+	}, [fundedLimit.value, invoiceLimit.value, params]);
 
 	const schema = zod.object({
 		fundedLimit: zod.preprocess(
@@ -68,7 +74,7 @@ export function AmountManagment({ params }) {
 		for (const key of Object.keys(dataForm)) {
 			try {
 				await updateConfigParam(key, { value: dataForm[key] });
-				setAlertMsg("¡Guardado exitosamente!");
+				setAlertMsg("¡Actualizado exitosamente!");
 				setAlertSeverity("success");
 			} catch (error) {
 				setAlertMsg(error.message);
@@ -153,11 +159,7 @@ export function AmountManagment({ params }) {
 					}}
 				>
 					<Stack direction="row" spacing={1} sx={{ alignItems: "center", justifyContent: "flex-end" }}>
-						{isDisabled ? (
-							<Button color="secondary" variant="outlined" onClick={() => setIsDisabled(!isDisabled)}>
-								Editar
-							</Button>
-						) : (
+						{fundedLimit.value && invoiceLimit.value ? (
 							<Button
 								color="secondary"
 								variant="outlined"
@@ -166,13 +168,18 @@ export function AmountManagment({ params }) {
 									reset();
 								}}
 							>
-								Cancelar
+								{isDisabled ? "Editar" : "Cancelar"}
+							</Button>
+						) : null}
+						{fundedLimit.value && invoiceLimit.value ? (
+							<Button variant="contained" type="submit" disabled={isDisabled}>
+								Guardar
+							</Button>
+						) : (
+							<Button variant="contained" type="submit" disabled={isDisabled}>
+								Crear
 							</Button>
 						)}
-
-						<Button variant="contained" type="submit">
-							Guardar
-						</Button>
 					</Stack>
 				</Grid>
 			</Grid>

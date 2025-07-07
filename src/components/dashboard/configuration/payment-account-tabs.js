@@ -20,12 +20,34 @@ export function PaymentAccountTabs({ tabsInfo }) {
 	const [alertMsg, setAlertMsg] = React.useState("");
 	const [alertSeverity, setAlertSeverity] = React.useState("success");
 
+	const defaultTab = {
+		id: 1,
+		label: `Cuenta ${1}`,
+		isPrimary: false,
+		paymentAccount: {
+			id: "",
+			bankName: "",
+			accountNumber: "",
+			accountType: "",
+			currency: "",
+			limit: "",
+			dailyReceived: "",
+			isActive: "",
+			updatedAt: "",
+			isPrimary: false,
+			holderName: "",
+			holderDocument: "",
+		},
+	};
+
 	const [tabSelected, setTabSelected] = React.useState(1);
 	const [accountToDelete, setAccountToDelete] = React.useState(null);
-	const [tabs, setTabs] = React.useState(tabsInfo);
+	const [tabs, setTabs] = React.useState([defaultTab]);
 
 	React.useEffect(() => {
-		setTabs(tabsInfo);
+		if (tabsInfo.length > 0) {
+			setTabs(tabsInfo);
+		}
 	}, [tabsInfo]);
 
 	const handleChange = (_, newValue) => {
@@ -39,7 +61,7 @@ export function PaymentAccountTabs({ tabsInfo }) {
 			label: `Cuenta ${newIndex}`,
 			isPrimary: false,
 			paymentAccount: {
-				id: "",
+				id: null,
 				bankName: "",
 				accountNumber: "",
 				accountType: "",
@@ -60,17 +82,19 @@ export function PaymentAccountTabs({ tabsInfo }) {
 	const handleRemoveTab = (tabValue, event, paymentAccount) => {
 		event.stopPropagation(); // Prevenir cambio de tab
 
-		if (paymentAccount.id === "") {
-			setTabs((prev) => prev.filter((tab) => tab.id !== tabValue));
+		if (paymentAccount.id) {
+			setAccountToDelete(paymentAccount);
+			modalDeleteAccount.handleOpen();
+		} else {
+			if (tabs.length > 1) {
+				setTabs((prev) => prev.filter((tab) => tab.id !== tabValue));
+			}
 
 			// Si estás eliminando la tab activa, cambia a otra existente
 			if (tabSelected === tabValue && tabs.length > 1) {
 				const nextTab = tabs.find((t) => t.id !== tabValue);
 				if (nextTab) setTabSelected(nextTab.id);
 			}
-		} else {
-			setAccountToDelete(paymentAccount);
-			modalDeleteAccount.handleOpen();
 		}
 	};
 
@@ -86,6 +110,12 @@ export function PaymentAccountTabs({ tabsInfo }) {
 			notificationAlert.handleOpen();
 			modalDeleteAccount.handleClose();
 			setTabSelected(1);
+			if (tabs.length === 1) {
+				setTabs([defaultTab]);
+			} else {
+				setTabs((prev) => prev.filter((tab) => tab.id !== accountToDelete.id));
+			}
+
 			router.refresh();
 		}
 	};
@@ -150,12 +180,12 @@ export function PaymentAccountTabs({ tabsInfo }) {
 				aria-describedby="alert-dialog-description"
 			>
 				<DialogTitle id="alert-dialog-title" textAlign={"center"} sx={{ pt: 4 }}>
-					{"Eliminar cuenta"}
+					{"Desactivar cuenta"}
 				</DialogTitle>
 
 				<DialogContent>
 					<DialogContentText id="alert-dialog-description" textAlign={"center"} sx={{ pb: 2 }}>
-						{`¿Desea eliminar la cuenta de pago ${accountToDelete?.accountNumber}?`}
+						{`¿Desea desactivar la cuenta de pago ${accountToDelete?.accountNumber}?`}
 					</DialogContentText>
 
 					<Box component={"div"} display={"flex"} justifyContent={"flex-end"} gap={2} padding={1}>

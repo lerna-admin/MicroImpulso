@@ -25,7 +25,6 @@ export default async function Page({ searchParams }) {
 	} = await getUser();
 
 	const assets = await getCashFlowSummary(user.branch.id, date);
-	console.log(date)
 	const {
 		data: movementsData,
 		total: movementsTotalItems,
