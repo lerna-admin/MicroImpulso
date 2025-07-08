@@ -135,7 +135,10 @@ export const dashboardConfig = {
 					title: "Configuración",
 					icon: "gear",
 					matcher: { type: "startsWith", href: "/dashboard/permissions" },
-					items: [{ key: "permissions", title: "Permisos", href: paths.dashboard.configuration.permissions }],
+					items: [
+						{ key: "permissions", title: "Permisos", href: paths.dashboard.configuration.permissions },
+						{ key: "templates", title: "Plantillas", href: paths.dashboard.configuration.templates },
+					],
 				},
 			],
 		},
@@ -170,6 +173,13 @@ export const dashboardConfig = {
 						{ key: "requests", title: "Lista de solicitudes", href: paths.dashboard.requests.list },
 						{ key: "requests:create", title: "Crear solicitud", href: paths.dashboard.requests.create },
 					],
+				},
+				{
+					key: "cash_flow",
+					title: "Movimientos de caja",
+					icon: "cash-register",
+					href: paths.dashboard.cash_flow,
+					matcher: { type: "startsWith", href: "/dashboard/cash_flow" },
 				},
 				{
 					key: "balance",

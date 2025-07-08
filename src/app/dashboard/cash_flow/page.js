@@ -24,7 +24,16 @@ export default async function Page({ searchParams }) {
 		data: { user },
 	} = await getUser();
 
+	// esta deberia mandarsele el userId para que asi mismo me traiga los datos del mismo
+
+	//  si es un agente el userId no debe retornar el objeto {
+	//     "label": "Gastos",
+	//     "value": 0,
+	//     "trend": "decrease"
+	// },
 	const assets = await getCashFlowSummary(user.branch.id, date);
+
+	// esta deberia mandarsele el id del user para que asi mismo me traiga los datos del mismo
 	const {
 		data: movementsData,
 		total: movementsTotalItems,

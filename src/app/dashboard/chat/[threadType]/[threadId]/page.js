@@ -9,7 +9,5 @@ export const metadata = { title: `Thread | Chat | Dashboard | ${appConfig.name}`
 export default async function Page({ params }) {
 	const { threadId, threadType } = await params;
 
-
-
 	return <ThreadView threadId={threadId} threadType={threadType} />;
 }

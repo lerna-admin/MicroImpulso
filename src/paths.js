@@ -27,6 +27,7 @@ export const paths = {
 			permissions: "/dashboard/configuration/permissions",
 			amountManagment: "/dashboard/configuration/amount-managment",
 			paymentInformation: "/dashboard/configuration/payment-information",
+			templates: "/dashboard/configuration/templates",
 			branchManagment: {
 				create: "/dashboard/configuration/branch-managment/create",
 				list: "/dashboard/configuration/branch-managment",

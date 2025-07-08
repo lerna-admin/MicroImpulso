@@ -55,7 +55,8 @@ export function PaymentAccountTabs({ tabsInfo }) {
 	};
 
 	const handleAddTab = () => {
-		const newIndex = tabs.length + 1;
+		const maxId = tabs.reduce((max, obj) => Math.max(max, obj.id), 0);
+		const newIndex = maxId + 1;
 		const newTab = {
 			id: newIndex,
 			label: `Cuenta ${newIndex}`,
@@ -165,6 +166,7 @@ export function PaymentAccountTabs({ tabsInfo }) {
 				</Box>
 				{tabs.map((item) => (
 					<TabPanel key={item.id} value={item.id}>
+						{item.id}
 						<PaymentAccountInformation paymentAccount={item.paymentAccount} />
 					</TabPanel>
 				))}
