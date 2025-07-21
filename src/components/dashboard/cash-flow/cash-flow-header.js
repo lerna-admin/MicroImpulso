@@ -3,7 +3,7 @@
 import * as React from "react";
 import { useRouter } from "next/navigation";
 import { createCashMovement } from "@/app/dashboard/cash_flow/hooks/use-cash-flow";
-import { getAllUsers } from "@/app/dashboard/users/hooks/use-users";
+import { getBranchesById } from "@/app/dashboard/configuration/branch-managment/hooks/use-branches";
 import { ROLES } from "@/constants/roles";
 import { formatCurrency } from "@/helpers/format-currency";
 import { capitalizeWord } from "@/helpers/format-words";
@@ -80,11 +80,11 @@ export function CashFlowHeader({ user }) {
 	];
 
 	const categoryOptions = [
-		{ label: "PRESTAMO", value: "PRESTAMO", type: "SALIDA" },
-		{ label: "ENTRADA GERENCIA", value: "ENTRADA_GERENCIA", type: "SALIDA" },
-		{ label: "TRANSFERENCIA", value: "TRANSFERENCIA", type: "SALIDA" },
-		{ label: "GASTO PROVEEDOR", value: "GASTO_PROVEEDOR", type: "ENTRADA" },
+		{ label: "ENTRADA GERENCIA", value: "ENTRADA_GERENCIA", type: "ENTRADA" },
 		{ label: "COBRO CLIENTE", value: "COBRO_CLIENTE", type: "ENTRADA" },
+		{ label: "PRESTAMO", value: "PRESTAMO", type: "SALIDA" },
+		{ label: "TRANSFERENCIA", value: "TRANSFERENCIA", type: "SALIDA" },
+		{ label: "GASTO PROVEEDOR", value: "GASTO_PROVEEDOR", type: "SALIDA" },
 	];
 
 	const {
@@ -115,8 +115,16 @@ export function CashFlowHeader({ user }) {
 
 	React.useEffect(() => {
 		if (category === "TRANSFERENCIA") {
-			getAllUsers({ branchId: user.branch.id, role: user.role === ROLES.AGENTE ? "ADMIN" : "AGENT" })
-				.then(({ data }) => setUsuariosOptions(data))
+			getBranchesById(user.branch.id)
+				.then((resp) => {
+					const { administrator, agents } = resp;
+					if (user.role === ROLES.AGENTE) {
+						setUsuariosOptions([administrator]);
+					} else if (user.role === ROLES.ADMIN) {
+						const agentsFiltered = agents.filter((agent) => agent.role === ROLES.AGENTE);
+						setUsuariosOptions(agentsFiltered);
+					}
+				})
 				.catch((error) => {
 					setAlertMsg(error);
 					setAlertSeverity("error");
@@ -129,6 +137,8 @@ export function CashFlowHeader({ user }) {
 		setIsPending(true);
 
 		try {
+			// ! Si es una transferencia envio condicionalmente los campos de userId y date?
+			// ! por el contrario vas a crear otra api para eso?
 			await createCashMovement({
 				typeMovement: dataForm.typeMovement,
 				amount: dataForm.amount,
@@ -137,10 +147,10 @@ export function CashFlowHeader({ user }) {
 				userId: user.id,
 				branchId: user.branch.id,
 			});
+
 			setAlertMsg("¡Movimiento creado exitosamente!");
 			setAlertSeverity("success");
 			popover.handleClose();
-
 			reset();
 		} catch (error) {
 			setAlertMsg(error.message);
@@ -295,13 +305,21 @@ export function CashFlowHeader({ user }) {
 											<FormControl fullWidth error={Boolean(errors.category)} disabled={!typeMovement}>
 												<InputLabel id="category">Categoria</InputLabel>
 												<Select labelId="category" {...field}>
-													{categoryOptions
-														.filter((option) => option.type === typeMovement)
-														.map((option) => (
-															<MenuItem key={option.value} value={option.value}>
-																{capitalizeWord(option.label)}
-															</MenuItem>
-														))}
+													{user.role === ROLES.AGENTE
+														? categoryOptions
+																.filter((option) => option.value === "TRANSFERENCIA")
+																.map((option) => (
+																	<MenuItem key={option.value} value={option.value}>
+																		{capitalizeWord(option.label)}
+																	</MenuItem>
+																))
+														: categoryOptions
+																.filter((option) => option.type === typeMovement)
+																.map((option) => (
+																	<MenuItem key={option.value} value={option.value}>
+																		{capitalizeWord(option.label)}
+																	</MenuItem>
+																))}
 												</Select>
 												{errors.category ? <FormHelperText>{errors.category.message}</FormHelperText> : null}
 											</FormControl>

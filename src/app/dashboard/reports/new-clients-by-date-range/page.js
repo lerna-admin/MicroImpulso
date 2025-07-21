@@ -5,9 +5,9 @@ import Typography from "@mui/material/Typography";
 
 import { appConfig } from "@/config/app";
 
-export const metadata = { title: `Reportes | Dashboard | ${appConfig.name}` };
+export const metadata = { title: `Clientes Nuevos por Rango de Fechas | Dashboard | ${appConfig.name}` };
 
-export default function Page() {
+export default async function Page() {
 	return (
 		<Box
 			sx={{
@@ -20,7 +20,7 @@ export default function Page() {
 			<Stack spacing={4}>
 				<Stack direction={{ xs: "column", sm: "row" }} spacing={3} sx={{ alignItems: "flex-start" }}>
 					<Box sx={{ flex: "1 1 auto" }}>
-						<Typography variant="h4">Reportes</Typography>
+						<Typography variant="h4">Clientes Nuevos por Rango de Fechas</Typography>
 					</Box>
 				</Stack>
 			</Stack>

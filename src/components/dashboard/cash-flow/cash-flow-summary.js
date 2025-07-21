@@ -8,7 +8,7 @@ import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 import { TrendDown as TrendDownIcon, TrendUp as TrendUpIcon } from "@phosphor-icons/react/dist/ssr";
 
-export function Summary({ assets }) {
+export function CashFlowSummary({ assets }) {
 	const theme = useTheme();
 
 	// Detecta breakpoint activo

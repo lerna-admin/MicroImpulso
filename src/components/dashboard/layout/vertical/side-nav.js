@@ -1,6 +1,7 @@
 import * as React from "react";
 import RouterLink from "next/link";
 import { usePathname } from "next/navigation";
+import { Tooltip } from "@mui/material";
 import Box from "@mui/material/Box";
 import Chip from "@mui/material/Chip";
 import Stack from "@mui/material/Stack";
@@ -141,100 +142,219 @@ function NavItem({
 	const isBranch = children && !href;
 	const showChildren = Boolean(children && open);
 
+	function hasTitleLong() {
+		if (title.length > 21) return true;
+		return false;
+	}
+
 	return (
 		<Box component="li" data-depth={depth} sx={{ userSelect: "none" }}>
-			<Box
-				{...(isBranch
-					? {
-							onClick: () => {
-								setOpen(!open);
-							},
-							onKeyUp: (event) => {
-								if (event.key === "Enter" || event.key === " ") {
-									setOpen(!open);
+			{hasTitleLong() ? (
+				<Tooltip title={title} placement="right">
+					<Box
+						{...(isBranch
+							? {
+									onClick: () => {
+										setOpen(!open);
+									},
+									onKeyUp: (event) => {
+										if (event.key === "Enter" || event.key === " ") {
+											setOpen(!open);
+										}
+									},
+									role: "button",
 								}
+							: {
+									...(href
+										? {
+												component: external ? "a" : RouterLink,
+												href,
+												target: external ? "_blank" : undefined,
+												rel: external ? "noreferrer" : undefined,
+											}
+										: { role: "button" }),
+								})}
+						sx={{
+							alignItems: "center",
+							borderRadius: 1,
+							color: "var(--NavItem-color)",
+							cursor: "pointer",
+							display: "flex",
+							flex: "0 0 auto",
+							gap: 1,
+							p: "6px 16px",
+							position: "relative",
+							textDecoration: "none",
+							whiteSpace: "nowrap",
+							...(disabled && {
+								bgcolor: "var(--NavItem-disabled-background)",
+								color: "var(--NavItem-disabled-color)",
+								cursor: "not-allowed",
+							}),
+							...(active && {
+								bgcolor: "var(--NavItem-active-background)",
+								color: "var(--NavItem-active-color)",
+								...(depth > 0 && {
+									"&::before": {
+										bgcolor: "var(--NavItem-children-indicator)",
+										borderRadius: "2px",
+										content: '" "',
+										height: "20px",
+										left: "-14px",
+										position: "absolute",
+										width: "3px",
+									},
+								}),
+							}),
+							...(open && { color: "var(--NavItem-open-color)" }),
+							"&:hover": {
+								...(!disabled &&
+									!active && { bgcolor: "var(--NavItem-hover-background)", color: "var(--NavItem-hover-color)" }),
 							},
-							role: "button",
-						}
-					: {
-							...(href
-								? {
-										component: external ? "a" : RouterLink,
-										href,
-										target: external ? "_blank" : undefined,
-										rel: external ? "noreferrer" : undefined,
+						}}
+						tabIndex={0}
+					>
+						<Box sx={{ alignItems: "center", display: "flex", justifyContent: "center", flex: "0 0 auto" }}>
+							{Icon ? (
+								<Icon
+									fill={active ? "var(--NavItem-icon-active-color)" : "var(--NavItem-icon-color)"}
+									fontSize="var(--icon-fontSize-md)"
+									weight={forceOpen || active ? "fill" : undefined}
+								/>
+							) : null}
+						</Box>
+						<Box sx={{ flex: "1 1 auto" }}>
+							<Typography
+								sx={{
+									color: "inherit",
+									fontSize: "0.875rem",
+									fontWeight: 500,
+									lineHeight: "28px",
+									maxWidth: "150px",
+									whiteSpace: "nowrap",
+									overflow: "hidden",
+									textOverflow: "ellipsis",
+								}}
+							>
+								{title}
+							</Typography>
+						</Box>
+						{label ? <Chip color="primary" label={label} size="small" /> : null}
+						{external ? (
+							<Box sx={{ alignItems: "center", display: "flex", flex: "0 0 auto" }}>
+								<ArrowSquareOutIcon color="var(--NavItem-icon-color)" fontSize="var(--icon-fontSize-sm)" />
+							</Box>
+						) : null}
+						{isBranch ? (
+							<Box sx={{ alignItems: "center", display: "flex", flex: "0 0 auto" }}>
+								<ExpandIcon color="var(--NavItem-expand-color)" fontSize="var(--icon-fontSize-sm)" />
+							</Box>
+						) : null}
+					</Box>
+				</Tooltip>
+			) : (
+				<Box
+					{...(isBranch
+						? {
+								onClick: () => {
+									setOpen(!open);
+								},
+								onKeyUp: (event) => {
+									if (event.key === "Enter" || event.key === " ") {
+										setOpen(!open);
 									}
-								: { role: "button" }),
-						})}
-				sx={{
-					alignItems: "center",
-					borderRadius: 1,
-					color: "var(--NavItem-color)",
-					cursor: "pointer",
-					display: "flex",
-					flex: "0 0 auto",
-					gap: 1,
-					p: "6px 16px",
-					position: "relative",
-					textDecoration: "none",
-					whiteSpace: "nowrap",
-					...(disabled && {
-						bgcolor: "var(--NavItem-disabled-background)",
-						color: "var(--NavItem-disabled-color)",
-						cursor: "not-allowed",
-					}),
-					...(active && {
-						bgcolor: "var(--NavItem-active-background)",
-						color: "var(--NavItem-active-color)",
-						...(depth > 0 && {
-							"&::before": {
-								bgcolor: "var(--NavItem-children-indicator)",
-								borderRadius: "2px",
-								content: '" "',
-								height: "20px",
-								left: "-14px",
-								position: "absolute",
-								width: "3px",
-							},
+								},
+								role: "button",
+							}
+						: {
+								...(href
+									? {
+											component: external ? "a" : RouterLink,
+											href,
+											target: external ? "_blank" : undefined,
+											rel: external ? "noreferrer" : undefined,
+										}
+									: { role: "button" }),
+							})}
+					sx={{
+						alignItems: "center",
+						borderRadius: 1,
+						color: "var(--NavItem-color)",
+						cursor: "pointer",
+						display: "flex",
+						flex: "0 0 auto",
+						gap: 1,
+						p: "6px 16px",
+						position: "relative",
+						textDecoration: "none",
+						whiteSpace: "nowrap",
+						...(disabled && {
+							bgcolor: "var(--NavItem-disabled-background)",
+							color: "var(--NavItem-disabled-color)",
+							cursor: "not-allowed",
 						}),
-					}),
-					...(open && { color: "var(--NavItem-open-color)" }),
-					"&:hover": {
-						...(!disabled &&
-							!active && { bgcolor: "var(--NavItem-hover-background)", color: "var(--NavItem-hover-color)" }),
-					},
-				}}
-				tabIndex={0}
-			>
-				<Box sx={{ alignItems: "center", display: "flex", justifyContent: "center", flex: "0 0 auto" }}>
-					{Icon ? (
-						<Icon
-							fill={active ? "var(--NavItem-icon-active-color)" : "var(--NavItem-icon-color)"}
-							fontSize="var(--icon-fontSize-md)"
-							weight={forceOpen || active ? "fill" : undefined}
-						/>
+						...(active && {
+							bgcolor: "var(--NavItem-active-background)",
+							color: "var(--NavItem-active-color)",
+							...(depth > 0 && {
+								"&::before": {
+									bgcolor: "var(--NavItem-children-indicator)",
+									borderRadius: "2px",
+									content: '" "',
+									height: "20px",
+									left: "-14px",
+									position: "absolute",
+									width: "3px",
+								},
+							}),
+						}),
+						...(open && { color: "var(--NavItem-open-color)" }),
+						"&:hover": {
+							...(!disabled &&
+								!active && { bgcolor: "var(--NavItem-hover-background)", color: "var(--NavItem-hover-color)" }),
+						},
+					}}
+					tabIndex={0}
+				>
+					<Box sx={{ alignItems: "center", display: "flex", justifyContent: "center", flex: "0 0 auto" }}>
+						{Icon ? (
+							<Icon
+								fill={active ? "var(--NavItem-icon-active-color)" : "var(--NavItem-icon-color)"}
+								fontSize="var(--icon-fontSize-md)"
+								weight={forceOpen || active ? "fill" : undefined}
+							/>
+						) : null}
+					</Box>
+					<Box sx={{ flex: "1 1 auto" }}>
+						<Typography
+							sx={{
+								color: "inherit",
+								fontSize: "0.875rem",
+								fontWeight: 500,
+								lineHeight: "28px",
+								maxWidth: "150px",
+								whiteSpace: "nowrap",
+								overflow: "hidden",
+								textOverflow: "ellipsis",
+							}}
+						>
+							{title}
+						</Typography>
+					</Box>
+					{label ? <Chip color="primary" label={label} size="small" /> : null}
+					{external ? (
+						<Box sx={{ alignItems: "center", display: "flex", flex: "0 0 auto" }}>
+							<ArrowSquareOutIcon color="var(--NavItem-icon-color)" fontSize="var(--icon-fontSize-sm)" />
+						</Box>
+					) : null}
+					{isBranch ? (
+						<Box sx={{ alignItems: "center", display: "flex", flex: "0 0 auto" }}>
+							<ExpandIcon color="var(--NavItem-expand-color)" fontSize="var(--icon-fontSize-sm)" />
+						</Box>
 					) : null}
 				</Box>
-				<Box sx={{ flex: "1 1 auto" }}>
-					<Typography
-						component="span"
-						sx={{ color: "inherit", fontSize: "0.875rem", fontWeight: 500, lineHeight: "28px" }}
-					>
-						{title}
-					</Typography>
-				</Box>
-				{label ? <Chip color="primary" label={label} size="small" /> : null}
-				{external ? (
-					<Box sx={{ alignItems: "center", display: "flex", flex: "0 0 auto" }}>
-						<ArrowSquareOutIcon color="var(--NavItem-icon-color)" fontSize="var(--icon-fontSize-sm)" />
-					</Box>
-				) : null}
-				{isBranch ? (
-					<Box sx={{ alignItems: "center", display: "flex", flex: "0 0 auto" }}>
-						<ExpandIcon color="var(--NavItem-expand-color)" fontSize="var(--icon-fontSize-sm)" />
-					</Box>
-				) : null}
-			</Box>
+			)}
+
 			{showChildren ? (
 				<Box sx={{ pl: "24px" }}>
 					<Box sx={{ borderLeft: "1px solid var(--NavItem-children-border)", pl: "12px" }}>{children}</Box>

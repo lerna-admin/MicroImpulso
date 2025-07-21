@@ -21,9 +21,96 @@ export const dashboardConfig = {
 				{
 					key: "reports",
 					title: "Reportes",
-					href: paths.dashboard.reports,
 					icon: "article",
 					matcher: { type: "startsWith", href: "/dashboard/reports" },
+					items: [
+						{
+							key: "reports:daily-cash-count-by-agent  ",
+							title: "Arqueo Diario por Agente",
+							href: paths.dashboard.reports.dailyCashCountByAgent,
+						},
+						{
+							key: "reports:active-loans-by-status  ",
+							title: "Préstamos Activos por Estado",
+							href: paths.dashboard.reports.activeLoansByStatus,
+						},
+						{
+							key: "reports:upcoming-due-dates  ",
+							title: "Vencimientos Próximos",
+							href: paths.dashboard.reports.upcomingDueDates,
+						},
+						{ key: "reports:overdue-loans  ", title: "Préstamos Vencidos", href: paths.dashboard.reports.overdueLoans },
+						{
+							key: "reports:loan-history-by-client  ",
+							title: "Histórico de Préstamos por Cliente",
+							href: paths.dashboard.reports.loanHistoryByClient,
+						},
+						{
+							key: "reports:new-clients-by-date-range  ",
+							title: "Clientes Nuevos por Rango de Fechas",
+							href: paths.dashboard.reports.newClientsByDateRange,
+						},
+						{
+							key: "reports:active-vs-inactive-clients  ",
+							title: "Clientes Activos vs Inactivos",
+							href: paths.dashboard.reports.activeVsInactiveClients,
+						},
+						{
+							key: "reports:total-loan-amount  ",
+							title: "Monto Prestado Total (Acumulado)",
+							href: paths.dashboard.reports.totalLoanAmount,
+						},
+						{
+							key: "reports:total-collection-received  ",
+							title: "Recaudo Total (Pagos Recibidos)",
+							href: paths.dashboard.reports.totalCollectionReceived,
+						},
+						{
+							key: "reports:documents-uploaded-by-client  ",
+							title: "Documentos Subidos por Cliente",
+							href: paths.dashboard.reports.documentsUploadedByClient,
+						},
+						{
+							key: "reports:agent-activity  ",
+							title: "Actividad de los Agentes",
+							href: paths.dashboard.reports.agentActivity,
+						},
+						{
+							key: "reports:average-approval-time  ",
+							title: "Tiempo Promedio de Aprobación",
+							href: paths.dashboard.reports.averageApprovalTime,
+						},
+						{
+							key: "reports:general-cash-flow  ",
+							title: "Flujo de Caja General",
+							href: paths.dashboard.reports.generalCashFlow,
+						},
+						{
+							key: "reports:transaction-details  ",
+							title: "Detalle de Transacciones",
+							href: paths.dashboard.reports.transactionDetails,
+						},
+						{
+							key: "reports:client-or-agent-conversations  ",
+							title: "Conversaciones por Cliente o Agente",
+							href: paths.dashboard.reports.clientOrAgentConversations,
+						},
+						{
+							key: "reports:generated-and-sent-contracts  ",
+							title: "Contratos Generados y Enviados",
+							href: paths.dashboard.reports.generatedAndSentContracts,
+						},
+						{
+							key: "reports:document-upload-and-classification  ",
+							title: "Carga y Clasificación de Documentos",
+							href: paths.dashboard.reports.documentUploadAndClassification,
+						},
+						{
+							key: "reports:general-statistics-by-branch",
+							title: "Estadísticas Generales por Sede",
+							href: paths.dashboard.reports.generalStatisticsByBranch,
+						},
+					],
 				},
 				{
 					key: "requests",
@@ -93,6 +180,80 @@ export const dashboardConfig = {
 			key: ROLES.ADMIN,
 			title: "Administrador",
 			items: [
+				{
+					key: "reports",
+					title: "Reportes",
+					icon: "article",
+					matcher: { type: "startsWith", href: "/dashboard/reports" },
+					items: [
+						{
+							key: "reports:daily-cash-summary  ",
+							title: "Resumen Diario de Caja",
+							href: paths.dashboard.reports.dailyCashSummary,
+						},
+						{
+							key: "reports:daily-cash-count-by-agent  ",
+							title: "Arqueo Diario por Agente",
+							href: paths.dashboard.reports.dailyCashCountByAgent,
+						},
+						{
+							key: "reports:active-loans-by-status  ",
+							title: "Préstamos Activos por Estado",
+							href: paths.dashboard.reports.activeLoansByStatus,
+						},
+						{
+							key: "reports:upcoming-due-dates  ",
+							title: "Vencimientos Próximos",
+							href: paths.dashboard.reports.upcomingDueDates,
+						},
+						{ key: "reports:overdue-loans  ", title: "Préstamos Vencidos", href: paths.dashboard.reports.overdueLoans },
+						{
+							key: "reports:loan-history-by-client  ",
+							title: "Histórico de Préstamos por Cliente",
+							href: paths.dashboard.reports.loanHistoryByClient,
+						},
+						{
+							key: "reports:new-clients-by-date-range  ",
+							title: "Clientes Nuevos por Rango de Fechas",
+							href: paths.dashboard.reports.newClientsByDateRange,
+						},
+						{
+							key: "reports:active-vs-inactive-clients  ",
+							title: "Clientes Activos vs Inactivos",
+							href: paths.dashboard.reports.activeVsInactiveClients,
+						},
+						{
+							key: "reports:documents-uploaded-by-client  ",
+							title: "Documentos Subidos por Cliente",
+							href: paths.dashboard.reports.documentsUploadedByClient,
+						},
+						{
+							key: "reports:agent-activity  ",
+							title: "Actividad de los Agentes",
+							href: paths.dashboard.reports.agentActivity,
+						},
+						{
+							key: "reports:transaction-details  ",
+							title: "Detalle de Transacciones",
+							href: paths.dashboard.reports.transactionDetails,
+						},
+						{
+							key: "reports:client-or-agent-conversations  ",
+							title: "Conversaciones por Cliente o Agente",
+							href: paths.dashboard.reports.clientOrAgentConversations,
+						},
+						{
+							key: "reports:generated-and-sent-contracts  ",
+							title: "Contratos Generados y Enviados",
+							href: paths.dashboard.reports.generatedAndSentContracts,
+						},
+						{
+							key: "reports:document-upload-and-classification  ",
+							title: "Carga y Clasificación de Documentos",
+							href: paths.dashboard.reports.documentUploadAndClassification,
+						},
+					],
+				},
 				{
 					key: "requests",
 					title: "Solicitudes",

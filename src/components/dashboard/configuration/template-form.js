@@ -1,34 +1,58 @@
 "use client";
 
 import * as React from "react";
-import { Box, Chip, Paper, TextField, Typography } from "@mui/material";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Box, Button, Chip, FormControl, FormHelperText, InputLabel, OutlinedInput, Stack } from "@mui/material";
 import { styled } from "@mui/material/styles";
-import { Smiley } from "@phosphor-icons/react/dist/ssr";
+import { Controller, useForm } from "react-hook-form";
+import { z as zod } from "zod";
 
 export function TemplateForm() {
-	const [chipData, setChipData] = React.useState([
-		{ key: 0, label: "Angular" },
-		{ key: 1, label: "jQuery" },
-		{ key: 2, label: "Polymer" },
-		{ key: 3, label: "React" },
-		{ key: 4, label: "Vue.js" },
-	]);
+	const [variables, setVariables] = React.useState([{ id: "nombre", label: "nombre" }]);
 
-	const [newField, setNewField] = React.useState("");
+	const schema = zod.object({
+		newField: zod
+			.string()
+			.transform((val) => val.replaceAll(/\s+/g, "_")) // Reemplaza espacios por guiones bajos
+			.refine((val) => val.length > 3, {
+				message: "Debe tener más de 3 caracteres",
+			})
+			.refine((val) => val.length <= 20, {
+				message: "No puede tener más de 20 caracteres",
+			}),
+	});
+
+	const {
+		control,
+		handleSubmit,
+		formState: { errors },
+		reset,
+	} = useForm({
+		defaultValues: {
+			newField: "",
+		},
+		resolver: zodResolver(schema),
+	});
 
 	const handleDelete = (chipToDelete) => () => {
-		setChipData((chips) => chips.filter((chip) => chip.key !== chipToDelete.key));
+		setVariables((chips) => chips.filter((chip) => chip.id !== chipToDelete.id));
 	};
 
-	const handleNewField = ({ target }) => {
-		setNewField(target.value);
+	const handleAdd = ({ newField }) => {
+		const found = variables.find((item) => item.id === newField.toLowerCase());
+		// Si ya existe una variable con el mismo id sale de la func
+		if (found) {
+			reset();
+			return;
+		}
+
+		const newVariable = { id: newField.toLowerCase(), label: newField.toLowerCase() };
+		setVariables((prev) => [...prev, newVariable]);
+		reset();
 	};
 
 	return (
 		<Box padding={3}>
-			<Typography variant="body2" color="initial">
-				Campos:
-			</Typography>
 			<Box
 				sx={{
 					display: "flex",
@@ -40,21 +64,33 @@ export function TemplateForm() {
 				}}
 				component="ul"
 			>
-				{chipData.map((data) => {
-					let icon;
-
-					if (data.label === "React") {
-						icon = <Smiley />;
-					}
-
+				{variables.map((item) => {
 					return (
-						<ListItem key={data.key}>
-							<Chip icon={icon} label={data.label} onDelete={data.label === "React" ? undefined : handleDelete(data)} />
+						<ListItem key={item.id}>
+							<Chip label={item.label} onDelete={handleDelete(item)} />
 						</ListItem>
 					);
 				})}
 			</Box>
-			<TextField label="Añadir campo" value={newField} onChange={(e) => handleNewField(e)} />
+			<form onSubmit={handleSubmit(handleAdd)}>
+				<Stack spacing={2} direction={"column"} alignItems={"start"} paddingTop={3}>
+					<Controller
+						control={control}
+						name="newField"
+						render={({ field }) => (
+							<FormControl error={Boolean(errors.newField)}>
+								<InputLabel required>Nueva variable</InputLabel>
+								<OutlinedInput {...field} />
+								{errors.newField ? <FormHelperText>{errors.newField.message}</FormHelperText> : null}
+							</FormControl>
+						)}
+					/>
+
+					<Button variant="contained" color="primary" type="submit">
+						Añadir
+					</Button>
+				</Stack>
+			</form>
 		</Box>
 	);
 }
