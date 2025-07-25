@@ -1,8 +1,9 @@
 "use client";
 
 import * as React from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { getAllCustomers } from "@/app/dashboard/customers/hooks/use-customers";
+import { getAllCustomers, getCustomerById } from "@/app/dashboard/customers/hooks/use-customers";
 import { getDocumentsUploadedByClient } from "@/app/dashboard/reports/services/reports";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -40,6 +41,17 @@ const columns = [
 	},
 	{
 		formatter(row) {
+			return (
+				<Link target="_blank" href={paths.dashboard.documents.details(row.docId)} variant="subtitle2">
+					File
+				</Link>
+			);
+		},
+		name: "URL",
+		width: "150px",
+	},
+	{
+		formatter(row) {
 			const mapping = {
 				ID: { label: "Cedula" },
 				WORK_LETTER: { label: "Carta laboral" },
@@ -50,7 +62,7 @@ const columns = [
 
 			const { label } = mapping[row.type] ?? { label: "Unknown" };
 
-			<Chip label={label} size="medium" variant="outlined" />;
+			return <Chip label={label} size="medium" variant="outlined" />;
 		},
 		name: "Clasificación",
 		width: "150px",
@@ -58,7 +70,7 @@ const columns = [
 ];
 
 export function DocumentsUploadedByClient({ filters, user }) {
-	const { startDate, endDate } = filters;
+	const { startDate, endDate, clientId } = filters;
 
 	const schema = zod.object({
 		user: zod
@@ -99,13 +111,13 @@ export function DocumentsUploadedByClient({ filters, user }) {
 	const [alertMsg, setAlertMsg] = React.useState("");
 	const [alertSeverity, setAlertSeverity] = React.useState("");
 
-	const boxesNames = ["Total documentos por cliente"];
 	const router = useRouter();
 	const [rows, setRows] = React.useState([]);
 	const [boxes, setBoxes] = React.useState([]);
 
 	const [selectedStartDate, setSelectedStartDate] = React.useState(dayjs(startDate));
 	const [selectedEndDate, setSelectedEndDate] = React.useState(dayjs(endDate));
+	const [selectedClient, setSelectedClient] = React.useState(null);
 
 	const updateSearchParams = React.useCallback(
 		(newFilters) => {
@@ -119,6 +131,9 @@ export function DocumentsUploadedByClient({ filters, user }) {
 			}
 			if (newFilters.docType) {
 				searchParams.set("docType", newFilters.docType);
+			}
+			if (newFilters.clientId) {
+				searchParams.set("clientId", newFilters.clientId);
 			}
 
 			router.push(`${paths.dashboard.reports.documentsUploadedByClient}?${searchParams.toString()}`);
@@ -141,12 +156,13 @@ export function DocumentsUploadedByClient({ filters, user }) {
 			const dateFormatted = dayjs(value).format("YYYY-MM-DD");
 			updateSearchParams({ ...filters, endDate: dateFormatted });
 		},
-		[updateSearchParams, filters]
+		[updateSearchParams, filters, clientId]
 	);
 
 	const getDocumentsUploaded = async (clientId) => {
 		if (!clientId) return;
 		setLoading(true);
+
 		try {
 			const { totals, blocks } = await getDocumentsUploadedByClient({
 				userId: user.id,
@@ -154,19 +170,8 @@ export function DocumentsUploadedByClient({ filters, user }) {
 				endDate: dayjs(selectedEndDate).format("YYYY-MM-DD"),
 				clientId,
 			});
-			console.log(totals, blocks);
-
-			setRows(blocks);
-			const boxes = Object.entries(totals).map(([_, value], index) => {
-				return {
-					name: boxesNames[index],
-					value: value,
-				};
-			});
-
-			boxes.pop(); // Se elimina el ultimo ya que no se va a usar
-
-			setBoxes(boxes);
+			setBoxes(formattedBoxes(totals, ["Total documentos por cliente"]));
+			if (blocks.length > 0) setRows(blocks[0]?.documents);
 		} catch (error) {
 			setAlertMsg(error);
 			setAlertSeverity("error");
@@ -174,6 +179,41 @@ export function DocumentsUploadedByClient({ filters, user }) {
 			setLoading(false);
 		}
 	};
+
+	React.useEffect(() => {
+		if (!filters.clientId) return;
+		if (filters) {
+			getDocumentsUploaded(clientId);
+		}
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [filters]);
+
+	React.useEffect(() => {
+		if (!filters.clientId) return;
+
+		const loadClient = async () => {
+			try {
+				setLoading(true);
+				const { client } = await getCustomerById(filters.clientId); // Asume que tu API puede buscar por ID
+				if (client) {
+					const clientData = { label: client.name, id: client.id };
+					setSelectedClient(clientData);
+					// Opcional: añadir a las opciones si no está
+					setOptions((prev) => {
+						const exists = prev.find((o) => o.id === clientData.id);
+						return exists ? prev : [...prev, clientData];
+					});
+				}
+			} catch (error) {
+				setAlertMsg(error);
+				setAlertSeverity("error");
+			} finally {
+				setLoading(false);
+			}
+		};
+
+		loadClient();
+	}, [filters.clientId]);
 
 	const debounced = React.useMemo(
 		() =>
@@ -252,13 +292,14 @@ export function DocumentsUploadedByClient({ filters, user }) {
 								options={options}
 								loading={loading}
 								inputValue={inputValue}
-								value={field.value || null}
+								value={selectedClient || null}
 								onInputChange={(event, newInputValue) => {
 									setInputValue(newInputValue);
 								}}
 								onChange={(event, newValue) => {
-									getDocumentsUploaded(newValue?.id);
+									setSelectedClient(newValue ?? null);
 									field.onChange(newValue ?? { id: null, label: null });
+									updateSearchParams({ ...filters, clientId: newValue?.id });
 									resetData();
 								}}
 								getOptionLabel={(option) => (typeof option === "string" ? option : option?.label || "")}
@@ -287,43 +328,46 @@ export function DocumentsUploadedByClient({ filters, user }) {
 					);
 				}}
 			/>
+			{boxes.length === 0 ? null : (
+				<Card>
+					<Box
+						sx={{
+							display: "grid",
+							columnGap: 0,
+							gap: 2,
+							gridTemplateColumns: { xs: "1fr", md: "repeat(2, 1fr)", lg: "repeat(1, 1fr)" },
+							p: 3,
+						}}
+					>
+						{boxes.map((item, index) => {
+							const isLastInRow = (index + 1) % columns === 0;
 
-			<Card>
-				<Box
-					sx={{
-						display: "grid",
-						columnGap: 0,
-						gap: 2,
-						gridTemplateColumns: { xs: "1fr", md: "repeat(2, 1fr)", lg: "repeat(1, 1fr)" },
-						p: 3,
-					}}
-				>
-					{boxes.map((item, index) => {
-						const isLastInRow = (index + 1) % columns === 0;
+							return (
+								<Stack
+									key={item.name}
+									spacing={1}
+									sx={{
+										borderRight: isLastInRow ? "none" : "1px solid var(--mui-palette-divider)",
+										borderBottom: { xs: "1px solid var(--mui-palette-divider)", md: "none" },
+										pb: { xs: 2, md: 0 },
+									}}
+								>
+									<Typography color="text.secondary">{item.name}</Typography>
+									<Typography variant="h3">{item.value}</Typography>
+								</Stack>
+							);
+						})}
+					</Box>
+				</Card>
+			)}
 
-						return (
-							<Stack
-								key={item.name}
-								spacing={1}
-								sx={{
-									borderRight: isLastInRow ? "none" : "1px solid var(--mui-palette-divider)",
-									borderBottom: { xs: "1px solid var(--mui-palette-divider)", md: "none" },
-									pb: { xs: 2, md: 0 },
-								}}
-							>
-								<Typography color="text.secondary">{item.name}</Typography>
-								<Typography variant="h3">{item.value}</Typography>
-							</Stack>
-						);
-					})}
-				</Box>
-			</Card>
-
-			<Card>
-				<Box sx={{ overflowX: "auto" }}>
-					<DataTable columns={columns} rows={rows} />
-				</Box>
-			</Card>
+			{rows.length === 0 ? null : (
+				<Card>
+					<Box sx={{ overflowX: "auto" }}>
+						<DataTable columns={columns} rows={rows} />
+					</Box>
+				</Card>
+			)}
 
 			<NotificationAlert
 				openAlert={popoverAlert.open}
@@ -333,4 +377,13 @@ export function DocumentsUploadedByClient({ filters, user }) {
 			></NotificationAlert>
 		</Stack>
 	);
+}
+
+function formattedBoxes(data, boxesNames) {
+	return Object.entries(data).map(([_, value], index) => {
+		return {
+			name: boxesNames[index],
+			value: value,
+		};
+	});
 }
