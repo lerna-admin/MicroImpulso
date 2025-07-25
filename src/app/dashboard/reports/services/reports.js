@@ -163,6 +163,8 @@ export async function getDocumentsUploadedByClient({
 	if (docType) params.append("docType", docType);
 
 	const url = `${BASE_URL}/reports/documents-by-client?${params.toString()}`;
+	console.log(url);
+	
 	const res = await fetch(url);
 
 	if (!res.ok) throw new Error("Error al obtener este reporte");

@@ -121,7 +121,7 @@ export function DocumentsUploadedByClient({ filters, user }) {
 				searchParams.set("docType", newFilters.docType);
 			}
 
-			router.push(`${paths.dashboard.reports.totalCollectionReceived}?${searchParams.toString()}`);
+			router.push(`${paths.dashboard.reports.documentsUploadedByClient}?${searchParams.toString()}`);
 		},
 		[router]
 	);
@@ -148,9 +148,14 @@ export function DocumentsUploadedByClient({ filters, user }) {
 		if (!clientId) return;
 		setLoading(true);
 		try {
-			const { totals, blocks } = await getDocumentsUploadedByClient({ userId: user.id, clientId });
-            console.log(totals, blocks);
-            
+			const { totals, blocks } = await getDocumentsUploadedByClient({
+				userId: user.id,
+				startDate: dayjs(selectedStartDate).format("YYYY-MM-DD"),
+				endDate: dayjs(selectedEndDate).format("YYYY-MM-DD"),
+				clientId,
+			});
+			console.log(totals, blocks);
+
 			setRows(blocks);
 			const boxes = Object.entries(totals).map(([_, value], index) => {
 				return {

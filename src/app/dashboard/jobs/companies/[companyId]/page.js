@@ -10,7 +10,6 @@ import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 import { ArrowRight as ArrowRightIcon } from "@phosphor-icons/react/dist/ssr/ArrowRight";
 
-import { paths } from "@/paths";
 import { dayjs } from "@/lib/dayjs";
 import { Description } from "@/components/dashboard/jobs/description";
 import { JobsCard } from "@/components/dashboard/jobs/jobs-card";
@@ -93,7 +92,6 @@ export default function Page() {
 					<Link
 						color="text.primary"
 						component={RouterLink}
-						href={paths.dashboard.jobs.companies.overview("1")}
 						sx={{ alignItems: "center", display: "flex", gap: 1 }}
 						variant="subtitle2"
 					>
@@ -116,7 +114,6 @@ export default function Page() {
 					<Link
 						color="text.primary"
 						component={RouterLink}
-						href={paths.dashboard.jobs.companies.overview("1")}
 						sx={{ alignItems: "center", display: "flex", gap: 1 }}
 						variant="subtitle2"
 					>
