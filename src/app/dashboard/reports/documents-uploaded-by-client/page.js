@@ -8,7 +8,8 @@ import { DocumentsUploadedByClient } from "@/components/dashboard/reports/docume
 export const metadata = { title: `Documentos Subidos por Cliente | Dashboard | ${appConfig.name}` };
 
 export default async function Page({ searchParams }) {
-	const { startDate, endDate, docType } = await searchParams;
+	const { startDate, endDate, docType, clientId } = await searchParams;
+
 	const {
 		data: { user },
 	} = await getUser();
@@ -22,7 +23,7 @@ export default async function Page({ searchParams }) {
 				width: "var(--Content-width)",
 			}}
 		>
-			<DocumentsUploadedByClient filters={{ startDate, endDate, docType }} user={user} />
+			<DocumentsUploadedByClient filters={{ startDate, endDate, docType, clientId }} user={user} />
 		</Box>
 	);
 }

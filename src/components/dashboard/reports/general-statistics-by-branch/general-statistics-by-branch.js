@@ -2,47 +2,54 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
-import {
-	Box,
-	Card,
-	CardContent,
-	CardHeader,
-	Divider,
-	FormControl,
-	InputLabel,
-	Paper,
-	Select,
-	Stack,
-	Typography,
-	useMediaQuery,
-	useTheme,
-} from "@mui/material";
+import { Box, Card, CardContent, Divider, Paper, Stack, Typography, useMediaQuery, useTheme } from "@mui/material";
 import { DatePicker } from "@mui/x-date-pickers";
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 
 import { paths } from "@/paths";
 import { dayjs } from "@/lib/dayjs";
 import { NoSsr } from "@/components/core/no-ssr";
-import { Option } from "@/components/core/option";
 
-const barsDetail = [{ name: "Total recaudado por agente", dataKey: "v1", color: "var(--mui-palette-primary-main)" }];
+const bars = [
+	{ name: "Total prestado", dataKey: "v1" },
+	{ name: "Total desembolsado", dataKey: "v2" },
+	{ name: "Total recaudado", dataKey: "v3" },
+	{ name: "Total pagado", dataKey: "v4" },
+	{ name: "Total renovado", dataKey: "v5" },
+	{ name: "Clientes activos", dataKey: "v6" },
+	{ name: "Monto vencido", dataKey: "v7" },
+	{ name: "Prestamos vencidos", dataKey: "v8" },
+	{ name: "Valor neto", dataKey: "v9" },
+];
 
-export function TotalCollectionReceived({ filters, data, branches = [] }) {
-	const { startDate, endDate, branch } = filters;
-	const chartHeight = 300;
-	const router = useRouter();
-	const [selectedStartDate, setSelectedStartDate] = React.useState(dayjs(startDate));
-	const [selectedEndDate, setSelectedEndDate] = React.useState(dayjs(endDate));
-	const [selectedBranch, setSelectedBranch] = React.useState(branch === undefined ? "" : branch);
-
-	const boxesNames = ["Total recaudado"];
+export function GeneralStatisticsByBranch({ data, filters }) {
+	const { startDate, endDate } = filters;
+	const boxesNames = [
+		"Total prestado",
+		"Total desembolsado",
+		"Total recaudado",
+		"Total pagado",
+		"Total renovado",
+		"Clientes activos",
+		"Monto vencido",
+		"Prestamos vencidos",
+		"Valor neto",
+	];
 
 	const theme = useTheme();
 
 	const isLg = useMediaQuery(theme.breakpoints.up("lg"));
 	const isMd = useMediaQuery(theme.breakpoints.up("md"));
 
-	const columns = isLg ? 1 : isMd ? 2 : 1;
+	const columns = isLg ? 4 : isMd ? 2 : 1;
+
+	const chartHeight = 300;
+	const palette = pastelPalette(bars.length);
+
+	const barsWithColors = bars.map((bar, i) => ({
+		...bar,
+		color: palette[i],
+	}));
 
 	const boxes = Object.entries(data.totals).map(([_, value], index) => {
 		return {
@@ -51,21 +58,9 @@ export function TotalCollectionReceived({ filters, data, branches = [] }) {
 		};
 	});
 
-	const barsData = data.blocks.flatMap((block) =>
-		(block.agents || []).map((agent) => ({
-			name: agent.agentName,
-			v1: agent.totalCollected,
-		}))
-	);
-
-	React.useEffect(() => {
-		updateSearchParams({
-			...filters,
-			startDate: dayjs(selectedStartDate).format("YYYY-MM-DD"),
-			endDate: dayjs(selectedEndDate).format("YYYY-MM-DD"),
-		});
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, []);
+	const router = useRouter();
+	const [selectedStartDate, setSelectedStartDate] = React.useState(dayjs(startDate));
+	const [selectedEndDate, setSelectedEndDate] = React.useState(dayjs(endDate));
 
 	const updateSearchParams = React.useCallback(
 		(newFilters) => {
@@ -77,22 +72,10 @@ export function TotalCollectionReceived({ filters, data, branches = [] }) {
 			if (newFilters.endDate) {
 				searchParams.set("endDate", newFilters.endDate);
 			}
-			if (newFilters.branch) {
-				searchParams.set("branch", newFilters.branch);
-			}
 
-			router.push(`${paths.dashboard.reports.totalCollectionReceived}?${searchParams.toString()}`);
+			router.push(`${paths.dashboard.reports.generalStatisticsByBranch}?${searchParams.toString()}`);
 		},
 		[router]
-	);
-
-	const handleFilterBranchChange = React.useCallback(
-		(e) => {
-			const value = e.target.value;
-			setSelectedBranch(value);
-			updateSearchParams({ ...filters, branch: value });
-		},
-		[updateSearchParams, filters]
 	);
 
 	const handleFilterStartDateChange = React.useCallback(
@@ -112,14 +95,12 @@ export function TotalCollectionReceived({ filters, data, branches = [] }) {
 		},
 		[updateSearchParams, filters]
 	);
-
 	return (
 		<Stack spacing={4}>
 			<Stack direction={{ xs: "column", sm: "row" }} spacing={3} sx={{ alignItems: "center" }}>
 				<Typography variant="h4" flexGrow={1} textAlign={{ xs: "center", sm: "left" }}>
-					Recaudo Total (Pagos Recibidos)
+					Estadísticas Generales por Sede
 				</Typography>
-
 				<DatePicker
 					label="Fecha inicio:"
 					sx={{ flexGrow: 1, maxWidth: "170px" }}
@@ -135,28 +116,15 @@ export function TotalCollectionReceived({ filters, data, branches = [] }) {
 					value={selectedEndDate}
 					onChange={handleFilterEndDateChange}
 				/>
-				{branches.length === 0 ? null : (
-					<FormControl sx={{ maxWidth: "170px", width: "100%" }}>
-						<InputLabel id="selectedBranch">Sede:</InputLabel>
-						<Select labelId="selectedBranch" value={selectedBranch} onChange={handleFilterBranchChange}>
-							{branches.length === 0
-								? null
-								: branches.map(({ id, name }) => (
-										<Option key={id} value={id}>
-											{name}
-										</Option>
-									))}
-						</Select>
-					</FormControl>
-				)}
 			</Stack>
+
 			<Card>
 				<Box
 					sx={{
 						display: "grid",
 						columnGap: 0,
 						gap: 2,
-						gridTemplateColumns: { xs: "1fr", md: "repeat(2, 1fr)", lg: "repeat(1, 1fr)" },
+						gridTemplateColumns: { xs: "1fr", md: "repeat(2, 1fr)", lg: "repeat(4, 1fr)" },
 						p: 3,
 					}}
 				>
@@ -175,7 +143,7 @@ export function TotalCollectionReceived({ filters, data, branches = [] }) {
 							>
 								<Typography color="text.secondary">{item.name}</Typography>
 								<Typography variant="h3">
-									{item.name === boxesNames.at(1)
+									{index === 5 || index === 7
 										? item.value
 										: new Intl.NumberFormat("es-CO", {
 												style: "currency",
@@ -189,26 +157,17 @@ export function TotalCollectionReceived({ filters, data, branches = [] }) {
 				</Box>
 			</Card>
 			<Card>
-				<CardHeader title={data.blocks[0]?.branchName} />
 				<CardContent>
 					<Stack divider={<Divider />} spacing={3}>
 						<NoSsr fallback={<Box sx={{ height: `${chartHeight}px` }} />}>
 							<ResponsiveContainer height={chartHeight}>
-								<BarChart
-									width={500}
-									height={300}
-									data={barsData}
-									margin={{
-										top: 5,
-										right: 30,
-										left: 20,
-										bottom: 5,
-									}}
-								>
-									<CartesianGrid strokeDasharray="3 3" vertical={false} />
-									<XAxis dataKey="name" axisLine={false} />
+								<BarChart data={data.branchesFormatted} margin={{ top: 0, right: 20, bottom: 0, left: 40 }}>
+									<CartesianGrid strokeDasharray="2 4" vertical={false} />
+									<XAxis axisLine={false} tickMargin={15} dataKey="name" tickLine={false} type="category" />
 									<YAxis
 										axisLine={false}
+										tickMargin={15}
+										type="number"
 										tickFormatter={(value) =>
 											new Intl.NumberFormat("es-CO", {
 												style: "currency",
@@ -217,8 +176,7 @@ export function TotalCollectionReceived({ filters, data, branches = [] }) {
 											}).format(value)
 										}
 									/>
-									<Tooltip animationDuration={50} content={<TooltipContent />} cursor={false} />
-									{barsDetail.map((bar) => (
+									{barsWithColors.map((bar) => (
 										<Bar
 											animationDuration={300}
 											barSize={24}
@@ -226,13 +184,21 @@ export function TotalCollectionReceived({ filters, data, branches = [] }) {
 											fill={bar.color}
 											key={bar.name}
 											name={bar.name}
-											radius={[5, 5, 0, 0]}
+											radius={[5, 5, 5, 5]}
 										/>
 									))}
+									<Tooltip animationDuration={50} content={<TooltipContent />} cursor={false} />
 								</BarChart>
 							</ResponsiveContainer>
 						</NoSsr>
-						<Legend />
+						<Stack direction="row" spacing={2} sx={{ flexWrap: "wrap", justifyContent: "center" }}>
+							{barsWithColors.map((bar) => (
+								<Stack direction="row" key={bar.name} spacing={1} sx={{ alignItems: "center" }}>
+									<Box sx={{ bgcolor: bar.color, borderRadius: "2px", height: "8px", width: "16px" }} />
+									<Typography variant="body2">{bar.name}</Typography>
+								</Stack>
+							))}
+						</Stack>
 					</Stack>
 				</CardContent>
 			</Card>
@@ -240,22 +206,7 @@ export function TotalCollectionReceived({ filters, data, branches = [] }) {
 	);
 }
 
-function Legend() {
-	return (
-		<Stack direction="row" spacing={2}>
-			{barsDetail.map((bar) => (
-				<Stack direction="row" key={bar.name} spacing={1} sx={{ alignItems: "center" }}>
-					<Box sx={{ bgcolor: bar.color, borderRadius: "2px", height: "8px", width: "16px" }} />
-					<Typography color="text.secondary" variant="caption">
-						{bar.name}
-					</Typography>
-				</Stack>
-			))}
-		</Stack>
-	);
-}
-
-function TooltipContent({ active, payload }) {
+function TooltipContent({ active, payload, label }) {
 	if (!active) {
 		return null;
 	}
@@ -263,20 +214,30 @@ function TooltipContent({ active, payload }) {
 	return (
 		<Paper sx={{ border: "1px solid var(--mui-palette-divider)", boxShadow: "var(--mui-shadows-16)", p: 1 }}>
 			<Stack spacing={2}>
+				<Typography variant="subtitle1">{label}</Typography>
 				{payload?.map((entry) => (
-					<Stack direction="row" key={entry.name} spacing={3} sx={{ alignItems: "center" }}>
+					<Stack direction="row" key={entry.name} spacing={2} sx={{ alignItems: "center" }}>
 						<Stack direction="row" spacing={1} sx={{ alignItems: "center", flex: "1 1 auto" }}>
 							<Box sx={{ bgcolor: entry.fill, borderRadius: "2px", height: "8px", width: "8px" }} />
 							<Typography sx={{ whiteSpace: "nowrap" }}>{entry.name}</Typography>
 						</Stack>
 						<Typography color="text.secondary" variant="body2">
-							{new Intl.NumberFormat("es-CO", { style: "currency", currency: "COP", minimumFractionDigits: 0 }).format(
-								entry.value
-							)}
+							{new Intl.NumberFormat("en-US", {
+								style: "currency",
+								currency: "USD",
+								maximumFractionDigits: 0,
+							}).format(entry.value)}
 						</Typography>
 					</Stack>
 				))}
 			</Stack>
 		</Paper>
 	);
+}
+
+function pastelPalette(n, alpha = 1, s = 60, l = 80) {
+	return Array.from({ length: n }, (_, i) => {
+		const h = Math.round((360 / n) * i);
+		return `hsla(${h}, ${s}%, ${l}%, ${alpha})`;
+	});
 }

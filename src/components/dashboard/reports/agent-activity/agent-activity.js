@@ -2,11 +2,11 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
+import { ROLES } from "@/constants/roles";
 import {
 	Box,
 	Card,
 	CardContent,
-	CardHeader,
 	Divider,
 	FormControl,
 	InputLabel,
@@ -14,8 +14,6 @@ import {
 	Select,
 	Stack,
 	Typography,
-	useMediaQuery,
-	useTheme,
 } from "@mui/material";
 import { DatePicker } from "@mui/x-date-pickers";
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
@@ -25,47 +23,23 @@ import { dayjs } from "@/lib/dayjs";
 import { NoSsr } from "@/components/core/no-ssr";
 import { Option } from "@/components/core/option";
 
-const barsDetail = [{ name: "Total recaudado por agente", dataKey: "v1", color: "var(--mui-palette-primary-main)" }];
+const bars = [
+	{ name: "Atendidos", dataKey: "v1", color: "var(--mui-palette-primary-400)" },
+	{ name: "Aprobados", dataKey: "v2", color: "var(--mui-palette-error-400)" },
+	{ name: "Renovados", dataKey: "v3", color: "var(--mui-palette-info-400)" },
+	{ name: "Pagos cobrados", dataKey: "v4", color: "var(--mui-palette-warning-400)" },
+];
 
-export function TotalCollectionReceived({ filters, data, branches = [] }) {
-	const { startDate, endDate, branch } = filters;
-	const chartHeight = 300;
+export function AgentActivity({ data, branches, filters, user }) {
+	const { startDate, endDate } = filters;
+	const { role, branchId } = user;
+
 	const router = useRouter();
+	const chartHeight = 300;
+
 	const [selectedStartDate, setSelectedStartDate] = React.useState(dayjs(startDate));
 	const [selectedEndDate, setSelectedEndDate] = React.useState(dayjs(endDate));
-	const [selectedBranch, setSelectedBranch] = React.useState(branch === undefined ? "" : branch);
-
-	const boxesNames = ["Total recaudado"];
-
-	const theme = useTheme();
-
-	const isLg = useMediaQuery(theme.breakpoints.up("lg"));
-	const isMd = useMediaQuery(theme.breakpoints.up("md"));
-
-	const columns = isLg ? 1 : isMd ? 2 : 1;
-
-	const boxes = Object.entries(data.totals).map(([_, value], index) => {
-		return {
-			name: boxesNames[index],
-			value: value,
-		};
-	});
-
-	const barsData = data.blocks.flatMap((block) =>
-		(block.agents || []).map((agent) => ({
-			name: agent.agentName,
-			v1: agent.totalCollected,
-		}))
-	);
-
-	React.useEffect(() => {
-		updateSearchParams({
-			...filters,
-			startDate: dayjs(selectedStartDate).format("YYYY-MM-DD"),
-			endDate: dayjs(selectedEndDate).format("YYYY-MM-DD"),
-		});
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, []);
+	const [selectedBranch, setSelectedBranch] = React.useState("");
 
 	const updateSearchParams = React.useCallback(
 		(newFilters) => {
@@ -81,19 +55,14 @@ export function TotalCollectionReceived({ filters, data, branches = [] }) {
 				searchParams.set("branch", newFilters.branch);
 			}
 
-			router.push(`${paths.dashboard.reports.totalCollectionReceived}?${searchParams.toString()}`);
+			router.push(`${paths.dashboard.reports.agentActivity}?${searchParams.toString()}`);
 		},
 		[router]
 	);
 
-	const handleFilterBranchChange = React.useCallback(
-		(e) => {
-			const value = e.target.value;
-			setSelectedBranch(value);
-			updateSearchParams({ ...filters, branch: value });
-		},
-		[updateSearchParams, filters]
-	);
+	React.useEffect(() => {
+		if (branchId && role === ROLES.ADMIN) setSelectedBranch(branchId);
+	}, [role, branchId]);
 
 	const handleFilterStartDateChange = React.useCallback(
 		(value) => {
@@ -113,11 +82,19 @@ export function TotalCollectionReceived({ filters, data, branches = [] }) {
 		[updateSearchParams, filters]
 	);
 
+	const handleFilterBranchChange = React.useCallback(
+		(e) => {
+			const value = e.target.value;
+			setSelectedBranch(value);
+			updateSearchParams({ ...filters, branch: value });
+		},
+		[updateSearchParams, filters]
+	);
 	return (
 		<Stack spacing={4}>
 			<Stack direction={{ xs: "column", sm: "row" }} spacing={3} sx={{ alignItems: "center" }}>
 				<Typography variant="h4" flexGrow={1} textAlign={{ xs: "center", sm: "left" }}>
-					Recaudo Total (Pagos Recibidos)
+					Actividad de los Agentes
 				</Typography>
 
 				<DatePicker
@@ -135,10 +112,12 @@ export function TotalCollectionReceived({ filters, data, branches = [] }) {
 					value={selectedEndDate}
 					onChange={handleFilterEndDateChange}
 				/>
+
 				{branches.length === 0 ? null : (
-					<FormControl sx={{ maxWidth: "170px", width: "100%" }}>
+					<FormControl sx={{ maxWidth: "170px", width: "100%" }} disabled={role === ROLES.ADMIN}>
 						<InputLabel id="selectedBranch">Sede:</InputLabel>
-						<Select labelId="selectedBranch" value={selectedBranch} onChange={handleFilterBranchChange}>
+						<Select labelId="selectedBranch" defaultValue="" value={selectedBranch} onChange={handleFilterBranchChange}>
+							{branches.length === 0 ? null : <Option value="">Todas las sedes</Option>}
 							{branches.length === 0
 								? null
 								: branches.map(({ id, name }) => (
@@ -150,85 +129,29 @@ export function TotalCollectionReceived({ filters, data, branches = [] }) {
 					</FormControl>
 				)}
 			</Stack>
-			<Card>
-				<Box
-					sx={{
-						display: "grid",
-						columnGap: 0,
-						gap: 2,
-						gridTemplateColumns: { xs: "1fr", md: "repeat(2, 1fr)", lg: "repeat(1, 1fr)" },
-						p: 3,
-					}}
-				>
-					{boxes.map((item, index) => {
-						const isLastInRow = (index + 1) % columns === 0;
 
-						return (
-							<Stack
-								key={item.name}
-								spacing={1}
-								sx={{
-									borderRight: isLastInRow ? "none" : "1px solid var(--mui-palette-divider)",
-									borderBottom: { xs: "1px solid var(--mui-palette-divider)", md: "none" },
-									pb: { xs: 2, md: 0 },
-								}}
-							>
-								<Typography color="text.secondary">{item.name}</Typography>
-								<Typography variant="h3">
-									{item.name === boxesNames.at(1)
-										? item.value
-										: new Intl.NumberFormat("es-CO", {
-												style: "currency",
-												currency: "COP",
-												minimumFractionDigits: 0,
-											}).format(item.value)}
-								</Typography>
-							</Stack>
-						);
-					})}
-				</Box>
-			</Card>
 			<Card>
-				<CardHeader title={data.blocks[0]?.branchName} />
 				<CardContent>
-					<Stack divider={<Divider />} spacing={3}>
+					<Stack divider={<Divider />} spacing={2} sx={{ flex: "1 1 auto" }}>
 						<NoSsr fallback={<Box sx={{ height: `${chartHeight}px` }} />}>
 							<ResponsiveContainer height={chartHeight}>
-								<BarChart
-									width={500}
-									height={300}
-									data={barsData}
-									margin={{
-										top: 5,
-										right: 30,
-										left: 20,
-										bottom: 5,
-									}}
-								>
-									<CartesianGrid strokeDasharray="3 3" vertical={false} />
-									<XAxis dataKey="name" axisLine={false} />
-									<YAxis
-										axisLine={false}
-										tickFormatter={(value) =>
-											new Intl.NumberFormat("es-CO", {
-												style: "currency",
-												currency: "COP",
-												minimumFractionDigits: 0,
-											}).format(value)
-										}
-									/>
-									<Tooltip animationDuration={50} content={<TooltipContent />} cursor={false} />
-									{barsDetail.map((bar) => (
+								<BarChart data={data} margin={{ top: 0, right: 0, bottom: 0, left: 0 }}>
+									<CartesianGrid strokeDasharray="2 4" vertical={false} />
+									<XAxis axisLine={false} dataKey="name" type="category" />
+									<YAxis axisLine={false} type="number" />
+									{bars.map((bar) => (
 										<Bar
+											key={bar.name}
 											animationDuration={300}
-											barSize={24}
+											barSize={32}
 											dataKey={bar.dataKey}
 											fill={bar.color}
-											key={bar.name}
 											name={bar.name}
-											radius={[5, 5, 0, 0]}
+											stackId="total"
+											radius={[0, 0, 0, 0]}
 										/>
 									))}
+									<Tooltip animationDuration={50} content={<TooltipContent />} cursor={false} />
 								</BarChart>
 							</ResponsiveContainer>
 						</NoSsr>
@@ -243,7 +166,7 @@ export function TotalCollectionReceived({ filters, data, branches = [] }) {
 function Legend() {
 	return (
 		<Stack direction="row" spacing={2}>
-			{barsDetail.map((bar) => (
+			{bars.map((bar) => (
 				<Stack direction="row" key={bar.name} spacing={1} sx={{ alignItems: "center" }}>
 					<Box sx={{ bgcolor: bar.color, borderRadius: "2px", height: "8px", width: "16px" }} />
 					<Typography color="text.secondary" variant="caption">
@@ -270,9 +193,7 @@ function TooltipContent({ active, payload }) {
 							<Typography sx={{ whiteSpace: "nowrap" }}>{entry.name}</Typography>
 						</Stack>
 						<Typography color="text.secondary" variant="body2">
-							{new Intl.NumberFormat("es-CO", { style: "currency", currency: "COP", minimumFractionDigits: 0 }).format(
-								entry.value
-							)}
+							{new Intl.NumberFormat("en-US").format(entry.value)}
 						</Typography>
 					</Stack>
 				))}

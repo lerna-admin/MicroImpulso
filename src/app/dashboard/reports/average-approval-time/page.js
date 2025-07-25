@@ -1,13 +1,21 @@
 import * as React from "react";
 import Box from "@mui/material/Box";
-import Stack from "@mui/material/Stack";
-import Typography from "@mui/material/Typography";
 
 import { appConfig } from "@/config/app";
+import { getUser } from "@/lib/custom-auth/server";
+import { AverageApprovalTime } from "@/components/dashboard/reports/average-approval-time/average-approval-time";
+
+import { getAverageApprovalTime } from "../services/reports";
 
 export const metadata = { title: `Tiempo Promedio de Aprobación | Dashboard | ${appConfig.name}` };
 
 export default async function Page() {
+	const {
+		data: { user },
+	} = await getUser();
+
+	const { averageDisbursementTime, details } = await getAverageApprovalTime({ userId: user.id });
+
 	return (
 		<Box
 			sx={{
@@ -17,13 +25,7 @@ export default async function Page() {
 				width: "var(--Content-width)",
 			}}
 		>
-			<Stack spacing={4}>
-				<Stack direction={{ xs: "column", sm: "row" }} spacing={3} sx={{ alignItems: "flex-start" }}>
-					<Box sx={{ flex: "1 1 auto" }}>
-						<Typography variant="h4">Tiempo Promedio de Aprobación</Typography>
-					</Box>
-				</Stack>
-			</Stack>
+			<AverageApprovalTime data={{ averageDisbursementTime, details }} user={user} />
 		</Box>
 	);
 }
