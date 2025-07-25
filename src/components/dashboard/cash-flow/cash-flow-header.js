@@ -3,7 +3,10 @@
 import * as React from "react";
 import { useRouter } from "next/navigation";
 import { createCashMovement } from "@/app/dashboard/cash_flow/hooks/use-cash-flow";
+import { getBranchesById } from "@/app/dashboard/configuration/branch-managment/hooks/use-branches";
+import { ROLES } from "@/constants/roles";
 import { formatCurrency } from "@/helpers/format-currency";
+import { capitalizeWord } from "@/helpers/format-words";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
 	Box,
@@ -35,19 +38,30 @@ import { usePopover } from "@/hooks/use-popover";
 import { NotificationAlert } from "@/components/widgets/notifications/notification-alert";
 
 dayjs.locale("es");
-const schema = zod.object({
-	amount: zod
-		.string()
-		.min(1, "El monto es obligatorio")
-		.transform((val) => val.replaceAll(/\D/g, ""))
-		.transform(Number)
-		.refine((val) => Number.isInteger(val) && val > 0, {
-			message: "Debe ser un número entero mayor a 0",
-		}),
-	typeMovement: zod.string().min(1, { message: "El tipo de movimiento es obligatorio" }),
-	category: zod.string().min(1, { message: "La categoria es obligatoria" }),
-	description: zod.string().min(1, { message: "La descripción es obligatoria" }),
-});
+const schema = zod
+	.object({
+		amount: zod
+			.string()
+			.min(1, "El monto es obligatorio")
+			.transform((val) => val.replaceAll(/\D/g, ""))
+			.transform(Number)
+			.refine((val) => Number.isInteger(val) && val > 0, {
+				message: "Debe ser un número entero mayor a 0",
+			}),
+		typeMovement: zod.string().min(1, { message: "El tipo de movimiento es obligatorio" }),
+		category: zod.string().min(1, { message: "La categoria es obligatoria" }),
+		transferUser: zod.string().optional(),
+		description: zod.string().min(1, { message: "La descripción es obligatoria" }),
+	})
+	.superRefine((data, ctx) => {
+		if (data.category === "TRANSFERENCIA" && (!data.transferUser || data.transferUser.trim() === "")) {
+			ctx.addIssue({
+				path: ["transferUser"],
+				code: zod.ZodIssueCode.custom,
+				message: "Este campo es obligatorio para transferencias",
+			});
+		}
+	});
 
 export function CashFlowHeader({ user }) {
 	const popover = usePopover();
@@ -57,6 +71,21 @@ export function CashFlowHeader({ user }) {
 	const [alertMsg, setAlertMsg] = React.useState("");
 	const [alertSeverity, setAlertSeverity] = React.useState("");
 	const [isPending, setIsPending] = React.useState(false);
+
+	const [usuariosOptions, setUsuariosOptions] = React.useState([]);
+
+	const typeMovementOptions = [
+		{ label: "ENTRADA", value: "ENTRADA" },
+		{ label: "SALIDA", value: "SALIDA" },
+	];
+
+	const categoryOptions = [
+		{ label: "ENTRADA GERENCIA", value: "ENTRADA_GERENCIA", type: "ENTRADA" },
+		{ label: "COBRO CLIENTE", value: "COBRO_CLIENTE", type: "ENTRADA" },
+		{ label: "PRESTAMO", value: "PRESTAMO", type: "SALIDA" },
+		{ label: "TRANSFERENCIA", value: "TRANSFERENCIA", type: "SALIDA" },
+		{ label: "GASTO PROVEEDOR", value: "GASTO_PROVEEDOR", type: "SALIDA" },
+	];
 
 	const {
 		control,
@@ -69,6 +98,7 @@ export function CashFlowHeader({ user }) {
 			amount: "",
 			typeMovement: "",
 			category: "",
+			transferUser: "",
 			description: "",
 		},
 	});
@@ -78,39 +108,58 @@ export function CashFlowHeader({ user }) {
 		name: "typeMovement",
 	});
 
-	const {
-		branch: { name: branchName },
-	} = user;
+	const category = useWatch({
+		control,
+		name: "category",
+	});
 
-	const {
-		branch: { id: branchId },
-	} = user;
+	React.useEffect(() => {
+		if (category === "TRANSFERENCIA") {
+			getBranchesById(user.branch.id)
+				.then((resp) => {
+					const { administrator, agents } = resp;
+					if (user.role === ROLES.AGENTE) {
+						setUsuariosOptions([administrator]);
+					} else if (user.role === ROLES.ADMIN) {
+						const agentsFiltered = agents.filter((agent) => agent.role === ROLES.AGENTE);
+						setUsuariosOptions(agentsFiltered);
+					}
+				})
+				.catch((error) => {
+					setAlertMsg(error);
+					setAlertSeverity("error");
+				})
+				.finally(popoverAlert.handleOpen());
+		}
+	}, [category]);
 
 	const onSubmit = async (dataForm) => {
 		setIsPending(true);
 
 		try {
+			// ! Si es una transferencia envio condicionalmente los campos de userId y date?
+			// ! por el contrario vas a crear otra api para eso?
 			await createCashMovement({
 				typeMovement: dataForm.typeMovement,
 				amount: dataForm.amount,
 				category: dataForm.category,
 				description: dataForm.description,
 				userId: user.id,
-				branchId: branchId,
+				branchId: user.branch.id,
 			});
+
 			setAlertMsg("¡Movimiento creado exitosamente!");
 			setAlertSeverity("success");
 			popover.handleClose();
-
 			reset();
 		} catch (error) {
 			setAlertMsg(error.message);
 			setAlertSeverity("error");
+		} finally {
+			popoverAlert.handleOpen();
+			setIsPending(false);
+			router.refresh();
 		}
-
-		popoverAlert.handleOpen();
-		setIsPending(false);
-		router.refresh();
 	};
 
 	return (
@@ -125,7 +174,7 @@ export function CashFlowHeader({ user }) {
 						{/* Información de la sede */}
 						<Stack direction="row" spacing={1} alignItems="center" pr={2}>
 							<BuildingIcon />
-							<Typography variant="body2">{`Sede ${branchName}`}</Typography>
+							<Typography variant="body2">{`Sede ${user.branch.name}`}</Typography>
 						</Stack>
 
 						{/* Botón de acción */}
@@ -166,18 +215,45 @@ export function CashFlowHeader({ user }) {
 											<FormControl fullWidth error={Boolean(errors.typeMovement)}>
 												<InputLabel id="type-movement">Tipo de movimiento</InputLabel>
 												<Select {...field} labelId="type-movement">
-													<MenuItem value="ENTRADA">
-														<Stack direction="row" alignItems="center" spacing={1}>
-															<TrendUpIcon color="var(--mui-palette-success-main)" fontSize="var(--icon-fontSize-md)" />
-															<Typography>Entrada</Typography>
-														</Stack>
-													</MenuItem>
-													<MenuItem value="SALIDA">
-														<Stack direction="row" alignItems="center" spacing={1}>
-															<TrendDownIcon color="var(--mui-palette-error-main)" fontSize="var(--icon-fontSize-md)" />
-															<Typography>Salida</Typography>
-														</Stack>
-													</MenuItem>
+													{user.role === ROLES.AGENTE
+														? typeMovementOptions
+																.filter((option) => option.value === "SALIDA")
+																.map((option) => (
+																	<MenuItem key={option.value} value={option.value}>
+																		<Stack direction="row" alignItems="center" spacing={1}>
+																			{option.value === "ENTRADA" ? (
+																				<TrendUpIcon
+																					color="var(--mui-palette-success-main)"
+																					fontSize="var(--icon-fontSize-md)"
+																				/>
+																			) : (
+																				<TrendDownIcon
+																					color="var(--mui-palette-error-main)"
+																					fontSize="var(--icon-fontSize-md)"
+																				/>
+																			)}
+																			<Typography>{capitalizeWord(option.label)}</Typography>
+																		</Stack>
+																	</MenuItem>
+																))
+														: typeMovementOptions.map((option) => (
+																<MenuItem key={option.value} value={option.value}>
+																	<Stack direction="row" alignItems="center" spacing={1}>
+																		{option.value === "ENTRADA" ? (
+																			<TrendUpIcon
+																				color="var(--mui-palette-success-main)"
+																				fontSize="var(--icon-fontSize-md)"
+																			/>
+																		) : (
+																			<TrendDownIcon
+																				color="var(--mui-palette-error-main)"
+																				fontSize="var(--icon-fontSize-md)"
+																			/>
+																		)}
+																		<Typography>{capitalizeWord(option.label)}</Typography>
+																	</Stack>
+																</MenuItem>
+															))}
 												</Select>
 												{errors.typeMovement ? <FormHelperText>{errors.typeMovement.message}</FormHelperText> : null}
 											</FormControl>
@@ -229,31 +305,57 @@ export function CashFlowHeader({ user }) {
 											<FormControl fullWidth error={Boolean(errors.category)} disabled={!typeMovement}>
 												<InputLabel id="category">Categoria</InputLabel>
 												<Select labelId="category" {...field}>
-													{typeMovement === "ENTRADA"
-														? [
-																<MenuItem key="COBRO_CLIENTE" value="COBRO_CLIENTE">
-																	Cobro
-																</MenuItem>,
-																<MenuItem key="ENTRADA_GERENCIA" value="ENTRADA_GERENCIA">
-																	Entrada caja
-																</MenuItem>,
-															]
-														: typeMovement === "SALIDA"
-															? [
-																	<MenuItem key="PRESTAMO" value="PRESTAMO">
-																		Préstamos
-																	</MenuItem>,
-																	<MenuItem key="GASTO_PROVEEDOR" value="GASTO_PROVEEDOR">
-																		Gastos
-																	</MenuItem>,
-																]
-															: []}
+													{user.role === ROLES.AGENTE
+														? categoryOptions
+																.filter((option) => option.value === "TRANSFERENCIA")
+																.map((option) => (
+																	<MenuItem key={option.value} value={option.value}>
+																		{capitalizeWord(option.label)}
+																	</MenuItem>
+																))
+														: categoryOptions
+																.filter((option) => option.type === typeMovement)
+																.map((option) => (
+																	<MenuItem key={option.value} value={option.value}>
+																		{capitalizeWord(option.label)}
+																	</MenuItem>
+																))}
 												</Select>
 												{errors.category ? <FormHelperText>{errors.category.message}</FormHelperText> : null}
 											</FormControl>
 										)}
 									/>
 								</Grid>
+
+								{category === "TRANSFERENCIA" ? (
+									<Grid
+										size={{
+											md: 12,
+											xs: 12,
+										}}
+									>
+										<Controller
+											control={control}
+											name="transferUser"
+											render={({ field }) => (
+												<FormControl fullWidth error={Boolean(errors.transferUser)} disabled={!typeMovement}>
+													<InputLabel id="transferUser">
+														{user.role === ROLES.AGENTE ? "Administrador" : "Agente"}
+													</InputLabel>
+													<Select labelId="transferUser" {...field}>
+														{usuariosOptions.map((option) => (
+															<MenuItem key={option.id} value={option.id}>
+																{option.name}
+															</MenuItem>
+														))}
+													</Select>
+													{errors.transferUser ? <FormHelperText>{errors.transferUser.message}</FormHelperText> : null}
+												</FormControl>
+											)}
+										/>
+									</Grid>
+								) : null}
+
 								<Grid
 									size={{
 										md: 12,

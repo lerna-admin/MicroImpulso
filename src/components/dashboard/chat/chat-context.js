@@ -67,7 +67,7 @@ export function ChatProvider({
 	threads: initialLabels = [],
 	messages: initialMessages = [],
 }) {
-	useEnableAudio();
+	// useEnableAudio();
 
 	const { user } = useAuth();
 

@@ -4,7 +4,7 @@ import { useEffect } from 'react';
 export function useEnableAudio() {
   useEffect(() => {
     const handler = () => {
-      const audio = new Audio('/sounds/newMessage.wav');
+      const audio = new Audio('/assets/newMessage.wav');
       audio.volume = 0;          // volumen 0 → “silencioso”
       audio.play().finally(() => {
         audio.pause();           // detenerlo inmediatamente

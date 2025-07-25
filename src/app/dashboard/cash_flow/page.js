@@ -11,7 +11,7 @@ import { dayjs } from "@/lib/dayjs";
 import { CashFlowHeader } from "@/components/dashboard/cash-flow/cash-flow-header";
 import { MovementsPagination } from "@/components/dashboard/cash-flow/movements-pagination";
 import { MovementsTable } from "@/components/dashboard/cash-flow/movements-table";
-import { Summary } from "@/components/dashboard/cash-flow/summary";
+import { CashFlowSummary } from "@/components/dashboard/cash-flow/cash-flow-summary";
 
 export const metadata = { title: `Movimientos de caja | Dashboard | ${appConfig.name}` };
 
@@ -24,7 +24,9 @@ export default async function Page({ searchParams }) {
 		data: { user },
 	} = await getUser();
 
-	const assets = await getCashFlowSummary(user.branch.id, date);
+	const assets = await getCashFlowSummary(user.id, date);
+
+	// esta deberia mandarsele el id del user para que asi mismo me traiga los datos del mismo
 	const {
 		data: movementsData,
 		total: movementsTotalItems,
@@ -56,7 +58,7 @@ export default async function Page({ searchParams }) {
 						/>
 					</Grid>
 					<Grid size={12}>
-						<Summary assets={assets} />
+						<CashFlowSummary assets={assets} />
 					</Grid>
 					<Grid size={12}>
 						<Card>

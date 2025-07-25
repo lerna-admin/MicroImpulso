@@ -15,3 +15,9 @@ export async function getAllBranches() {
 	if (!res.ok) throw new Error("Error al obtener sedes");
 	return await res.json();
 }
+
+export async function getBranchesById(id) {
+	const res = await fetch(`${BASE_URL}/branches/${id}`);
+	if (!res.ok) throw new Error("Error al obtener sedes por id");
+	return await res.json();
+}
