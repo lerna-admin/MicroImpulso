@@ -3,6 +3,7 @@ import Box from "@mui/material/Box";
 
 import { appConfig } from "@/config/app";
 import { getUser } from "@/lib/custom-auth/server";
+import { dayjs } from "@/lib/dayjs";
 import { NewClientsByDateRange } from "@/components/dashboard/reports/new-clients-by-date-range/new-clients-by-date-range";
 
 import { getNewClientsByDateRange } from "../services/reports";
@@ -16,7 +17,11 @@ export default async function Page({ searchParams }) {
 		data: { user },
 	} = await getUser();
 
-	const { records } = await getNewClientsByDateRange({ userId: user.id, startDate, endDate });
+	const { records } = await getNewClientsByDateRange({
+		userId: user.id,
+		startDate: startDate ?? dayjs(startDate).format("YYYY-MM-DD"),
+		endDate: endDate ?? dayjs(endDate).format("YYYY-MM-DD"),
+	});
 
 	const recordsFormatted = records.map(({ client, loan }) => ({
 		id: client.id,

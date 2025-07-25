@@ -1,13 +1,22 @@
 import * as React from "react";
 import Box from "@mui/material/Box";
-import Stack from "@mui/material/Stack";
-import Typography from "@mui/material/Typography";
 
 import { appConfig } from "@/config/app";
+import { getUser } from "@/lib/custom-auth/server";
+import { GeneralCashFlow } from "@/components/dashboard/reports/general-cash-flow/general-cash-flow";
+
+import { getGeneralCashFlow } from "../services/reports";
 
 export const metadata = { title: `Flujo de Caja General | Dashboard | ${appConfig.name}` };
 
-export default async function Page() {
+export default async function Page({ searchParams }) {
+	const { startDate, endDate } = await searchParams;
+
+	const {
+		data: { user },
+	} = await getUser();
+
+	const { summary, dailyBreakdown } = await getGeneralCashFlow({ userId: user.id, startDate, endDate });
 	return (
 		<Box
 			sx={{
@@ -17,13 +26,7 @@ export default async function Page() {
 				width: "var(--Content-width)",
 			}}
 		>
-			<Stack spacing={4}>
-				<Stack direction={{ xs: "column", sm: "row" }} spacing={3} sx={{ alignItems: "flex-start" }}>
-					<Box sx={{ flex: "1 1 auto" }}>
-						<Typography variant="h4">Flujo de Caja General</Typography>
-					</Box>
-				</Stack>
-			</Stack>
+			<GeneralCashFlow data={{ summary, dailyBreakdown }} filters={{ startDate, endDate }} />
 		</Box>
 	);
 }
