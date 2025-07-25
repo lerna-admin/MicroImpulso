@@ -10,8 +10,6 @@ import { SealCheck as SealCheckIcon } from "@phosphor-icons/react/dist/ssr/SealC
 import { Star as StarIcon } from "@phosphor-icons/react/dist/ssr/Star";
 import { Users as UsersIcon } from "@phosphor-icons/react/dist/ssr/Users";
 
-import { paths } from "@/paths";
-
 import { JobsCard } from "./jobs-card";
 
 export function CompanyCard({ company }) {
@@ -20,20 +18,10 @@ export function CompanyCard({ company }) {
 			<CardContent>
 				<Stack spacing={2}>
 					<Stack direction={{ xs: "column", sm: "row" }} spacing={2} sx={{ alignItems: "flex-start" }}>
-						<Avatar
-							component={RouterLink}
-							href={paths.dashboard.jobs.companies.overview("1")}
-							src={company.logo}
-							variant="rounded"
-						/>
+						<Avatar component={RouterLink} src={company.logo} variant="rounded" />
 						<Stack spacing={1}>
 							<div>
-								<Link
-									color="text.primary"
-									component={RouterLink}
-									href={paths.dashboard.jobs.companies.overview("1")}
-									variant="h6"
-								>
+								<Link color="text.primary" component={RouterLink} variant="h6">
 									{company.name}
 								</Link>
 								<Typography variant="body2">{company.description}</Typography>
