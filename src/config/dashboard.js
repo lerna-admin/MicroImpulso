@@ -91,21 +91,6 @@ export const dashboardConfig = {
 							href: paths.dashboard.reports.transactionDetails,
 						},
 						{
-							key: "reports:client-or-agent-conversations  ",
-							title: "Conversaciones por Cliente o Agente",
-							href: paths.dashboard.reports.clientOrAgentConversations,
-						},
-						{
-							key: "reports:generated-and-sent-contracts  ",
-							title: "Contratos Generados y Enviados",
-							href: paths.dashboard.reports.generatedAndSentContracts,
-						},
-						{
-							key: "reports:document-upload-and-classification  ",
-							title: "Carga y Clasificación de Documentos",
-							href: paths.dashboard.reports.documentUploadAndClassification,
-						},
-						{
 							key: "reports:general-statistics-by-branch",
 							title: "Estadísticas Generales por Sede",
 							href: paths.dashboard.reports.generalStatisticsByBranch,
@@ -236,21 +221,6 @@ export const dashboardConfig = {
 							key: "reports:transaction-details  ",
 							title: "Detalle de Transacciones",
 							href: paths.dashboard.reports.transactionDetails,
-						},
-						{
-							key: "reports:client-or-agent-conversations  ",
-							title: "Conversaciones por Cliente o Agente",
-							href: paths.dashboard.reports.clientOrAgentConversations,
-						},
-						{
-							key: "reports:generated-and-sent-contracts  ",
-							title: "Contratos Generados y Enviados",
-							href: paths.dashboard.reports.generatedAndSentContracts,
-						},
-						{
-							key: "reports:document-upload-and-classification  ",
-							title: "Carga y Clasificación de Documentos",
-							href: paths.dashboard.reports.documentUploadAndClassification,
 						},
 					],
 				},

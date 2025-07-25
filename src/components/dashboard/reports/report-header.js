@@ -7,7 +7,7 @@ import { DatePicker } from "@mui/x-date-pickers";
 import { dayjs } from "@/lib/dayjs";
 import { Option } from "@/components/core/option";
 
-export function ReportHeader({ title, branches = [], filters, pathToUpdateSearchParams, user }) {
+export function ReportHeader({ title, branches = [], filters, pathToUpdateSearchParams, user, disabledDate = false }) {
 	const { date } = filters;
 	const { role, branch } = user;
 
@@ -63,13 +63,16 @@ export function ReportHeader({ title, branches = [], filters, pathToUpdateSearch
 				{title}
 			</Typography>
 
-			<DatePicker
-				label="Fecha:"
-				sx={{ flexGrow: 1, maxWidth: "170px" }}
-				name="date"
-				value={selectedDate}
-				onChange={handleFilterDateChange}
-			/>
+			{disabledDate ? null : (
+				<DatePicker
+					label="Fecha:"
+					sx={{ flexGrow: 1, maxWidth: "170px" }}
+					name="date"
+					value={selectedDate}
+					onChange={handleFilterDateChange}
+				/>
+			)}
+
 			{branches.length === 0 ? null : (
 				<FormControl sx={{ maxWidth: "170px", width: "100%" }} disabled={role === ROLES.ADMIN}>
 					<InputLabel id="selectedBranch">Sede:</InputLabel>
