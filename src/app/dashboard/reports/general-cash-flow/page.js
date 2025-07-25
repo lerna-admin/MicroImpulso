@@ -17,6 +17,7 @@ export default async function Page({ searchParams }) {
 	} = await getUser();
 
 	const { summary, dailyBreakdown } = await getGeneralCashFlow({ userId: user.id, startDate, endDate });
+
 	return (
 		<Box
 			sx={{

@@ -249,7 +249,7 @@ function Legend() {
 		<Stack direction="row" spacing={2}>
 			{barsDetail.map((bar) => (
 				<Stack direction="row" key={bar.name} spacing={1} sx={{ alignItems: "center" }}>
-					<Box sx={{ bgcolor: bar.color, borderRadius: "2px", height: "4px", width: "16px" }} />
+					<Box sx={{ bgcolor: bar.color, borderRadius: "2px", height: "8px", width: "16px" }} />
 					<Typography color="text.secondary" variant="caption">
 						{bar.name}
 					</Typography>

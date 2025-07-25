@@ -110,11 +110,12 @@ export function GeneralCashFlow({ data, filters }) {
 							<Summary title="Valor neto" value={summary.netFlow} />
 						</Stack>
 						<NoSsr fallback={<Box sx={{ height: `${chartHeight}px` }} />}>
-							<ResponsiveContainer height={chartHeight} width="90%">
-								<LineChart data={dailyBreakdownFormatted} margin={{ top: 0, right: 20, bottom: 0, left: 20 }}>
+							<ResponsiveContainer height={chartHeight} width="100%">
+								<LineChart data={dailyBreakdownFormatted} margin={{ top: 0, right: 20, bottom: 0, left: 40 }}>
 									<CartesianGrid strokeDasharray="2 4" vertical={false} />
 									<XAxis
 										axisLine={false}
+										tickMargin={15}
 										dataKey="name"
 										tickFormatter={(value) => dayjs(value).format("MMM D")}
 										interval="preserveStartEnd"
@@ -134,7 +135,7 @@ export function GeneralCashFlow({ data, filters }) {
 										type="number"
 										yAxisId={0}
 									/>
-									{lines.map((line, index) => (
+									{lines.map((line) => (
 										<Line
 											animationDuration={300}
 											dataKey={line.dataKey}
@@ -142,7 +143,7 @@ export function GeneralCashFlow({ data, filters }) {
 											key={line.name}
 											name={line.name}
 											stroke={line.color}
-											strokeDasharray={index === 0 ? "0" : "4 4"}
+											strokeDasharray={"0"}
 											strokeWidth={2}
 											type="bump"
 											yAxisId={0}

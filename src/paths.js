@@ -59,7 +59,7 @@ export const paths = {
 			averageApprovalTime: "/dashboard/reports/average-approval-time",
 			generalCashFlow: "/dashboard/reports/general-cash-flow",
 			transactionDetails: "/dashboard/reports/transaction-details",
-			generalStatisticsByBranch: "/dashboard/reports/general-statistics-by-bran",
+			generalStatisticsByBranch: "/dashboard/reports/general-statistics-by-branch",
 		},
 		requests: {
 			create: "/dashboard/requests/create",

@@ -196,26 +196,45 @@ export async function getAverageApprovalTime({ userId = "" }) {
 	return await res.json();
 }
 
-export async function getGeneralCashFlow({ userId = "" }) {
+export async function getGeneralCashFlow({ userId = "", startDate = "", endDate = "" }) {
 	const params = new URLSearchParams();
 
 	if (userId) params.append("userId", userId);
+	if (startDate) params.append("startDate", startDate);
+	if (endDate) params.append("endDate", endDate);
 
 	const url = `${BASE_URL}/reports/cash-flow?${params.toString()}`;
-	console.log(url);
-	
 	const res = await fetch(url);
 
 	if (!res.ok) throw new Error("Error al obtener este reporte");
 	return await res.json();
 }
 
-export async function getTransactionDetails({ userId = "" }) {
+export async function getTransactionDetails({ userId = "", startDate = "", endDate = "", branchId = "" }) {
 	const params = new URLSearchParams();
 
 	if (userId) params.append("userId", userId);
+	if (startDate) params.append("startDate", startDate);
+	if (endDate) params.append("endDate", endDate);
+	if (branchId) params.append("branchId", branchId);
 
 	const url = `${BASE_URL}/reports/transactions-detail?${params.toString()}`;
+	const res = await fetch(url);
+
+	if (!res.ok) throw new Error("Error al obtener este reporte");
+	return await res.json();
+}
+
+export async function getGeneralStatisticsByBranch({ userId = "", startDate = "", endDate = "" }) {
+	const params = new URLSearchParams();
+
+	if (userId) params.append("userId", userId);
+	if (startDate) params.append("startDate", startDate);
+	if (endDate) params.append("endDate", endDate);
+
+	const url = `${BASE_URL}/reports/branch-stats?${params.toString()}`;
+	console.log(url);
+
 	const res = await fetch(url);
 
 	if (!res.ok) throw new Error("Error al obtener este reporte");
