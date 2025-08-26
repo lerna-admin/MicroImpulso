@@ -35,7 +35,7 @@ export function DetailBalanceList({ dataBalance, user }) {
 	const [alertMsg, setAlertMsg] = React.useState("");
 	const [alertSeverity, setAlertSeverity] = React.useState("");
 
-	const totalAmount = dataBalance.valorRenovados + dataBalance.valorNuevos;
+	const totalAmount = dataBalance.valorRenovados + dataBalance.valorNuevos + dataBalance.cobrado;
 	const totalRequests = dataBalance.renovados + dataBalance.nuevos;
 
 	const today = dayjs();

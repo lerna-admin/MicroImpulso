@@ -17,7 +17,7 @@ export default async function Page({ searchParams }) {
 		data: { user },
 	} = await getUser();
 
-	const { blocks } = await getAgentActivity({ userId: user.id, startDate, endDate, branchId: branch });
+	const { blocks, totals } = await getAgentActivity({ userId: user.id, startDate, endDate, branchId: branch });
 
 	const blocksFormatted = blocks.flatMap((block) =>
 		(block.agents || []).map((agent) => ({
@@ -43,6 +43,7 @@ export default async function Page({ searchParams }) {
 		>
 			<AgentActivity
 				data={blocksFormatted}
+				totals={totals}
 				branches={branchesFormatted}
 				filters={{ startDate, endDate, branch }}
 				user={user}

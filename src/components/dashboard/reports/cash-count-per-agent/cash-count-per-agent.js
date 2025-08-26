@@ -1,7 +1,19 @@
 "use client";
 
 import * as React from "react";
-import { Box, Card, CardContent, Divider, NoSsr, Paper, Stack, Typography } from "@mui/material";
+import {
+	Box,
+	Card,
+	CardContent,
+	CardHeader,
+	Divider,
+	NoSsr,
+	Paper,
+	Stack,
+	Typography,
+	useMediaQuery,
+	useTheme,
+} from "@mui/material";
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 
 import { paths } from "@/paths";
@@ -9,30 +21,80 @@ import { paths } from "@/paths";
 import { ReportHeader } from "../report-header";
 
 const bars = [
-	{ name: "N. prestamos asignados", dataKey: "v1", color: "var(--mui-palette-primary-main)" },
+	{ name: "Prestamos asignados", dataKey: "v1", color: "var(--mui-palette-primary-main)" },
 	{ name: "Pagos cobrados", dataKey: "v2", color: "var(--mui-palette-warning-400)" },
 	{ name: "Renovaciones", dataKey: "v3", color: "var(--mui-palette-error-300)" },
-	{ name: "Diferencia de caja", dataKey: "v4", color: "var(--mui-palette-success-100)" },
 ];
 
-export function DailyCashCountPerAgent({ data, branches, filters, user }) {
-	const chartHeight = 300;
+export function DailyCashCountPerAgent({ data, branches, agents, filters, user }) {
+	
+	const chartHeight = 400;
+	const theme = useTheme();
+	// Detecta breakpoint activo
+	const isLg = useMediaQuery(theme.breakpoints.up("lg"));
+	const isMd = useMediaQuery(theme.breakpoints.up("md"));
+
+	// Determina columnas activas
+	const columnsBoxes = isLg ? 3 : isMd ? 2 : 1;
+
+	const boxesNames = ["Total prestamos asignados", "Total pagos cobrados", "Total renovaciones"];
+
+	const boxes = Object.entries(data.totals).map(([_, value], index) => {
+		return {
+			name: boxesNames[index],
+			value: value.count,
+		};
+	});
 
 	const barsData = data.blocks.map(({ label, metrics }) => {
-		//TODO Arreglar que data va para cada datakey
-		return { name: label, v1: metrics.repayments.count, v2: metrics.disbursements.count };
+		return { name: label, v1: metrics.repayments.count, v2: metrics.disbursements.count, v3: metrics.penalties.count };
 	});
+
+	const titlesGraphics = [...new Set(data.blocks.map(obj => obj.branch.name))].join(", ");
+
 
 	return (
 		<Stack spacing={7}>
 			<ReportHeader
 				title={"Arqueo Diario por Agente"}
 				branches={branches}
+				agents={agents}
 				filters={filters}
 				pathToUpdateSearchParams={paths.dashboard.reports.dailyCashCountByAgent}
-				user={{role: user.role, branch: user.branchId}}
+				user={{ role: user.role, branch: user.branchId }}
 			/>
 			<Card>
+				<Box
+					sx={{
+						display: "grid",
+						columnGap: 0,
+						gap: 2,
+						gridTemplateColumns: { xs: "1fr", md: "repeat(2, 1fr)", lg: "repeat(3, 1fr)" },
+						p: 3,
+					}}
+				>
+					{boxes.map((item, index) => {
+						const isLastInRow = (index + 1) % columnsBoxes === 0;
+
+						return (
+							<Stack
+								key={item.name}
+								spacing={1}
+								sx={{
+									borderRight: isLastInRow ? "none" : "1px solid var(--mui-palette-divider)",
+									borderBottom: { xs: "1px solid var(--mui-palette-divider)", md: "none" },
+									pb: { xs: 2, md: 0 },
+								}}
+							>
+								<Typography color="text.secondary">{item.name}</Typography>
+								<Typography variant="h3">{item.value}</Typography>
+							</Stack>
+						);
+					})}
+				</Box>
+			</Card>
+			<Card>
+				<CardHeader title={titlesGraphics} />
 				<CardContent>
 					<Stack divider={<Divider />} spacing={3}>
 						<NoSsr fallback={<Box sx={{ height: `${chartHeight}px` }} />}>

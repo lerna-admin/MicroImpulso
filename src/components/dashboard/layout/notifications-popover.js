@@ -97,7 +97,6 @@ export function NotificationsPopover({ anchorEl, onClose, open = false }) {
 	}, [user.id, user.name]);
 
 	const handleRemoveOne = (notificationId) => {
-		console.log(notificationId);
 		const nuevosItems = notifications.filter((item) => item.id !== notificationId);
 		setNotifications(nuevosItems);
 	};

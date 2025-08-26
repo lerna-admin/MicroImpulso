@@ -5,7 +5,7 @@ import { Box, Card, Stack, Typography, useMediaQuery, useTheme } from "@mui/mate
 
 import { DataTable } from "@/components/core/data-table";
 
-export function OverdueLoans({ rows, boxes }) {
+export function OverdueLoans({ rows, totals }) {
 	const columns = [
 		{ field: "id", name: "ID", width: "50px" },
 		{
@@ -37,7 +37,7 @@ export function OverdueLoans({ rows, boxes }) {
 
 	const boxesNames = ["Total solicitudes vencidas", "Monto total pendiente"];
 
-	const boxes2 = Object.entries(boxes).map(([_, value], index) => {
+	const boxes = Object.entries(totals).map(([_, value], index) => {
 		return {
 			name: boxesNames[index],
 			value: value,
@@ -68,7 +68,7 @@ export function OverdueLoans({ rows, boxes }) {
 						p: 3,
 					}}
 				>
-					{boxes2.map((item, index) => {
+					{boxes.map((item, index) => {
 						const isLastInRow = (index + 1) % columnsBoxes === 0;
 
 						return (

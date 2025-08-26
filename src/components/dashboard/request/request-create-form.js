@@ -45,6 +45,8 @@ export function RequestCreateForm({ user }) {
 	const [options, setOptions] = React.useState([]);
 	const [loading, setLoading] = React.useState(false);
 
+	const [disableFormRequest, setDisableFormRequest] = React.useState(true);
+
 	const schema = zod.object({
 		customer: zod
 			.unknown() // Acepta cualquier cosa inicialmente, incluso {}
@@ -102,7 +104,7 @@ export function RequestCreateForm({ user }) {
 				status: "new",
 				requestedAmount: dataForm.amount,
 				endDateAt: dataForm.selectedDate,
-				amount: dataForm.amount*1.2,
+				amount: dataForm.amount * 1.2,
 				paymentDay: dataForm.datePayment,
 				type: dataForm.typePayment,
 			};
@@ -186,6 +188,11 @@ export function RequestCreateForm({ user }) {
 														setInputValue(newInputValue);
 													}}
 													onChange={(event, newValue) => {
+														if (newValue === null) {
+															setDisableFormRequest(true);
+														} else {
+															setDisableFormRequest(false);
+														}
 														field.onChange(newValue);
 													}}
 													getOptionLabel={(option) => (typeof option === "string" ? option : option?.label || "")}
@@ -216,98 +223,101 @@ export function RequestCreateForm({ user }) {
 								/>
 							</Grid>
 						</Grid>
-						<Grid container spacing={3}>
-							<Grid
-								size={{
-									md: 6,
-									xs: 12,
-								}}
-							>
-								<Controller
-									control={control}
-									name="amount"
-									render={({ field }) => {
-										return (
-											<FormControl error={Boolean(errors.amount)} fullWidth>
-												<InputLabel required>Monto solicitado</InputLabel>
-												<OutlinedInput
-													{...field}
-													value={field.value !== undefined && field.value !== null ? formatCurrency(field.value) : ""}
-													onChange={(e) => {
-														const raw = deleteAlphabeticals(e.target.value);
-														const numericValue = raw ? Number.parseInt(raw, 10) : 0;
-														field.onChange(numericValue);
-													}}
-													inputProps={{ inputMode: "numeric" }}
-												/>
-												{errors.amount ? <FormHelperText>{errors.amount.message}</FormHelperText> : null}
-											</FormControl>
-										);
+
+						{disableFormRequest ? null : (
+							<Grid container spacing={3}>
+								<Grid
+									size={{
+										md: 6,
+										xs: 12,
 									}}
-								/>
+								>
+									<Controller
+										control={control}
+										name="amount"
+										render={({ field }) => {
+											return (
+												<FormControl error={Boolean(errors.amount)} fullWidth>
+													<InputLabel required>Monto solicitado</InputLabel>
+													<OutlinedInput
+														{...field}
+														value={field.value !== undefined && field.value !== null ? formatCurrency(field.value) : ""}
+														onChange={(e) => {
+															const raw = deleteAlphabeticals(e.target.value);
+															const numericValue = raw ? Number.parseInt(raw, 10) : 0;
+															field.onChange(numericValue);
+														}}
+														inputProps={{ inputMode: "numeric" }}
+													/>
+													{errors.amount ? <FormHelperText>{errors.amount.message}</FormHelperText> : null}
+												</FormControl>
+											);
+										}}
+									/>
+								</Grid>
+								<Grid
+									size={{
+										md: 6,
+										xs: 12,
+									}}
+								>
+									<Controller
+										control={control}
+										name="typePayment"
+										render={({ field }) => (
+											<FormControl error={Boolean(errors.typePayment)} fullWidth>
+												<InputLabel required>Tipo de pago</InputLabel>
+												<Select {...field}>
+													<MenuItem value="QUINCENAL">Quincenal</MenuItem>
+													<MenuItem value="MENSUAL">Mensual</MenuItem>
+												</Select>
+												{errors.typePayment ? <FormHelperText>{errors.typePayment.message}</FormHelperText> : null}
+											</FormControl>
+										)}
+									/>
+								</Grid>
+								<Grid
+									size={{
+										md: 6,
+										xs: 12,
+									}}
+								>
+									<Controller
+										control={control}
+										name="datePayment"
+										render={({ field }) => (
+											<FormControl error={Boolean(errors.datePayment)} fullWidth>
+												<InputLabel required>Fecha de pago</InputLabel>
+												<Select {...field}>
+													<MenuItem value="15-30">15 - 30</MenuItem>
+													<MenuItem value="5-20">5 - 20</MenuItem>
+													<MenuItem value="10-25">10 - 25</MenuItem>
+												</Select>
+												{errors.datePayment ? <FormHelperText>{errors.datePayment.message}</FormHelperText> : null}
+											</FormControl>
+										)}
+									/>
+								</Grid>
+								<Grid
+									size={{
+										md: 6,
+										xs: 12,
+									}}
+								>
+									<Controller
+										control={control}
+										name="selectedDate"
+										render={({ field }) => (
+											<FormControl error={Boolean(errors.selectedDate)} fullWidth>
+												<InputLabel required>Dia a pagar</InputLabel>
+												<DatePicker {...field} minDate={dayjs()} sx={{ marginTop: "0.5rem" }} />
+												{errors.selectedDate ? <FormHelperText>{errors.selectedDate.message}</FormHelperText> : null}
+											</FormControl>
+										)}
+									/>
+								</Grid>
 							</Grid>
-							<Grid
-								size={{
-									md: 6,
-									xs: 12,
-								}}
-							>
-								<Controller
-									control={control}
-									name="typePayment"
-									render={({ field }) => (
-										<FormControl error={Boolean(errors.typePayment)} fullWidth>
-											<InputLabel required>Tipo de pago</InputLabel>
-											<Select {...field}>
-												<MenuItem value="QUINCENAL">Quincenal</MenuItem>
-												<MenuItem value="MENSUAL">Mensual</MenuItem>
-											</Select>
-											{errors.typePayment ? <FormHelperText>{errors.typePayment.message}</FormHelperText> : null}
-										</FormControl>
-									)}
-								/>
-							</Grid>
-							<Grid
-								size={{
-									md: 6,
-									xs: 12,
-								}}
-							>
-								<Controller
-									control={control}
-									name="datePayment"
-									render={({ field }) => (
-										<FormControl error={Boolean(errors.datePayment)} fullWidth>
-											<InputLabel required>Fecha de pago</InputLabel>
-											<Select {...field}>
-												<MenuItem value="15-30">15 - 30</MenuItem>
-												<MenuItem value="5-20">5 - 20</MenuItem>
-												<MenuItem value="10-25">10 - 25</MenuItem>
-											</Select>
-											{errors.datePayment ? <FormHelperText>{errors.datePayment.message}</FormHelperText> : null}
-										</FormControl>
-									)}
-								/>
-							</Grid>
-							<Grid
-								size={{
-									md: 6,
-									xs: 12,
-								}}
-							>
-								<Controller
-									control={control}
-									name="selectedDate"
-									render={({ field }) => (
-										<FormControl error={Boolean(errors.selectedDate)} fullWidth>
-											<InputLabel required>Dia a pagar</InputLabel>
-											<DatePicker {...field} minDate={dayjs()} sx={{ marginTop: "0.5rem" }} />
-											{errors.selectedDate ? <FormHelperText>{errors.selectedDate.message}</FormHelperText> : null}
-										</FormControl>
-									)}
-								/>
-							</Grid>
-						</Grid>
+						)}
 					</Stack>
 				</CardContent>
 				<CardActions sx={{ justifyContent: "flex-end" }}>

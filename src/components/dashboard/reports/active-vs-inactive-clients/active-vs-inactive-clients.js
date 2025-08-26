@@ -1,7 +1,18 @@
 "use client";
 
 import * as React from "react";
-import { Box, Card, CardContent, Divider, NoSsr, Paper, Stack, Typography } from "@mui/material";
+import {
+	Box,
+	Card,
+	CardContent,
+	Divider,
+	NoSsr,
+	Paper,
+	Stack,
+	Typography,
+	useMediaQuery,
+	useTheme,
+} from "@mui/material";
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 
 import { paths } from "@/paths";
@@ -13,8 +24,17 @@ const barsDetail = [
 	{ name: "Inactivos", dataKey: "v2", color: "var(--mui-palette-error-400)" },
 ];
 
-export function ActiveVsInactiveClients({ data, branches, filters, user }) {
+export function ActiveVsInactiveClients({ data, branches, agents, filters, user }) {
 	const chartHeight = 300;
+
+	const boxesNames = ["Activos", "Inactivos"];
+
+	const boxes = Object.entries(data).map(([_, value], index) => {
+		return {
+			name: boxesNames[index],
+			value: value,
+		};
+	});
 
 	const barsData = [
 		{
@@ -24,16 +44,55 @@ export function ActiveVsInactiveClients({ data, branches, filters, user }) {
 		},
 	];
 
+	const theme = useTheme();
+	// Detecta breakpoint activo
+	const isLg = useMediaQuery(theme.breakpoints.up("lg"));
+	const isMd = useMediaQuery(theme.breakpoints.up("md"));
+
+	// Determina columnas activas
+	const columnsBoxes = isLg ? 2 : isMd ? 2 : 1;
+
 	return (
 		<Stack spacing={4}>
 			<ReportHeader
 				title={"Clientes Activos vs Inactivos"}
 				branches={branches}
+				agents={agents}
 				filters={filters}
 				pathToUpdateSearchParams={paths.dashboard.reports.activeVsInactiveClients}
 				user={{ role: user.role, branch: user.branchId }}
 				disabledDate={true}
 			/>
+			<Card>
+				<Box
+					sx={{
+						display: "grid",
+						columnGap: 0,
+						gap: 2,
+						gridTemplateColumns: { xs: "1fr", md: "repeat(2, 1fr)", lg: "repeat(2, 1fr)" },
+						p: 3,
+					}}
+				>
+					{boxes.map((item, index) => {
+						const isLastInRow = (index + 1) % columnsBoxes === 0;
+
+						return (
+							<Stack
+								key={item.name}
+								spacing={1}
+								sx={{
+									borderRight: isLastInRow ? "none" : "1px solid var(--mui-palette-divider)",
+									borderBottom: { xs: "1px solid var(--mui-palette-divider)", md: "none" },
+									pb: { xs: 2, md: 0 },
+								}}
+							>
+								<Typography color="text.secondary">{item.name}</Typography>
+								<Typography variant="h3">{item.value}</Typography>
+							</Stack>
+						);
+					})}
+				</Box>
+			</Card>
 			<Card>
 				<CardContent>
 					<Stack divider={<Divider />} spacing={3}>

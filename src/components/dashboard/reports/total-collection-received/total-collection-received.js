@@ -139,6 +139,7 @@ export function TotalCollectionReceived({ filters, data, branches = [] }) {
 					<FormControl sx={{ maxWidth: "170px", width: "100%" }}>
 						<InputLabel id="selectedBranch">Sede:</InputLabel>
 						<Select labelId="selectedBranch" value={selectedBranch} onChange={handleFilterBranchChange}>
+							{branches.length === 0 ? null : <Option value="">Todas las sedes</Option>}
 							{branches.length === 0
 								? null
 								: branches.map(({ id, name }) => (
