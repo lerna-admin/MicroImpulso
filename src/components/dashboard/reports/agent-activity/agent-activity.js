@@ -18,7 +18,7 @@ import {
 	useTheme,
 } from "@mui/material";
 import { DatePicker } from "@mui/x-date-pickers";
-import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis } from "recharts";
 
 import { paths } from "@/paths";
 import { dayjs } from "@/lib/dayjs";
@@ -28,8 +28,8 @@ import { Option } from "@/components/core/option";
 const bars = [
 	{ name: "Atendidos", dataKey: "v1", color: "var(--mui-palette-primary-400)" },
 	{ name: "Aprobados", dataKey: "v2", color: "var(--mui-palette-error-400)" },
-	{ name: "Renovados", dataKey: "v3", color: "var(--mui-palette-info-400)" },
 	{ name: "Pagos cobrados", dataKey: "v4", color: "var(--mui-palette-warning-400)" },
+	{ name: "Renovados", dataKey: "v3", color: "var(--mui-palette-info-400)" },
 ];
 
 export function AgentActivity({ data, totals, branches, filters, user }) {
@@ -59,9 +59,6 @@ export function AgentActivity({ data, totals, branches, filters, user }) {
 			value: value,
 		};
 	});
-
-	console.log(boxes);
-	
 
 	const updateSearchParams = React.useCallback(
 		(newFilters) => {
@@ -191,7 +188,6 @@ export function AgentActivity({ data, totals, branches, filters, user }) {
 								<BarChart data={data} margin={{ top: 0, right: 0, bottom: 0, left: 0 }}>
 									<CartesianGrid strokeDasharray="2 4" vertical={false} />
 									<XAxis axisLine={false} dataKey="name" type="category" />
-									<YAxis axisLine={false} type="number" />
 									{bars.map((bar) => (
 										<Bar
 											key={bar.name}
