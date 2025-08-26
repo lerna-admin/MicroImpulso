@@ -19,13 +19,19 @@ export default async function Page({ searchParams }) {
 
 	const { blocks, totals } = await getAgentActivity({ userId: user.id, startDate, endDate, branchId: branch });
 
+	delete totals.disbursementCount;
+	delete totals.clientOnboardCount;
+	delete totals.documentUploadCount;
+	delete totals.branches;
+	delete totals.agents;
+
 	const blocksFormatted = blocks.flatMap((block) =>
 		(block.agents || []).map((agent) => ({
 			name: agent.agentName,
 			v1: agent.metrics.loanRequestsCount,
-			v2: agent.metrics.disbursementCount,
-			v3: agent.metrics.penaltyCount,
-			v4: agent.metrics.repaymentCount,
+			v2: agent.metrics.fundedCount,
+			v3: agent.metrics.repaymentCount,
+			v4: agent.metrics.penaltyCount,
 		}))
 	);
 

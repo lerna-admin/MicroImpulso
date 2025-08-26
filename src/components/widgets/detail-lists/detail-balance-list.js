@@ -24,8 +24,6 @@ dayjs.locale("es");
 
 export function DetailBalanceList({ dataBalance, user }) {
 
-	console.log(dataBalance);
-	
 	const [assets, setAssets] = React.useState([
 		{ id: 1, name: "Cartera ($)", value: "" },
 		{ id: 2, name: "Cobrado ($)", value: "" },
