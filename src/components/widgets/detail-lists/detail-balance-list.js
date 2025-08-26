@@ -23,6 +23,9 @@ import { NotificationAlert } from "../notifications/notification-alert";
 dayjs.locale("es");
 
 export function DetailBalanceList({ dataBalance, user }) {
+
+	console.log(dataBalance);
+	
 	const [assets, setAssets] = React.useState([
 		{ id: 1, name: "Cartera ($)", value: "" },
 		{ id: 2, name: "Cobrado ($)", value: "" },
@@ -35,7 +38,7 @@ export function DetailBalanceList({ dataBalance, user }) {
 	const [alertMsg, setAlertMsg] = React.useState("");
 	const [alertSeverity, setAlertSeverity] = React.useState("");
 
-	const totalAmount = dataBalance.valorRenovados + dataBalance.valorNuevos + dataBalance.cobrado;
+	const totalAmount = dataBalance.valorRenovados + dataBalance.valorNuevos;
 	const totalRequests = dataBalance.renovados + dataBalance.nuevos;
 
 	const today = dayjs();
