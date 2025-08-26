@@ -6,6 +6,7 @@ import { getUser } from "@/lib/custom-auth/server";
 import { ActiveVsInactiveClients } from "@/components/dashboard/reports/active-vs-inactive-clients/active-vs-inactive-clients";
 
 import { getAllBranches } from "../../configuration/branch-managment/hooks/use-branches";
+import { getAllUsers } from "../../users/hooks/use-users";
 import { getActiveVsInactiveClients } from "../services/reports";
 
 export const metadata = { title: `Clientes Activos vs Inactivos | Dashboard | ${appConfig.name}` };
@@ -21,6 +22,9 @@ export default async function Page({ searchParams }) {
 	const branches = await getAllBranches();
 	const branchesFormatted = branches.map(({ id, name }) => ({ id, name }));
 
+	const { data } = await getAllUsers({ role: "AGENT", branchId: branch });
+	const agentsFormatted = data.map(({ id, name }) => ({ id, name }));
+
 	return (
 		<Box
 			sx={{
@@ -30,7 +34,13 @@ export default async function Page({ searchParams }) {
 				width: "var(--Content-width)",
 			}}
 		>
-			<ActiveVsInactiveClients data={totals} branches={branchesFormatted} filters={{ branch }} user={user} />
+			<ActiveVsInactiveClients
+				data={totals}
+				branches={branchesFormatted}
+				agents={agentsFormatted}
+				filters={{ branch }}
+				user={user}
+			/>
 		</Box>
 	);
 }

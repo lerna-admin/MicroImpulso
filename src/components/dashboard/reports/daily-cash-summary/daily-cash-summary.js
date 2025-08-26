@@ -52,6 +52,7 @@ export function DailyCashSummary({ data, filters, user }) {
 				filters={filters}
 				pathToUpdateSearchParams={paths.dashboard.reports.dailyCashSummary}
 				user={{ role: user.role, branch: user.branchId }}
+				disabledAgent={true}
 			/>
 			<Card>
 				<Box

@@ -11,12 +11,12 @@ import { getActiveLoansByStatus } from "../services/reports";
 export const metadata = { title: `Préstamos Activos por Estado | Dashboard | ${appConfig.name}` };
 
 export default async function Page({ searchParams }) {
-	const { date, branch } = await searchParams;
+	const { branch } = await searchParams;
 	const {
 		data: { user },
 	} = await getUser();
 
-	const activeLoansByStatus = await getActiveLoansByStatus({ date: date, userId: user.id });
+	const activeLoansByStatus = await getActiveLoansByStatus({ branchId: branch, userId: user.id });
 	const branches = await getAllBranches();
 	const branchesFormatted = branches.map(({ id, name }) => ({ id, name }));
 
@@ -29,7 +29,7 @@ export default async function Page({ searchParams }) {
 				width: "var(--Content-width)",
 			}}
 		>
-			<ActiveLoansByStatus data={activeLoansByStatus} branches={branchesFormatted} filters={{ date, branch }} user={user} />
+			<ActiveLoansByStatus data={activeLoansByStatus} branches={branchesFormatted} filters={{ branch }} user={user} />
 		</Box>
 	);
 }

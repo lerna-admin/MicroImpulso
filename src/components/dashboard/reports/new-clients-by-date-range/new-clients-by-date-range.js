@@ -100,6 +100,7 @@ export function NewClientsByDateRange({ filters, rows }) {
 					name="startDate"
 					value={selectedStartDate}
 					onChange={handleFilterStartDateChange}
+					maxDate={dayjs()}
 				/>
 
 				<DatePicker
@@ -108,6 +109,7 @@ export function NewClientsByDateRange({ filters, rows }) {
 					name="endDate"
 					value={selectedEndDate}
 					onChange={handleFilterEndDateChange}
+					maxDate={dayjs()}
 				/>
 			</Stack>
 			<Card>

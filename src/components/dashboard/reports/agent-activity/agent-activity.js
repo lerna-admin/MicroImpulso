@@ -14,6 +14,8 @@ import {
 	Select,
 	Stack,
 	Typography,
+	useMediaQuery,
+	useTheme,
 } from "@mui/material";
 import { DatePicker } from "@mui/x-date-pickers";
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
@@ -30,16 +32,36 @@ const bars = [
 	{ name: "Pagos cobrados", dataKey: "v4", color: "var(--mui-palette-warning-400)" },
 ];
 
-export function AgentActivity({ data, branches, filters, user }) {
+export function AgentActivity({ data, totals, branches, filters, user }) {
 	const { startDate, endDate } = filters;
 	const { role, branchId } = user;
 
 	const router = useRouter();
 	const chartHeight = 300;
 
+	const theme = useTheme();
+	// Detecta breakpoint activo
+	const isLg = useMediaQuery(theme.breakpoints.up("lg"));
+	const isMd = useMediaQuery(theme.breakpoints.up("md"));
+
+	// Determina columnas activas
+	const columnsBoxes = isLg ? 4 : isMd ? 2 : 1;
+
 	const [selectedStartDate, setSelectedStartDate] = React.useState(dayjs(startDate));
 	const [selectedEndDate, setSelectedEndDate] = React.useState(dayjs(endDate));
 	const [selectedBranch, setSelectedBranch] = React.useState("");
+
+	const boxesNames = ["Total Atendidos", "Total Aprobados", "Total Renovados", "Total Pagos Cobrados"];
+
+	const boxes = Object.entries(totals).map(([_, value], index) => {
+		return {
+			name: boxesNames[index],
+			value: value,
+		};
+	});
+
+	console.log(boxes);
+	
 
 	const updateSearchParams = React.useCallback(
 		(newFilters) => {
@@ -129,6 +151,37 @@ export function AgentActivity({ data, branches, filters, user }) {
 					</FormControl>
 				)}
 			</Stack>
+
+			<Card>
+				<Box
+					sx={{
+						display: "grid",
+						columnGap: 0,
+						gap: 2,
+						gridTemplateColumns: { xs: "1fr", md: "repeat(2, 1fr)", lg: "repeat(4, 1fr)" },
+						p: 3,
+					}}
+				>
+					{boxes.map((item, index) => {
+						const isLastInRow = (index + 1) % columnsBoxes === 0;
+
+						return (
+							<Stack
+								key={item.name}
+								spacing={1}
+								sx={{
+									borderRight: isLastInRow ? "none" : "1px solid var(--mui-palette-divider)",
+									borderBottom: { xs: "1px solid var(--mui-palette-divider)", md: "none" },
+									pb: { xs: 2, md: 0 },
+								}}
+							>
+								<Typography color="text.secondary">{item.name}</Typography>
+								<Typography variant="h3">{item.value}</Typography>
+							</Stack>
+						);
+					})}
+				</Box>
+			</Card>
 
 			<Card>
 				<CardContent>

@@ -37,7 +37,7 @@ export default async function Page() {
 				width: "var(--Content-width)",
 			}}
 		>
-			<OverdueLoans rows={loansFormatted} boxes={totals} />
+			<OverdueLoans rows={loansFormatted} totals={totals} />
 		</Box>
 	);
 }

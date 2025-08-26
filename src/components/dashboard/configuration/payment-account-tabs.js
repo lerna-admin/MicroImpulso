@@ -166,7 +166,6 @@ export function PaymentAccountTabs({ tabsInfo }) {
 				</Box>
 				{tabs.map((item) => (
 					<TabPanel key={item.id} value={item.id}>
-						{item.id}
 						<PaymentAccountInformation paymentAccount={item.paymentAccount} />
 					</TabPanel>
 				))}

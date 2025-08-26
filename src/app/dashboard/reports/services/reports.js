@@ -13,12 +13,13 @@ export async function getDailyCashSummary({ date = "", userId = "" }) {
 	return await res.json();
 }
 
-export async function getDailyCashCountPerAgent({ date = "", userId = "", branchId = "" }) {
+export async function getDailyCashCountPerAgent({ date = "", userId = "", branchId = "", agentId = "" }) {
 	const params = new URLSearchParams();
 
 	if (date) params.append("date", date);
 	if (userId) params.append("userId", userId);
 	if (branchId) params.append("branchId", branchId);
+	if (agentId) params.append("agentId", agentId);
 
 	const url = `${BASE_URL}/reports/daily-cash-count?${params.toString()}`;
 	const res = await fetch(url);
@@ -233,8 +234,6 @@ export async function getGeneralStatisticsByBranch({ userId = "", startDate = ""
 	if (endDate) params.append("endDate", endDate);
 
 	const url = `${BASE_URL}/reports/branch-stats?${params.toString()}`;
-	console.log(url);
-
 	const res = await fetch(url);
 
 	if (!res.ok) throw new Error("Error al obtener este reporte");
