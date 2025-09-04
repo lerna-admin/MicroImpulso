@@ -3,15 +3,22 @@
 import * as React from "react";
 import RouterLink from "next/link";
 import { useRouter } from "next/navigation";
-import { renewRequest, updateRequest } from "@/app/dashboard/requests/hooks/use-requests";
+import { reasigmentRequest, renewRequest, updateRequest } from "@/app/dashboard/requests/hooks/use-requests";
 import { createTransaction } from "@/app/dashboard/transactions/hooks/use-transactions";
+import { getAllUsers } from "@/app/dashboard/users/hooks/use-users";
 import { deleteAlphabeticals } from "@/helpers/format-currency";
+import { zodResolver } from "@hookform/resolvers/zod";
 import {
+	Autocomplete,
 	Button,
+	CircularProgress,
 	Dialog,
 	DialogContent,
 	DialogContentText,
 	DialogTitle,
+	FormControl,
+	FormHelperText,
+	InputLabel,
 	Link,
 	Menu,
 	MenuItem,
@@ -24,6 +31,7 @@ import Chip from "@mui/material/Chip";
 import Grid from "@mui/material/Grid2";
 import IconButton from "@mui/material/IconButton";
 import Typography from "@mui/material/Typography";
+import { debounce } from "@mui/material/utils";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import {
 	DotsThree as DotsThreeIcon,
@@ -33,6 +41,8 @@ import {
 import { CheckCircle as CheckCircleIcon } from "@phosphor-icons/react/dist/ssr/CheckCircle";
 import { Clock as ClockIcon } from "@phosphor-icons/react/dist/ssr/Clock";
 import Cookies from "js-cookie";
+import { Controller, useForm } from "react-hook-form";
+import { z as zod } from "zod";
 
 import { paths } from "@/paths";
 import { dayjs } from "@/lib/dayjs";
@@ -40,7 +50,7 @@ import { usePopover } from "@/hooks/use-popover";
 import { DataTable } from "@/components/core/data-table";
 import { NotificationAlert } from "@/components/widgets/notifications/notification-alert";
 
-export function RequestsTable({ rows, permissions, role }) {
+export function RequestsTable({ rows, permissions, role, branch }) {
 	const columns = [
 		{
 			formatter: (row) => (
@@ -130,7 +140,7 @@ export function RequestsTable({ rows, permissions, role }) {
 		},
 
 		{
-			formatter: (row) => <ActionsCell row={row} permissions={permissions} role={role} />,
+			formatter: (row) => <ActionsCell row={row} permissions={permissions} role={role} branch={branch} />,
 			name: "Acciones",
 			hideName: true,
 			width: "70px",
@@ -151,13 +161,15 @@ export function RequestsTable({ rows, permissions, role }) {
 	);
 }
 
-export function ActionsCell({ row, permissions, role }) {
+export function ActionsCell({ row, permissions, role, branch }) {
+	
 	const router = useRouter();
 	const popover = usePopover();
 	const popoverAlert = usePopover();
 	const modalApproved = usePopover();
 	const modalFunded = usePopover();
 	const modalRenew = usePopover();
+	const modalReasigment = usePopover();
 	const [anchorEl, setAnchorEl] = React.useState(null);
 	const [amount, setAmount] = React.useState(0);
 	const [selectedDate, setSelectedDate] = React.useState(dayjs(row.endDateAt));
@@ -165,6 +177,43 @@ export function ActionsCell({ row, permissions, role }) {
 	const [alertSeverity, setAlertSeverity] = React.useState("");
 	const [isPending, setIsPending] = React.useState(false);
 	const isAgentClosed = Cookies.get("isAgentClosed");
+
+	const [inputValue, setInputValue] = React.useState("");
+	const [options, setOptions] = React.useState([]);
+	const [loading, setLoading] = React.useState(false);
+
+	const schema = zod.object({
+		user: zod
+			.object({
+				id: zod.number().nullable(),
+				label: zod.string().nullable(),
+			})
+			.refine(
+				(val) =>
+					typeof val === "object" &&
+					val !== null &&
+					"id" in val &&
+					typeof val.id === "number" &&
+					val.id > 0 &&
+					"label" in val &&
+					typeof val.label === "string" &&
+					val.label.trim() !== "",
+				{
+					message: "Debes seleccionar un usuario",
+				}
+			),
+	});
+
+	const defaultValues = {
+		user: { id: row.agent.id, label: row.agent.name },
+	};
+
+	const {
+		control,
+		handleSubmit,
+		formState: { errors },
+		reset,
+	} = useForm({ defaultValues, resolver: zodResolver(schema) });
 
 	const canDisburse = permissions.find((per) => per.name === "CAN_DISBURSE");
 
@@ -236,6 +285,57 @@ export function ActionsCell({ row, permissions, role }) {
 		setSelectedDate(newValue);
 	};
 
+	const debounced = React.useMemo(
+		() =>
+			debounce((value) => {
+				if (value.trim()) {
+					fetchOptions(value);
+				} else {
+					setOptions([]);
+				}
+			}, 700), // Espera 700ms después del último tipo
+		[]
+	);
+
+	React.useEffect(() => {
+		debounced(inputValue);
+		// Cleanup del debounce para evitar efectos secundarios
+		return () => {
+			debounced.clear();
+		};
+	}, [inputValue, debounced]);
+
+	const fetchOptions = async (query) => {
+		setLoading(true);
+		try {
+			const { data } = await getAllUsers({ name: query, role: "AGENT", branchId: branch });
+			const dataFormatted = data.map((user) => ({ label: user.name, id: user.id }));
+			setOptions(dataFormatted);
+		} catch (error) {
+			console.error("Error fetching autocomplete options:", error);
+		} finally {
+			setLoading(false);
+		}
+	};
+
+	const onSubmit = React.useCallback(async (dataForm) => {
+		const { user } = dataForm;
+		try {
+			await reasigmentRequest({ agent: user.id }, row.id);
+			setAlertMsg("¡Se ha guardado exitosamente!");
+			setAlertSeverity("success");
+		} catch (error) {
+			setAlertMsg(error.message);
+			setAlertSeverity("error");
+		} finally {
+			popoverAlert.handleOpen();
+			popover.handleClose();
+			modalReasigment.handleClose();
+			reset();
+		}
+		router.refresh();
+	});
+
 	return (
 		<React.Fragment>
 			<Tooltip title="Más opciones">
@@ -289,7 +389,115 @@ export function ActionsCell({ row, permissions, role }) {
 				>
 					<Typography>Renovar</Typography>
 				</MenuItem>
+				<MenuItem
+					disabled={role === "AGENT"}
+					onClick={() => {
+						popover.handleClose();
+						modalReasigment.handleOpen();
+					}}
+				>
+					<Typography>Reasignar</Typography>
+				</MenuItem>
 			</Menu>
+
+			{/* Modal para reasignar solicitud */}
+			<Dialog
+				fullWidth
+				maxWidth={"xs"}
+				open={modalReasigment.open}
+				onClose={modalReasigment.handleClose}
+				aria-labelledby="alert-dialog-title"
+				aria-describedby="alert-dialog-description"
+			>
+				<DialogTitle id="alert-dialog-title" textAlign={"center"} sx={{ pt: 4 }}>
+					{"Reasignar solicitud"}
+				</DialogTitle>
+
+				<DialogContent>
+					<form onSubmit={handleSubmit(onSubmit)}>
+						<Grid container spacing={3}>
+							<Grid
+								size={{
+									md: 12,
+									xs: 12,
+								}}
+								direction={"row"}
+							>
+								<Controller
+									control={control}
+									name="user"
+									render={({ field }) => {
+										return (
+											<FormControl error={Boolean(errors.user)} fullWidth>
+												<InputLabel required sx={{ marginBottom: "0.5rem" }}>
+													Agente
+												</InputLabel>
+												<Autocomplete
+													freeSolo
+													options={options}
+													loading={loading}
+													inputValue={inputValue}
+													value={field.value || null}
+													onInputChange={(event, newInputValue) => {
+														setInputValue(newInputValue);
+													}}
+													onChange={(event, newValue) => {
+														field.onChange(newValue ?? { id: null, label: null });
+													}}
+													getOptionLabel={(option) => (typeof option === "string" ? option : option?.label || "")}
+													isOptionEqualToValue={(option, value) => option?.label === value?.label}
+													renderInput={(params) => (
+														<TextField
+															{...params}
+															placeholder="Escribe su nombre"
+															variant="outlined"
+															slotProps={{
+																input: {
+																	...params.InputProps,
+																	endAdornment: (
+																		<React.Fragment>
+																			{loading ? <CircularProgress color="inherit" size={20} /> : null}
+																			{params.InputProps.endAdornment}
+																		</React.Fragment>
+																	),
+																},
+															}}
+														/>
+													)}
+												/>
+												{errors.user ? <FormHelperText>{errors.user.message}</FormHelperText> : null}
+											</FormControl>
+										);
+									}}
+								/>
+							</Grid>
+							<Grid
+								size={{
+									md: 12,
+									xs: 12,
+								}}
+								display={"flex"}
+								justifyContent={"flex-end"}
+								gap={2}
+							>
+								<Button variant="contained" disabled={isPending} type="submit" autoFocus>
+									Guardar
+								</Button>
+								<Button
+									variant="outlined"
+									onClick={() => {
+										popover.handleClose();
+										modalReasigment.handleClose();
+										reset();
+									}}
+								>
+									Cancelar
+								</Button>
+							</Grid>
+						</Grid>
+					</form>
+				</DialogContent>
+			</Dialog>
 
 			{/* Modal para renovar solicitud */}
 			<Dialog

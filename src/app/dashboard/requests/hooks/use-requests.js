@@ -92,6 +92,16 @@ export async function renewRequest(data, id) {
 	return await res.json();
 }
 
+export async function reasigmentRequest(data, id) {
+	const res = await fetch(`${BASE_URL}/loan-request/${id}`, {
+		method: "PATCH",
+		headers: { "Content-Type": "application/json" },
+		body: JSON.stringify(data),
+	});
+	if (!res.ok) throw new Error("Error al actualizar solicitud");
+	return await res.json();
+}
+
 export async function sendContract(loanRequestId) {
 	const res = await fetch(`${BASE_URL}/loan-request/${loanRequestId}/send-contract`, {
 		method: "POST",
