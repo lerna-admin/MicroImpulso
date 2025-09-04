@@ -2,7 +2,21 @@
 
 import * as React from "react";
 import { closeDay } from "@/app/dashboard/balance/hooks/use-balance";
-import { CardHeader, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from "@mui/material";
+import {
+	ButtonGroup,
+	CardHeader,
+	ClickAwayListener,
+	Dialog,
+	DialogActions,
+	DialogContent,
+	DialogContentText,
+	DialogTitle,
+	Grow,
+	MenuItem,
+	MenuList,
+	Paper,
+	Popper,
+} from "@mui/material";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import Card from "@mui/material/Card";
@@ -13,6 +27,10 @@ import List from "@mui/material/List";
 import ListItem from "@mui/material/ListItem";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
+import { ArrowDropDownIcon } from "@mui/x-date-pickers";
+import { Document, Font, Page, pdf, StyleSheet, Text, View } from "@react-pdf/renderer";
+import ExcelJS from "exceljs";
+import { saveAs } from "file-saver";
 import Cookies from "js-cookie";
 
 import { dayjs } from "@/lib/dayjs";
@@ -20,10 +38,81 @@ import { usePopover } from "@/hooks/use-popover";
 
 import { NotificationAlert } from "../notifications/notification-alert";
 
+Font.register({
+	family: "Roboto",
+	src: "https://fonts.gstatic.com/s/roboto/v30/KFOmCnqEu92Fr1Me5Q.ttf",
+});
+
 dayjs.locale("es");
 
-export function DetailBalanceList({ dataBalance, user }) {
+const styles = StyleSheet.create({
+	page: {
+		padding: 30,
+		fontSize: 12,
+		fontFamily: "Roboto",
+	},
+	title: {
+		fontSize: 18,
+		textAlign: "center",
+		marginBottom: 20,
+		fontWeight: "bold",
+	},
+	table: {
+		display: "table",
+		width: "auto",
+		borderStyle: "solid",
+		borderWidth: 1,
+		borderRightWidth: 0,
+		borderBottomWidth: 0,
+	},
+	tableRow: {
+		flexDirection: "row",
+	},
+	tableCol: {
+		width: "20%",
+		borderStyle: "solid",
+		borderWidth: 1,
+		borderLeftWidth: 0,
+		borderTopWidth: 0,
+		padding: 5,
+		textAlign: "center",
+	},
+	tableHeader: {
+		fontSize: 12,
+		fontWeight: "bold",
+		backgroundColor: "#f0f0f0",
+	},
+});
 
+export const MyDocument = ({ headers }) => (
+	<Document>
+		<Page size="A4" style={styles.page}>
+			<Text style={styles.title}>Cuadre de ruta</Text>
+
+			<View style={styles.table}>
+				{/* Encabezados */}
+				<View style={styles.tableRow}>
+					{headers.map((h) => (
+						<Text style={[styles.tableCol, styles.tableHeader]} key={h.id}>
+							{h.name}
+						</Text>
+					))}
+				</View>
+
+				{/* Valores */}
+				<View style={styles.tableRow}>
+					{headers.map((h) => (
+						<Text style={styles.tableCol} key={h.id}>
+							{String(h.value)}
+						</Text>
+					))}
+				</View>
+			</View>
+		</Page>
+	</Document>
+);
+
+export function DetailBalanceList({ dataBalance, user }) {
 	const [assets, setAssets] = React.useState([
 		{ id: 1, name: "Cartera ($)", value: "" },
 		{ id: 2, name: "Cobrado ($)", value: "" },
@@ -43,6 +132,12 @@ export function DetailBalanceList({ dataBalance, user }) {
 	const formattedDate = `${today.format("DD")} ${today.format("MMMM").toUpperCase()} ${today.format("YYYY, hh:mm A")}`;
 
 	const popover = usePopover();
+
+	const options = ["Excel", "PDF"];
+
+	const [open, setOpen] = React.useState(false);
+	const anchorRef = React.useRef(null);
+	const [selectedIndex, setSelectedIndex] = React.useState(1);
 
 	React.useEffect(() => {
 		const updates = [
@@ -76,15 +171,104 @@ export function DetailBalanceList({ dataBalance, user }) {
 		}
 	};
 
+	const handleMenuItemClick = (event, index) => {
+		setSelectedIndex(index);
+		setOpen(false);
+	};
+
+	const handleClick = async () => {
+		const assetsFormatted = assets.map((item) => {
+			const key = item.name.split(" ")[0].toLowerCase();
+			return { ...item, key };
+		});
+
+		if (selectedIndex === 0) exportExcel(assetsFormatted);
+
+		if (selectedIndex === 1) {
+			const blob = await pdf(<MyDocument headers={assetsFormatted} />).toBlob();
+			const today = dayjs();
+			saveAs(
+				blob,
+				`cuadre_de_ruta_${today.format("DD")}_${today.format("MMMM").toLowerCase()}_${today.format("YYYY")}.pdf`
+			);
+		}
+	};
+
+	const handleToggle = () => {
+		setOpen((prevOpen) => !prevOpen);
+	};
+
+	const handleClose = (event) => {
+		if (anchorRef.current && anchorRef.current.contains(event.target)) {
+			return;
+		}
+
+		setOpen(false);
+	};
+
 	return (
 		<Card variant="outlined">
 			<CardHeader
 				titleTypographyProps={{ variant: "h5" }}
 				title={"Balance de la ruta"}
 				action={
-					<Button size="xs" variant="contained" onClick={popover.handleOpen}>
-						Cierre
-					</Button>
+					<Stack direction="row" spacing={2}>
+						<Stack direction="row" spacing={2} alignItems={"center"}>
+							<Typography variant="body1" color="initial">
+								Exportar:{" "}
+							</Typography>
+							<ButtonGroup variant="contained" ref={anchorRef} aria-label="Button group with a nested menu">
+								<Button onClick={handleClick}>{options[selectedIndex]}</Button>
+								<Button
+									size="small"
+									aria-controls={open ? "split-button-menu" : undefined}
+									aria-expanded={open ? "true" : undefined}
+									aria-label="select merge strategy"
+									aria-haspopup="menu"
+									onClick={handleToggle}
+								>
+									<ArrowDropDownIcon />
+								</Button>
+							</ButtonGroup>
+							<Popper
+								sx={{ zIndex: 1 }}
+								open={open}
+								anchorEl={anchorRef.current}
+								role={undefined}
+								transition
+								disablePortal
+							>
+								{({ TransitionProps, placement }) => (
+									<Grow
+										{...TransitionProps}
+										style={{
+											transformOrigin: placement === "bottom" ? "center top" : "center bottom",
+										}}
+									>
+										<Paper>
+											<ClickAwayListener onClickAway={handleClose}>
+												<MenuList id="split-button-menu" autoFocusItem>
+													{options.map((option, index) => (
+														<MenuItem
+															key={option}
+															selected={index === selectedIndex}
+															onClick={(event) => handleMenuItemClick(event, index)}
+															sx={{ margin: "0.5rem" }}
+														>
+															{option}
+														</MenuItem>
+													))}
+												</MenuList>
+											</ClickAwayListener>
+										</Paper>
+									</Grow>
+								)}
+							</Popper>
+						</Stack>
+						<Button size="xs" variant="contained" onClick={popover.handleOpen}>
+							Cierre
+						</Button>
+					</Stack>
 				}
 			/>
 			<Divider />
@@ -165,6 +349,40 @@ export function DetailBalanceList({ dataBalance, user }) {
 		</Card>
 	);
 }
+
+const exportExcel = async (headers) => {
+	const today = dayjs();
+	const workbook = new ExcelJS.Workbook();
+	const sheet = workbook.addWorksheet("Cuadre de ruta");
+
+	const totalColumns = headers.length;
+
+	sheet.mergeCells(1, 1, 1, totalColumns);
+	const titleCell = sheet.getCell(1, 1);
+	titleCell.value = "Cuadre de ruta";
+	titleCell.alignment = { vertical: "middle", horizontal: "center" };
+	titleCell.font = { bold: true, size: 16 };
+
+	const headerRow = sheet.getRow(2);
+	headerRow.values = headers.map((h) => h.name);
+	headerRow.font = { bold: true };
+	headerRow.alignment = { vertical: "middle", horizontal: "center" };
+
+	const valuesRow = sheet.getRow(3);
+	valuesRow.values = headers.map((h) => h.value);
+
+	// eslint-disable-next-line unicorn/no-array-for-each
+	headers.forEach((h, i) => {
+		sheet.getColumn(i + 1).width = 20;
+	});
+
+	// Exportar archivo
+	const buffer = await workbook.xlsx.writeBuffer();
+	saveAs(
+		new Blob([buffer]),
+		`cuadre_de_ruta_${today.format("DD")}_${today.format("MMMM").toLowerCase()}_${today.format("YYYY")}.xlsx`
+	);
+};
 
 const parseCurrency = (value) => {
 	return new Intl.NumberFormat("es-CO", {
