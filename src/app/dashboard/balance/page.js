@@ -4,7 +4,7 @@ import Box from "@mui/material/Box";
 
 import { appConfig } from "@/config/app";
 import { getUser } from "@/lib/custom-auth/server";
-import { DetailBalanceList } from "@/components/widgets/detail-lists/detail-balance-list";
+import { DetailBalanceList } from "@/components/dashboard/balance/detail-balance-list";
 
 export const metadata = { title: `Balance de la ruta | Dashboard | ${appConfig.name}` };
 
