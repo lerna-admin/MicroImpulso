@@ -5,6 +5,8 @@ import { Box, Card, Stack, Typography, useMediaQuery, useTheme } from "@mui/mate
 
 import { DataTable } from "@/components/core/data-table";
 
+import { ExportComponent } from "../../export/export-component";
+
 export function OverdueLoans({ rows, totals }) {
 	const columns = [
 		{ field: "id", name: "ID", width: "50px" },
@@ -51,12 +53,39 @@ export function OverdueLoans({ rows, totals }) {
 	// Determina columnas activas
 	const columnsBoxes = isLg ? 2 : isMd ? 2 : 1;
 
+	const currencyFormatter = new Intl.NumberFormat("es-CO", {
+		style: "currency",
+		currency: "COP",
+		minimumFractionDigits: 0,
+	});
+
+	const detailRowsToExport = rows.map((row) => ({
+		Cliente: row.clientName,
+		"Monto pendiente": currencyFormatter.format(row.pendingAmount),
+		"Dias en mora": row.daysMora,
+		Agente: row.agentName,
+		"Fecha de vencimiento": row.dueDate,
+	}));
+
+	const totalsRowToExport = {
+		"Total solicitudes vencidas": totals.loanCount,
+		"Total monto pendiente": currencyFormatter.format(totals.amountDue),
+	};
+
 	return (
 		<Stack spacing={4}>
 			<Stack direction={{ xs: "column", sm: "row" }} spacing={3} sx={{ alignItems: "flex-start" }}>
 				<Box sx={{ flex: "1 1 auto" }}>
 					<Typography variant="h4">Préstamos Vencidos</Typography>
 				</Box>
+
+				<ExportComponent
+					reports={{
+						reportName: `Préstamos Vencidos`,
+						detailRowsToExport,
+						totalsRowToExport,
+					}}
+				/>
 			</Stack>
 			<Card>
 				<Box

@@ -14,6 +14,8 @@ import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YA
 import { paths } from "@/paths";
 import { dayjs } from "@/lib/dayjs";
 
+import { ExportComponent } from "../../export/export-component";
+
 const lines = [
 	{ name: "Desembolsados", dataKey: "v1", color: "var(--mui-palette-primary-main)" },
 	{ name: "Pagados", dataKey: "v2", color: "var(--mui-palette-success-main)" },
@@ -73,9 +75,30 @@ export function GeneralCashFlow({ data, filters }) {
 		[updateSearchParams, filters]
 	);
 
+	const currencyFormatter = new Intl.NumberFormat("es-CO", {
+		style: "currency",
+		currency: "COP",
+		minimumFractionDigits: 0,
+	});
+
+	const detailRowsToExport = data.dailyBreakdown.map((item) => ({
+		Fecha: item.date,
+		Desembolsado: currencyFormatter.format(item.disbursed),
+		Pagado: currencyFormatter.format(item.repayments),
+		Renovado: currencyFormatter.format(item.penalties),
+		"Valor Neto": currencyFormatter.format(item.netFlow),
+	}));
+
+	const totalsRowToExport = {
+		"Total Desembolsados": currencyFormatter.format(data.summary.disbursed),
+		"Total Pagados": currencyFormatter.format(data.summary.repayments),
+		"Total Renovados": currencyFormatter.format(data.summary.penalties),
+		"Valor Neto": currencyFormatter.format(data.summary.netFlow),
+	};
+
 	return (
 		<Stack spacing={4}>
-			<Stack direction={{ xs: "column", sm: "row" }} spacing={3} sx={{ alignItems: "center" }}>
+			<Stack direction={{ xs: "column", sm: "row" }} spacing={3} sx={{ alignItems: "end" }}>
 				<Typography variant="h4" flexGrow={1} textAlign={{ xs: "center", sm: "left" }}>
 					Flujo de Caja General
 				</Typography>
@@ -94,6 +117,16 @@ export function GeneralCashFlow({ data, filters }) {
 					value={selectedEndDate}
 					onChange={handleFilterEndDateChange}
 				/>
+
+				{data.dailyBreakdown.length === 0 ? null : (
+					<ExportComponent
+						reports={{
+							reportName: `Flujo de Caja General`,
+							detailRowsToExport,
+							totalsRowToExport,
+						}}
+					/>
+				)}
 			</Stack>
 			<Card>
 				<CardContent>

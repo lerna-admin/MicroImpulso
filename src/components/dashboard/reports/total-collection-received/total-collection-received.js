@@ -25,6 +25,8 @@ import { dayjs } from "@/lib/dayjs";
 import { NoSsr } from "@/components/core/no-ssr";
 import { Option } from "@/components/core/option";
 
+import { ExportComponent } from "../../export/export-component";
+
 const barsDetail = [{ name: "Total recaudado por agente", dataKey: "v1", color: "var(--mui-palette-primary-main)" }];
 
 export function TotalCollectionReceived({ filters, data, branches = [] }) {
@@ -113,9 +115,27 @@ export function TotalCollectionReceived({ filters, data, branches = [] }) {
 		[updateSearchParams, filters]
 	);
 
+	const currencyFormatter = new Intl.NumberFormat("es-CO", {
+		style: "currency",
+		currency: "COP",
+		minimumFractionDigits: 0,
+	});
+
+	const detailRowsToExport = data.blocks.flatMap((item) =>
+		item.agents.map((agent) => ({
+			Sede: item.branchName,
+			Agente: agent.agentName,
+			"Monto recaudado": currencyFormatter.format(agent.totalCollected),
+		}))
+	);
+
+	const totalsRowToExport = {
+		"Total recaudado": currencyFormatter.format(data.totals.totalCollected),
+	};
+
 	return (
 		<Stack spacing={4}>
-			<Stack direction={{ xs: "column", sm: "row" }} spacing={3} sx={{ alignItems: "center" }}>
+			<Stack direction={{ xs: "column", sm: "row" }} spacing={3} sx={{ alignItems: "end" }}>
 				<Typography variant="h4" flexGrow={1} textAlign={{ xs: "center", sm: "left" }}>
 					Recaudo Total (Pagos Recibidos)
 				</Typography>
@@ -149,6 +169,11 @@ export function TotalCollectionReceived({ filters, data, branches = [] }) {
 									))}
 						</Select>
 					</FormControl>
+				)}
+				{data.blocks.length === 0 ? null : (
+					<ExportComponent
+						reports={{ reportName: "Monto Prestado Total (Acumulado)", detailRowsToExport, totalsRowToExport }}
+					/>
 				)}
 			</Stack>
 			<Card>

@@ -10,6 +10,8 @@ import { paths } from "@/paths";
 import { dayjs } from "@/lib/dayjs";
 import { NoSsr } from "@/components/core/no-ssr";
 
+import { ExportComponent } from "../../export/export-component";
+
 const bars = [
 	{ name: "Total prestado", dataKey: "v1" },
 	{ name: "Total desembolsado", dataKey: "v2" },
@@ -95,9 +97,41 @@ export function GeneralStatisticsByBranch({ data, filters }) {
 		},
 		[updateSearchParams, filters]
 	);
+
+	const currencyFormatter = new Intl.NumberFormat("es-CO", {
+		style: "currency",
+		currency: "COP",
+		minimumFractionDigits: 0,
+	});
+
+	const detailRowsToExport = data.branchesFormatted.map((block) => ({
+		Sede: block.name,
+		Prestado: currencyFormatter.format(block.v1),
+		Desembolsado: currencyFormatter.format(block.v2),
+		Recaudado: currencyFormatter.format(block.v3),
+		Pagado: currencyFormatter.format(block.v4),
+		Renovado: currencyFormatter.format(block.v5),
+		"Clientes Activos": block.v6,
+		"Monto Vencido": currencyFormatter.format(block.v7),
+		"Prestamos Vencidos": block.v8,
+		"Valor Neto": currencyFormatter.format(block.v9),
+	}));
+
+	const totalsRowToExport = {
+		"Total Prestado": currencyFormatter.format(data.totals.totalLoaned),
+		"Total Desembolsado": currencyFormatter.format(data.totals.totalDisbursed),
+		"Total Recaudado": currencyFormatter.format(data.totals.totalCollected),
+		"Total Pagado": currencyFormatter.format(data.totals.repayments),
+		"Total Renovado": currencyFormatter.format(data.totals.penalties),
+		"Clientes Activos": data.totals.activeClients,
+		"Total Monto Vencido": currencyFormatter.format(data.totals.overdueAmount),
+		"Prestamos Vencidos": data.totals.overdueLoans,
+		"Valor Neto": currencyFormatter.format(data.totals.netFlow),
+	};
+
 	return (
 		<Stack spacing={4}>
-			<Stack direction={{ xs: "column", sm: "row" }} spacing={3} sx={{ alignItems: "center" }}>
+			<Stack direction={{ xs: "column", sm: "row" }} spacing={3} sx={{ alignItems: "end" }}>
 				<Typography variant="h4" flexGrow={1} textAlign={{ xs: "center", sm: "left" }}>
 					Estadísticas Generales por Sede
 				</Typography>
@@ -115,6 +149,14 @@ export function GeneralStatisticsByBranch({ data, filters }) {
 					name="endDate"
 					value={selectedEndDate}
 					onChange={handleFilterEndDateChange}
+				/>
+
+				<ExportComponent
+					reports={{
+						reportName: `Estadísticas Generales por Sede`,
+						detailRowsToExport,
+						totalsRowToExport,
+					}}
 				/>
 			</Stack>
 

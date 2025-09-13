@@ -24,7 +24,7 @@ const barsDetail = [
 	{ name: "Inactivos", dataKey: "v2", color: "var(--mui-palette-error-400)" },
 ];
 
-export function ActiveVsInactiveClients({ data, branches, agents, filters, user }) {
+export function ActiveVsInactiveClients({ data, branches, agents, filters, user, agentSelected }) {
 	const chartHeight = 300;
 
 	const boxesNames = ["Activos", "Inactivos"];
@@ -52,6 +52,15 @@ export function ActiveVsInactiveClients({ data, branches, agents, filters, user 
 	// Determina columnas activas
 	const columnsBoxes = isLg ? 2 : isMd ? 2 : 1;
 
+	const detailRowsToExport = [
+		{
+			Nombre: agentSelected ? `${agentSelected?.name}` : "Todos los agentes",
+			Sede: agentSelected ? agentSelected?.branch?.name : "Todas las sedes",
+			Activos: data.active,
+			Inactivos: data.inactive,
+		},
+	];
+
 	return (
 		<Stack spacing={4}>
 			<ReportHeader
@@ -62,6 +71,7 @@ export function ActiveVsInactiveClients({ data, branches, agents, filters, user 
 				pathToUpdateSearchParams={paths.dashboard.reports.activeVsInactiveClients}
 				user={{ role: user.role, branch: user.branchId }}
 				disabledDate={true}
+				reports={{ reportName: "Clientes Activos vs Inactivos ", detailRowsToExport }}
 			/>
 			<Card>
 				<Box

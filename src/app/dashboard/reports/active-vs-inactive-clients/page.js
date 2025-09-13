@@ -12,18 +12,20 @@ import { getActiveVsInactiveClients } from "../services/reports";
 export const metadata = { title: `Clientes Activos vs Inactivos | Dashboard | ${appConfig.name}` };
 
 export default async function Page({ searchParams }) {
-	const { branch } = await searchParams;
+	const { branch, agent } = await searchParams;
 
 	const {
 		data: { user },
 	} = await getUser();
-	const { totals } = await getActiveVsInactiveClients({ userId: user.id, branchId: branch });
+	const { totals } = await getActiveVsInactiveClients({ userId: user.id, branchId: branch, agentId: agent });
 
 	const branches = await getAllBranches();
 	const branchesFormatted = branches.map(({ id, name }) => ({ id, name }));
 
 	const { data } = await getAllUsers({ role: "AGENT", branchId: branch });
 	const agentsFormatted = data.map(({ id, name }) => ({ id, name }));
+
+	const agentSelected = data.find((item) => Number(agent) === item.id);
 
 	return (
 		<Box
@@ -40,6 +42,7 @@ export default async function Page({ searchParams }) {
 				agents={agentsFormatted}
 				filters={{ branch }}
 				user={user}
+				agentSelected={agentSelected}
 			/>
 		</Box>
 	);

@@ -18,12 +18,15 @@ Font.register({
 	src: "https://fonts.gstatic.com/s/roboto/v30/KFOmCnqEu92Fr1Me5Q.ttf",
 });
 
-export function ExportComponent({ balance, reports }) {
+export function ExportComponent({
+	balance,
+	reports = { reportName: null, detailRowsToExport: [], totalsRowToExport: {} },
+}) {
 	const options = ["Excel", "PDF"];
 
 	const [open, setOpen] = React.useState(false);
 	const anchorRef = React.useRef(null);
-	const [selectedIndex, setSelectedIndex] = React.useState(1);
+	const [selectedIndex, setSelectedIndex] = React.useState(0);
 
 	const handleMenuItemClick = (event, index) => {
 		setSelectedIndex(index);
@@ -49,9 +52,9 @@ export function ExportComponent({ balance, reports }) {
 				);
 			}
 		} else {
-			if (selectedIndex === 0) exportExcel(reports);
+			if (selectedIndex === 0 && reports.detailRowsToExport.length > 0) exportExcel(reports);
 
-			if (selectedIndex === 1) {
+			if (selectedIndex === 1 && reports.detailRowsToExport.length > 0) {
 				const blob = await pdf(<MyDocument report={reports} />).toBlob();
 				const today = dayjs();
 				saveAs(
@@ -124,15 +127,15 @@ export const MyDocument = ({ report }) => {
 	const headers = Object.keys(report.detailRowsToExport[0]);
 
 	// Totales
-	const totalsKeys = Object.keys(report.totalsRowToExport);
-	const totalsValues = Object.values(report.totalsRowToExport);
+	const totalsKeys = report.totalsRowToExport ? Object.keys(report.totalsRowToExport) : null;
+	const totalsValues = report.totalsRowToExport ? Object.values(report.totalsRowToExport) : null;
 
 	const columnCount = headers.length;
 	const colWidth = `${100 / columnCount}%`;
 
 	return (
 		<Document>
-			<Page size="A4" style={styles.page}>
+			<Page size="A4" style={styles.page} orientation={columnCount >= 7 ? "landscape" : "portrait"}>
 				<Text style={styles.title}>{report.reportName}</Text>
 
 				{/* Tabla de detalle */}
@@ -151,7 +154,7 @@ export const MyDocument = ({ report }) => {
 						<View style={styles.tableRow} key={idx}>
 							{Object.values(row).map((val, i) => (
 								<Text key={i} style={[styles.tableCol, { width: colWidth }]}>
-									{String(val)}
+									{val ? String(val) : ""}
 								</Text>
 							))}
 						</View>
@@ -159,24 +162,27 @@ export const MyDocument = ({ report }) => {
 				</View>
 
 				{/* Totales */}
-				<View style={[styles.table, styles.totals]}>
-					<View style={styles.tableRow}>
-						<Text style={[styles.tableCol, { width: colWidth }, styles.tableHeader]}>Totales</Text>
-						{totalsKeys.map((h) => (
-							<Text key={h} style={[styles.tableCol, { width: colWidth }, styles.tableHeader]}>
-								{h.replaceAll("_", " ").replaceAll(/\b\w/g, (c) => c.toUpperCase())}
-							</Text>
-						))}
+
+				{report.totalsRowToExport ? (
+					<View style={[styles.table, styles.totals]}>
+						<View style={styles.tableRow}>
+							<Text style={[styles.tableCol, { width: colWidth }, styles.tableHeader]}>Totales</Text>
+							{totalsKeys.map((h) => (
+								<Text key={h} style={[styles.tableCol, { width: colWidth }, styles.tableHeader]}>
+									{h.replaceAll("_", " ").replaceAll(/\b\w/g, (c) => c.toUpperCase())}
+								</Text>
+							))}
+						</View>
+						<View style={styles.tableRow}>
+							<Text style={[styles.tableCol, { width: colWidth }]}></Text>
+							{totalsValues.map((val, i) => (
+								<Text key={i} style={[styles.tableCol, { width: colWidth }]}>
+									{String(val)}
+								</Text>
+							))}
+						</View>
 					</View>
-					<View style={styles.tableRow}>
-						<Text style={[styles.tableCol, { width: colWidth }]}></Text>
-						{totalsValues.map((val, i) => (
-							<Text key={i} style={[styles.tableCol, { width: colWidth }]}>
-								{String(val)}
-							</Text>
-						))}
-					</View>
-				</View>
+				) : null}
 			</Page>
 		</Document>
 	);
@@ -238,26 +244,29 @@ const exportExcel = async (data) => {
 		sheet.addRow(Object.values(row));
 	}
 
-	//  Espacio + Totales
-	sheet.addRow([]);
-	const totalsKeys = ["Totales", ...Object.keys(data.totalsRowToExport)];
-	const totalsValues = ["", ...Object.values(data.totalsRowToExport)];
+	if (data.totalsRowToExport && Object.keys(data.totalsRowToExport).length > 0) {
+		//  Espacio + Totales
+		sheet.addRow([]);
+		const totalsKeys = ["Totales", ...Object.keys(data.totalsRowToExport)];
+		const totalsValues = ["", ...Object.values(data.totalsRowToExport)];
 
-	// fila de encabezados de totales
-	const totalsHeaderRow = sheet.addRow(
-		totalsKeys.map((h) => h.replaceAll("_", " ").replaceAll(/\b\w/g, (c) => c.toUpperCase()))
-	);
-	totalsHeaderRow.font = { bold: true };
-	totalsHeaderRow.alignment = { vertical: "middle", horizontal: "center" };
+		// fila de encabezados de totales
+		const totalsHeaderRow = sheet.addRow(
+			totalsKeys.map((h) => h.replaceAll("_", " ").replaceAll(/\b\w/g, (c) => c.toUpperCase()))
+		);
+		totalsHeaderRow.font = { bold: true };
+		totalsHeaderRow.alignment = { vertical: "middle", horizontal: "center" };
 
-	// fila con valores de totales
-	const totalsRow = sheet.addRow(totalsValues);
-	totalsRow.font = { bold: true };
+		// fila con valores de totales
+		const totalsRow = sheet.addRow(totalsValues);
+		totalsRow.font = { bold: true };
+	}
 
 	//  Ajustar ancho columnas automáticamente
 	for (const col of sheet.columns) {
 		let maxLength = 0;
 		col.eachCell({ includeEmpty: true }, (cell) => {
+			if (cell.row <= 2) return;
 			const len = cell.value ? cell.value.toString().length : 10;
 			if (len > maxLength) maxLength = len;
 		});

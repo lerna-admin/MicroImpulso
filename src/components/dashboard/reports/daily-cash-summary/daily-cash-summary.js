@@ -45,6 +45,27 @@ export function DailyCashSummary({ data, filters, user }) {
 		};
 	});
 
+	const currencyFormatter = new Intl.NumberFormat("es-CO", {
+		style: "currency",
+		currency: "COP",
+		minimumFractionDigits: 0,
+	});
+
+	const detailRowsToExport = data.blocks.map((agent) => ({
+		Agente: agent.label,
+		Pago: currencyFormatter.format(agent.kpi.totalCollected),
+		Desembolsado: currencyFormatter.format(agent.kpi.cashPaidOut),
+		"Balance Neto": currencyFormatter.format(agent.kpi.netBalance),
+		"Cantidad transacciones": agent.kpi.transactionCount,
+	}));
+
+	const totalsRowToExport = {
+		"Total recaudado": currencyFormatter.format(data.totals.totalCollected),
+		"Total desembolsado": currencyFormatter.format(data.totals.cashPaidOut),
+		"Total Dinero en caja": currencyFormatter.format(data.totals.netBalance),
+		"Total Numero de transacciones": data.totals.transactionCount,
+	};
+
 	return (
 		<Stack spacing={7}>
 			<ReportHeader
@@ -53,6 +74,7 @@ export function DailyCashSummary({ data, filters, user }) {
 				pathToUpdateSearchParams={paths.dashboard.reports.dailyCashSummary}
 				user={{ role: user.role, branch: user.branchId }}
 				disabledAgent={true}
+				reports={{ reportName: "Resumen Diario de Caja", detailRowsToExport, totalsRowToExport }}
 			/>
 			<Card>
 				<Box

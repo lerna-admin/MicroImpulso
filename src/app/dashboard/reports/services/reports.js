@@ -105,11 +105,12 @@ export async function getNewClientsByDateRange({ userId = "", startDate = "", en
 	return await res.json();
 }
 
-export async function getActiveVsInactiveClients({ userId = "", branchId = "" }) {
+export async function getActiveVsInactiveClients({ userId = "", branchId = "", agentId = "" }) {
 	const params = new URLSearchParams();
 
 	if (userId) params.append("userId", userId);
 	if (branchId) params.append("branchId", branchId);
+	if (agentId) params.append("agentId", agentId);
 
 	const url = `${BASE_URL}/reports/clients-active-inactive?${params.toString()}`;
 	const res = await fetch(url);

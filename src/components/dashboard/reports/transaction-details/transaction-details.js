@@ -11,6 +11,8 @@ import { dayjs } from "@/lib/dayjs";
 import { DataTable } from "@/components/core/data-table";
 import { Option } from "@/components/core/option";
 
+import { ExportComponent } from "../../export/export-component";
+
 const columns = [
 	{
 		formatter: (row) => (
@@ -126,9 +128,31 @@ export function TransactionDetails({ data, user, filters, branches }) {
 		},
 		[updateSearchParams, filters]
 	);
+
+	const statusMap = {
+		penalty: "Renovación",
+		disbursement: "Desembolsado",
+		repayment: "Pago",
+	};
+
+	const currencyFormatter = new Intl.NumberFormat("es-CO", {
+		style: "currency",
+		currency: "COP",
+		minimumFractionDigits: 0,
+	});
+
+	const detailRowsToExport = data.map((item) => ({
+		Fecha: item.date,
+		Cliente: item.clientName,
+		Agente: item.agentName,
+		Sede: item.branchName,
+		Monto: currencyFormatter.format(item.amount),
+		Tipo: statusMap[item.type] || item.type,
+	}));
+
 	return (
 		<Stack spacing={4}>
-			<Stack direction={{ xs: "column", sm: "row" }} spacing={3} sx={{ alignItems: "center" }}>
+			<Stack direction={{ xs: "column", sm: "row" }} spacing={3} sx={{ alignItems: "end" }}>
 				<Typography variant="h4" flexGrow={1} textAlign={{ xs: "center", sm: "left" }}>
 					Detalle de Transacciones
 				</Typography>
@@ -161,6 +185,14 @@ export function TransactionDetails({ data, user, filters, branches }) {
 									))}
 						</Select>
 					</FormControl>
+				)}
+				{data.length === 0 ? null : (
+					<ExportComponent
+						reports={{
+							reportName: `Detalle de Transacciones`,
+							detailRowsToExport,
+						}}
+					/>
 				)}
 			</Stack>
 			<Card>
