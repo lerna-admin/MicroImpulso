@@ -9,6 +9,8 @@ import { paths } from "@/paths";
 import { dayjs } from "@/lib/dayjs";
 import { DataTable } from "@/components/core/data-table";
 
+import { ExportComponent } from "../../export/export-component";
+
 const columns = [
 	{ field: "id", name: "ID", width: "50px" },
 	{
@@ -54,6 +56,14 @@ export function NewClientsByDateRange({ filters, rows }) {
 	const [selectedStartDate, setSelectedStartDate] = React.useState(dayjs(startDate));
 	const [selectedEndDate, setSelectedEndDate] = React.useState(dayjs(endDate));
 
+	const detailRowsToExport = rows.map((item) => ({
+		ID: item.id,
+		Nombre: item.clientName,
+		Sede: item.branch,
+		"Fecha de creacion": item.createdAt,
+		Monto: item.amount,
+	}));
+
 	const updateSearchParams = React.useCallback(
 		(newFilters) => {
 			const searchParams = new URLSearchParams();
@@ -90,7 +100,7 @@ export function NewClientsByDateRange({ filters, rows }) {
 
 	return (
 		<Stack spacing={4}>
-			<Stack direction={{ xs: "column", sm: "row" }} spacing={3} sx={{ alignItems: "center" }}>
+			<Stack direction={{ xs: "column", sm: "row" }} spacing={3} sx={{ alignItems: "end" }}>
 				<Typography variant="h4" flexGrow={1} textAlign={{ xs: "center", sm: "left" }}>
 					Clientes Nuevos por Rango de Fechas
 				</Typography>
@@ -111,6 +121,10 @@ export function NewClientsByDateRange({ filters, rows }) {
 					onChange={handleFilterEndDateChange}
 					maxDate={dayjs()}
 				/>
+
+				{rows.length === 0 ? null : (
+					<ExportComponent reports={{ reportName: "Clientes Nuevos por Rango de Fechas", detailRowsToExport }} />
+				)}
 			</Stack>
 			<Card>
 				<Box sx={{ overflowX: "auto" }}>

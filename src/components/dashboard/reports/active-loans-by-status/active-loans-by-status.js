@@ -68,6 +68,29 @@ export function ActiveLoansByStatus({ data, branches, filters, user }) {
 		}
 	}, [statuses]);
 
+	const statusMap = {
+		approved: "Aprobados",
+		funded: "Desembolsados",
+		new: "Nuevos",
+	};
+
+	const currencyFormatter = new Intl.NumberFormat("es-CO", {
+		style: "currency",
+		currency: "COP",
+		minimumFractionDigits: 0,
+	});
+
+	const detailRowsToExport = data.statuses.map((s) => ({
+		Estado: statusMap[s.status] || s.status,
+		Cantidad: s.count,
+		"Valor ($)": currencyFormatter.format(s.outstanding),
+	}));
+
+	const totalsRowToExport = {
+		"Total Cantidad": data.totals.count,
+		"Total Valor ($)": currencyFormatter.format(data.totals.outstanding),
+	};
+
 	return (
 		<Stack spacing={7}>
 			<ReportHeader
@@ -78,6 +101,7 @@ export function ActiveLoansByStatus({ data, branches, filters, user }) {
 				filters={filters}
 				pathToUpdateSearchParams={paths.dashboard.reports.activeLoansByStatus}
 				user={{ role: user.role, branch: user.branchId }}
+				reports={{ reportName: "Préstamos Activos por Estado", detailRowsToExport, totalsRowToExport }}
 			/>
 
 			<Card>

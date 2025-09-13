@@ -25,6 +25,8 @@ import { dayjs } from "@/lib/dayjs";
 import { NoSsr } from "@/components/core/no-ssr";
 import { Option } from "@/components/core/option";
 
+import { ExportComponent } from "../../export/export-component";
+
 const bars = [
 	{ name: "Atendidos", dataKey: "v1", color: "var(--mui-palette-primary-400)" },
 	{ name: "Aprobados", dataKey: "v2", color: "var(--mui-palette-error-400)" },
@@ -109,9 +111,26 @@ export function AgentActivity({ data, totals, branches, filters, user }) {
 		},
 		[updateSearchParams, filters]
 	);
+
+	const detailRowsToExport = data.blocksFormatted.map((item) => ({
+		Agente: `${item.name}`,
+		Atendidos: item.v1,
+		Aprobados: item.v2,
+		Renovados: item.v3,
+		Cobrados: item.v4,
+	}));
+
+	const totalsRowToExport = {
+		"Total atendidos": totals.loanRequestsCount,
+		"Total aprobados": totals.fundedCount,
+		"Total renovados": totals.repaymentCount,
+		"Total cobrados": totals.penaltyCount,
+	};
+
+
 	return (
 		<Stack spacing={4}>
-			<Stack direction={{ xs: "column", sm: "row" }} spacing={3} sx={{ alignItems: "center" }}>
+			<Stack direction={{ xs: "column", sm: "row" }} spacing={3} sx={{ alignItems: "end" }}>
 				<Typography variant="h4" flexGrow={1} textAlign={{ xs: "center", sm: "left" }}>
 					Actividad de los Agentes
 				</Typography>
@@ -147,6 +166,14 @@ export function AgentActivity({ data, totals, branches, filters, user }) {
 						</Select>
 					</FormControl>
 				)}
+
+				<ExportComponent
+					reports={{
+						reportName: `Actividad de los Agentes (${data.allBranchesFormatString})`,
+						detailRowsToExport,
+						totalsRowToExport,
+					}}
+				/>
 			</Stack>
 
 			<Card>
@@ -185,7 +212,7 @@ export function AgentActivity({ data, totals, branches, filters, user }) {
 					<Stack divider={<Divider />} spacing={2} sx={{ flex: "1 1 auto" }}>
 						<NoSsr fallback={<Box sx={{ height: `${chartHeight}px` }} />}>
 							<ResponsiveContainer height={chartHeight}>
-								<BarChart data={data} margin={{ top: 0, right: 0, bottom: 0, left: 0 }}>
+								<BarChart data={data.blocksFormatted} margin={{ top: 0, right: 0, bottom: 0, left: 0 }}>
 									<CartesianGrid strokeDasharray="2 4" vertical={false} />
 									<XAxis axisLine={false} dataKey="name" type="category" />
 									{bars.map((bar) => (

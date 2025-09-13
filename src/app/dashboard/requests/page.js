@@ -68,7 +68,7 @@ export default async function Page({ searchParams }) {
 							/>
 							<Divider />
 							<Box sx={{ overflowX: "auto" }}>
-								<RequestsTable rows={requests} permissions={permissions} role={user.role} />
+								<RequestsTable rows={requests} permissions={permissions} role={user.role} branch={user.branch.id} />
 							</Box>
 							<Divider />
 							<RequestsPagination

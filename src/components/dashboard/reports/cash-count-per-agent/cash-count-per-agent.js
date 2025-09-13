@@ -27,7 +27,6 @@ const bars = [
 ];
 
 export function DailyCashCountPerAgent({ data, branches, agents, filters, user }) {
-	
 	const chartHeight = 400;
 	const theme = useTheme();
 	// Detecta breakpoint activo
@@ -50,8 +49,20 @@ export function DailyCashCountPerAgent({ data, branches, agents, filters, user }
 		return { name: label, v1: metrics.repayments.count, v2: metrics.disbursements.count, v3: metrics.penalties.count };
 	});
 
-	const titlesGraphics = [...new Set(data.blocks.map(obj => obj.branch.name))].join(", ");
+	const titlesGraphics = [...new Set(data.blocks.map((obj) => obj.branch.name))].join(", ");
 
+	const detailRowsToExport = data.blocks.map((block) => ({
+		nombre: block.label,
+		prestamos_asignados: block.metrics.repayments.count,
+		pagos_cobrados: block.metrics.disbursements.count,
+		renovaciones: block.metrics.penalties.count,
+	}));
+
+	const totalsRowToExport = {
+		total_prestamos_asignados: data.totals.repayments.count,
+		total_pagos_cobrados: data.totals.disbursements.count,
+		total_renovaciones: data.totals.penalties.count,
+	};
 
 	return (
 		<Stack spacing={7}>
@@ -62,6 +73,7 @@ export function DailyCashCountPerAgent({ data, branches, agents, filters, user }
 				filters={filters}
 				pathToUpdateSearchParams={paths.dashboard.reports.dailyCashCountByAgent}
 				user={{ role: user.role, branch: user.branchId }}
+				reports={{ reportName: "Arqueo Diario por Agente", detailRowsToExport, totalsRowToExport }}
 			/>
 			<Card>
 				<Box

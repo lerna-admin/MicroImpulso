@@ -7,6 +7,8 @@ import { DatePicker } from "@mui/x-date-pickers";
 import { dayjs } from "@/lib/dayjs";
 import { Option } from "@/components/core/option";
 
+import { ExportComponent } from "../export/export-component";
+
 export function ReportHeader({
 	title,
 	branches = [],
@@ -16,6 +18,7 @@ export function ReportHeader({
 	user,
 	disabledDate = false,
 	disabledAgent = false,
+	reports,
 }) {
 	const { date } = filters;
 	const { role, branch } = user;
@@ -89,7 +92,7 @@ export function ReportHeader({
 		<Stack
 			direction={{ xs: "column", sm: "row" }}
 			spacing={{ xs: 2, sm: 3 }}
-			sx={{ flexWrap: "wrap", alignItems: "center" }}
+			sx={{ flexWrap: "wrap", alignItems: "end" }}
 			useFlexGap
 		>
 			<Typography variant="h4" flexGrow={1} textAlign={{ xs: "center", sm: "left" }}>
@@ -137,6 +140,8 @@ export function ReportHeader({
 					</Select>
 				</FormControl>
 			)}
+
+			<ExportComponent reports={reports} />
 		</Stack>
 	);
 }

@@ -25,6 +25,10 @@ export default async function Page({ searchParams }) {
 	delete totals.branches;
 	delete totals.agents;
 
+	const allBranchesFormatString = blocks.reduce((acc, branch, index) => {
+		return acc + (index > 0 ? ", " : "") + branch.branchName;
+	}, "");
+
 	const blocksFormatted = blocks.flatMap((block) =>
 		(block.agents || []).map((agent) => ({
 			name: agent.agentName,
@@ -48,7 +52,7 @@ export default async function Page({ searchParams }) {
 			}}
 		>
 			<AgentActivity
-				data={blocksFormatted}
+				data={{ blocksFormatted, allBranchesFormatString }}
 				totals={totals}
 				branches={branchesFormatted}
 				filters={{ startDate, endDate, branch }}

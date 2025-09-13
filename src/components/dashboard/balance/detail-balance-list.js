@@ -17,13 +17,13 @@ import Cookies from "js-cookie";
 
 import { dayjs } from "@/lib/dayjs";
 import { usePopover } from "@/hooks/use-popover";
+import { ExportComponent } from "@/components/dashboard/export/export-component.js";
 
-import { NotificationAlert } from "../notifications/notification-alert";
+import { NotificationAlert } from "../../widgets/notifications/notification-alert";
 
 dayjs.locale("es");
 
 export function DetailBalanceList({ dataBalance, user }) {
-
 	const [assets, setAssets] = React.useState([
 		{ id: 1, name: "Cartera ($)", value: "" },
 		{ id: 2, name: "Cobrado ($)", value: "" },
@@ -82,9 +82,12 @@ export function DetailBalanceList({ dataBalance, user }) {
 				titleTypographyProps={{ variant: "h5" }}
 				title={"Balance de la ruta"}
 				action={
-					<Button size="xs" variant="contained" onClick={popover.handleOpen}>
-						Cierre
-					</Button>
+					<Stack direction="row" spacing={2}>
+						<ExportComponent balance={assets} />
+						<Button size="xs" variant="contained" onClick={popover.handleOpen}>
+							Cierre
+						</Button>
+					</Stack>
 				}
 			/>
 			<Divider />
