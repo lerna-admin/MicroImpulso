@@ -19,6 +19,31 @@ export async function closeDay(agentId) {
 	return data;
 }
 
+export async function unlockUser(agentId) {
+	const res = await fetch(`${BASE_URL}/users/${agentId}/unblock`, {
+		method: "PATCH",
+		headers: { "Content-Type": "application/json" },
+	});
+
+	const data = await res.json();
+
+	if (!res.ok) throw new Error("Error al desbloquear usuario");
+	return data;
+}
+
+export async function activeUser(agentId, body) {
+	const res = await fetch(`${BASE_URL}/users/${agentId}`, {
+		method: "PATCH",
+		headers: { "Content-Type": "application/json" },
+		body: JSON.stringify(body),
+	});
+
+	const data = await res.json();
+
+	if (!res.ok) throw new Error("Error al desbloquear usuario");
+	return data;
+}
+
 export async function deleteCloseDay(agentId) {
 	const res = await fetch(`${BASE_URL}/closing/agent/${agentId}/close-day`, {
 		method: "DELETE",

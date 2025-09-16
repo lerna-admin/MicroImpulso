@@ -2,9 +2,11 @@
 
 import * as React from "react";
 import RouterLink from "next/link";
-import { deleteCloseDay } from "@/app/dashboard/balance/hooks/use-balance";
+import { useRouter } from "next/navigation";
+import { activeUser, deleteCloseDay, unlockUser } from "@/app/dashboard/balance/hooks/use-balance";
 import {
 	Button,
+	Chip,
 	Dialog,
 	DialogContent,
 	DialogContentText,
@@ -22,7 +24,12 @@ import Typography from "@mui/material/Typography";
 import {
 	ArrowCounterClockwise as ArrowCounterClockwiseIcon,
 	DotsThree as DotsThreeIcon,
+	ExclamationMark as ExclamationMarkIcon,
+	LockOpen as LockOpenIcon,
+	UserCheck as UserCheckIcon,
+	XCircle as XCircleIcon,
 } from "@phosphor-icons/react/dist/ssr";
+import { CheckCircle as CheckCircleIcon } from "@phosphor-icons/react/dist/ssr/CheckCircle";
 
 import { paths } from "@/paths";
 import { dayjs } from "@/lib/dayjs";
@@ -71,7 +78,29 @@ export function UsersTable({ rows }) {
 			name: "Fecha actualizada",
 			width: "150px",
 		},
+		{
+			formatter: (row) => {
+				const mapping = {
+					blocked: {
+						label: "Bloqueado",
+						icon: <ExclamationMarkIcon color="var(--mui-palette-error-main)" weight="fill" />,
+					},
+					active: {
+						label: "Activo",
+						icon: <CheckCircleIcon color="var(--mui-palette-success-main)" weight="fill" />,
+					},
+					inactive: {
+						label: "Inactivo",
+						icon: <XCircleIcon color="var(--mui-palette-error-main)" weight="fill" />,
+					},
+				};
+				const { label, icon } = mapping[row.status.toLowerCase()] ?? { label: "Unknown", icon: null };
 
+				return <Chip icon={icon} label={label} size="small" variant="outlined" />;
+			},
+			name: "Estado",
+			width: "100px",
+		},
 		{
 			formatter: (row) => <ActionsCell row={row} />,
 			name: "Acciones",
@@ -96,6 +125,7 @@ export function UsersTable({ rows }) {
 }
 
 export function ActionsCell({ row }) {
+	const router = useRouter();
 	const popover = usePopover();
 	const modalRevertirCierre = usePopover();
 	const notificationAlert = usePopover();
@@ -121,6 +151,34 @@ export function ActionsCell({ row }) {
 		modalRevertirCierre.handleClose();
 	};
 
+	const handleUnlockUser = async () => {
+		try {
+			await unlockUser(row.id);
+			setAlertMsg("¡Se ha desbloqueado exitosamente!");
+			setAlertSeverity("success");
+		} catch (error) {
+			setAlertMsg(error.message);
+			setAlertSeverity("error");
+		}
+		popover.handleClose();
+		notificationAlert.handleOpen();
+		router.refresh();
+	};
+
+	const handleActiveUser = async () => {
+		try {
+			await activeUser(row.id, { status: "active" });
+			setAlertMsg("¡Se ha activado exitosamente!");
+			setAlertSeverity("success");
+		} catch (error) {
+			setAlertMsg(error.message);
+			setAlertSeverity("error");
+		}
+		popover.handleClose();
+		notificationAlert.handleOpen();
+		router.refresh();
+	};
+
 	return (
 		<React.Fragment>
 			<Tooltip title="Más opciones">
@@ -139,6 +197,18 @@ export function ActionsCell({ row }) {
 						<ArrowCounterClockwiseIcon />
 					</ListItemIcon>
 					<Typography>Revertir cierre del dia</Typography>
+				</MenuItem>
+				<MenuItem onClick={handleUnlockUser}>
+					<ListItemIcon>
+						<LockOpenIcon />
+					</ListItemIcon>
+					<Typography>Desbloquear</Typography>
+				</MenuItem>
+				<MenuItem onClick={handleActiveUser}>
+					<ListItemIcon>
+						<UserCheckIcon />
+					</ListItemIcon>
+					<Typography>Activar</Typography>
 				</MenuItem>
 			</Menu>
 
