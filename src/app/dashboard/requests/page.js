@@ -1,5 +1,4 @@
 import * as React from "react";
-
 import { ROLES } from "@/constants/roles";
 import Box from "@mui/material/Box";
 import Card from "@mui/material/Card";
@@ -15,9 +14,9 @@ import { RequestsPagination } from "@/components/dashboard/request/requests-pagi
 import { RequestsSelectionProvider } from "@/components/dashboard/request/requests-selection-context";
 import { RequestsTable } from "@/components/dashboard/request/requests-table";
 
+import { getAllBranches } from "../configuration/branch-managment/hooks/use-branches";
 import { getAllUsers } from "../users/hooks/use-users";
 import { getAllRequests, getRequestsByAgent } from "./hooks/use-requests";
-import { getAllBranches } from "../configuration/branch-managment/hooks/use-branches";
 
 export const metadata = { title: `Solicitudes | Dashboard | ${appConfig.name}` };
 
@@ -27,8 +26,6 @@ export default async function Page({ searchParams }) {
 	const {
 		data: { user },
 	} = await getUser();
-
-	const { permissions } = user;
 
 	const {
 		data: requests,
@@ -68,7 +65,7 @@ export default async function Page({ searchParams }) {
 							/>
 							<Divider />
 							<Box sx={{ overflowX: "auto" }}>
-								<RequestsTable rows={requests} permissions={permissions} role={user.role} branch={user.branch.id} />
+								<RequestsTable rows={requests} />
 							</Box>
 							<Divider />
 							<RequestsPagination

@@ -15,9 +15,8 @@ import { CustomersPagination } from "@/components/dashboard/customer/customers-p
 import { CustomersSelectionProvider } from "@/components/dashboard/customer/customers-selection-context";
 import { CustomersTable } from "@/components/dashboard/customer/customers-table";
 
-
-import { getAllCustomers } from "./hooks/use-customers";
 import { getAllBranches } from "../configuration/branch-managment/hooks/use-branches";
+import { getAllCustomers } from "./hooks/use-customers";
 
 export const metadata = { title: `Clientes | Dashboard | ${appConfig.name}` };
 
@@ -27,6 +26,8 @@ export default async function Page({ searchParams }) {
 	const {
 		data: { user },
 	} = await getUser();
+
+	const { permissions } = user;
 
 	const getCustomers = (role) => {
 		if (role === ROLES.AGENTE) return getAllCustomers({ page, limit, status, type, paymentDay, agent: user.id });
@@ -87,7 +88,7 @@ export default async function Page({ searchParams }) {
 						/>
 						<Divider />
 						<Box sx={{ overflowX: "auto" }}>
-							<CustomersTable rows={customers} />
+							<CustomersTable rows={customers} permissions={permissions} role={user.role} branch={user.branch.id} />
 						</Box>
 						<Divider />
 						<CustomersPagination

@@ -1,4 +1,4 @@
-import { CardsThree as CardsThreeIcon } from "@phosphor-icons/react";
+import { CardsThree as CardsThreeIcon, MagnifyingGlass } from "@phosphor-icons/react";
 import {
 	CashRegister as CashRegisterIcon,
 	CurrencyCircleDollar as CurrencyCircleDollarIcon,
@@ -78,4 +78,5 @@ export const icons = {
 	"cash-register": CashRegisterIcon,
 	timer: TimerIcon,
 	"seal-percent": SealPercentIcon,
+	"magnifying-glass": MagnifyingGlass,
 };

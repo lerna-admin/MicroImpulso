@@ -16,7 +16,7 @@ import { dayjs } from "@/lib/dayjs";
 import { usePopover } from "@/hooks/use-popover";
 import { NotificationAlert } from "@/components/widgets/notifications/notification-alert";
 
-export function CustomerEditForm({ customerToEdit }) {
+export function CustomerEditForm({ customerToEdit, onlyRead = false }) {
 	const [formData, setFormData] = React.useState({
 		id: "",
 		name: "",
@@ -70,6 +70,7 @@ export function CustomerEditForm({ customerToEdit }) {
 							<FormControl fullWidth>
 								<InputLabel>N. de documento</InputLabel>
 								<OutlinedInput
+									disabled={onlyRead}
 									defaultValue={customerToEdit.client.document}
 									id="document"
 									name="document"
@@ -86,6 +87,7 @@ export function CustomerEditForm({ customerToEdit }) {
 							<FormControl fullWidth>
 								<InputLabel>Nombre Completo</InputLabel>
 								<OutlinedInput
+									disabled={onlyRead}
 									defaultValue={customerToEdit.client.name}
 									id="name"
 									name="name"
@@ -102,6 +104,7 @@ export function CustomerEditForm({ customerToEdit }) {
 							<FormControl fullWidth>
 								<InputLabel>Celular</InputLabel>
 								<OutlinedInput
+									disabled={onlyRead}
 									defaultValue={customerToEdit.client.phone}
 									id="phone"
 									name="phone"
@@ -118,6 +121,7 @@ export function CustomerEditForm({ customerToEdit }) {
 							<FormControl fullWidth>
 								<InputLabel>Correo</InputLabel>
 								<OutlinedInput
+									disabled={onlyRead}
 									defaultValue={customerToEdit.client.email}
 									name="email"
 									id="email"
@@ -136,6 +140,7 @@ export function CustomerEditForm({ customerToEdit }) {
 							<FormControl fullWidth>
 								<InputLabel>Dirección</InputLabel>
 								<OutlinedInput
+									disabled={onlyRead}
 									defaultValue={customerToEdit.client.address}
 									id="address"
 									name="address"
@@ -201,14 +206,16 @@ export function CustomerEditForm({ customerToEdit }) {
 							</FormControl>
 						</Grid>
 					</Grid>
-					<Stack direction="row" spacing={1} sx={{ alignItems: "center", justifyContent: "flex-end" }}>
-						<Button color="secondary" variant="outlined" onClick={() => router.push(paths.dashboard.customers.list)}>
-							Cancelar
-						</Button>
-						<Button variant="contained" onClick={handleSubmit}>
-							Confirmar
-						</Button>
-					</Stack>
+					{onlyRead ? null : (
+						<Stack direction="row" spacing={1} sx={{ alignItems: "center", justifyContent: "flex-end" }}>
+							<Button color="secondary" variant="outlined" onClick={() => router.push(paths.dashboard.customers.list)}>
+								Cancelar
+							</Button>
+							<Button variant="contained" onClick={handleSubmit}>
+								Confirmar
+							</Button>
+						</Stack>
+					)}
 				</Stack>
 			</form>
 

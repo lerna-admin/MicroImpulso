@@ -1,5 +1,4 @@
 import { ROLES } from "@/constants/roles";
-
 import { paths } from "@/paths";
 
 export const dashboardConfig = {
@@ -11,6 +10,13 @@ export const dashboardConfig = {
 			title: "Gerente",
 			items: [
 				// Si quitas un item de cualquiera de los roles, desaparece tanto del sidebar como tampoco deja acceder por el middleware
+				{
+					key: "consultations",
+					title: "Consultas",
+					href: paths.dashboard.consultations,
+					icon: "magnifying-glass",
+					matcher: { type: "startsWith", href: "/dashboard/consultations" },
+				},
 				{
 					key: "overview",
 					title: "Resumen",
@@ -166,6 +172,12 @@ export const dashboardConfig = {
 			title: "Administrador",
 			items: [
 				{
+					key: "consultations",
+					title: "Consultas",
+					icon: "magnifying-glass",
+					matcher: { type: "startsWith", href: "/dashboard/consultations" },
+				},
+				{
 					key: "reports",
 					title: "Reportes",
 					icon: "article",
@@ -268,7 +280,6 @@ export const dashboardConfig = {
 					matcher: { type: "startsWith", href: "/dashboard/permissions" },
 					items: [
 						{ key: "permissions", title: "Permisos", href: paths.dashboard.configuration.permissions },
-						{ key: "templates", title: "Plantillas", href: paths.dashboard.configuration.templates },
 					],
 				},
 			],
@@ -278,6 +289,12 @@ export const dashboardConfig = {
 			key: ROLES.AGENTE,
 			title: "Agentes",
 			items: [
+				{
+					key: "consultations",
+					title: "Consultas",
+					icon: "magnifying-glass",
+					matcher: { type: "startsWith", href: "/dashboard/consultations" },
+				},
 				{
 					key: "chat",
 					title: "Chat",

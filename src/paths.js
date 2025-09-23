@@ -27,12 +27,12 @@ export const paths = {
 			permissions: "/dashboard/configuration/permissions",
 			amountManagment: "/dashboard/configuration/amount-managment",
 			paymentInformation: "/dashboard/configuration/payment-information",
-			templates: "/dashboard/configuration/templates",
 			branchManagment: {
 				create: "/dashboard/configuration/branch-managment/create",
 				list: "/dashboard/configuration/branch-managment",
 			},
 		},
+		consultations: "/dashboard/consultations",
 		customers: {
 			create: "/dashboard/customers/create",
 			details: (customerId) => `/dashboard/customers/${customerId}`,
