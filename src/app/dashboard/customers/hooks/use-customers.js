@@ -42,6 +42,18 @@ export async function getAllCustomers({
 	return await res.json();
 }
 
+export async function getAllCustomersByQuery(query) {
+	const params = new URLSearchParams();
+
+	params.append("q", query.toString());
+
+	const url = `${BASE_URL}/clients/query?${params.toString()}`;
+	const res = await fetch(url);
+
+	if (!res.ok) throw new Error("Error al obtener clientes");
+	return await res.json();
+}
+
 // /**
 //  *
 //  * @returns {Client[]}

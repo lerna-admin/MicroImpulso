@@ -1,15 +1,19 @@
 import * as React from "react";
-import { Card } from "@mui/material";
+import { Card, Stack } from "@mui/material";
 import Box from "@mui/material/Box";
-import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 
 import { appConfig } from "@/config/app";
+import { getUser } from "@/lib/custom-auth/server";
+import { Consultations } from "@/components/dashboard/configuration/consultations.js";
 
-export const metadata = { title: `Plantillas | Dashboard | ${appConfig.name}` };
-import { TemplateForm } from "@/components/dashboard/configuration/template-form";
+export const metadata = { title: `Resumen | Consultas | ${appConfig.name}` };
 
 export default async function Page() {
+	const {
+		data: { user },
+	} = await getUser();
+
 	return (
 		<Box
 			sx={{
@@ -22,12 +26,12 @@ export default async function Page() {
 			<Stack spacing={4}>
 				<Stack spacing={3} sx={{ alignItems: "flex-start" }}>
 					<Box sx={{ flex: "1 1 auto" }}>
-						<Typography variant="h4">Plantillas</Typography>
+						<Typography variant="h4">Consultas</Typography>
 					</Box>
 				</Stack>
 				<Stack>
 					<Card>
-						<TemplateForm/>
+						<Consultations role={user.role} />
 					</Card>
 				</Stack>
 			</Stack>
