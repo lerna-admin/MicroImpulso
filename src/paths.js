@@ -32,7 +32,7 @@ export const paths = {
 				list: "/dashboard/configuration/branch-managment",
 			},
 		},
-		consultations: "/dashboard/consultations",
+		queries: "/dashboard/queries",
 		customers: {
 			create: "/dashboard/customers/create",
 			details: (customerId) => `/dashboard/customers/${customerId}`,

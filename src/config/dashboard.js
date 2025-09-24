@@ -11,11 +11,11 @@ export const dashboardConfig = {
 			items: [
 				// Si quitas un item de cualquiera de los roles, desaparece tanto del sidebar como tampoco deja acceder por el middleware
 				{
-					key: "consultations",
+					key: "queries",
 					title: "Consultas",
-					href: paths.dashboard.consultations,
+					href: paths.dashboard.queries,
 					icon: "magnifying-glass",
-					matcher: { type: "startsWith", href: "/dashboard/consultations" },
+					matcher: { type: "startsWith", href: "/dashboard/queries" },
 				},
 				{
 					key: "overview",
@@ -172,10 +172,11 @@ export const dashboardConfig = {
 			title: "Administrador",
 			items: [
 				{
-					key: "consultations",
+					key: "queries",
 					title: "Consultas",
+					href: paths.dashboard.queries,
 					icon: "magnifying-glass",
-					matcher: { type: "startsWith", href: "/dashboard/consultations" },
+					matcher: { type: "startsWith", href: "/dashboard/queries" },
 				},
 				{
 					key: "reports",
@@ -290,10 +291,11 @@ export const dashboardConfig = {
 			title: "Agentes",
 			items: [
 				{
-					key: "consultations",
+					key: "queries",
 					title: "Consultas",
+					href: paths.dashboard.queries,
 					icon: "magnifying-glass",
-					matcher: { type: "startsWith", href: "/dashboard/consultations" },
+					matcher: { type: "startsWith", href: "/dashboard/queries" },
 				},
 				{
 					key: "chat",
