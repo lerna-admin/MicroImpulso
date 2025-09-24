@@ -5,7 +5,7 @@ import Typography from "@mui/material/Typography";
 
 import { appConfig } from "@/config/app";
 import { getUser } from "@/lib/custom-auth/server";
-import { Consultations } from "@/components/dashboard/configuration/consultations.js";
+import { Queries } from "@/components/dashboard/configuration/queries.js";
 
 export const metadata = { title: `Resumen | Consultas | ${appConfig.name}` };
 
@@ -31,7 +31,7 @@ export default async function Page() {
 				</Stack>
 				<Stack>
 					<Card>
-						<Consultations role={user.role} />
+						<Queries role={user.role} />
 					</Card>
 				</Stack>
 			</Stack>

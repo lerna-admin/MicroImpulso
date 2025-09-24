@@ -33,7 +33,7 @@ import { PropertyList } from "@/components/core/property-list";
 import { CustomerEditForm } from "../customer/customer-edit-form";
 import { CustomersLineItemsTable } from "../customer/customers-line-items-table";
 
-export function Consultations({ role }) {
+export function Queries({ role }) {
 	const [inputValue, setInputValue] = React.useState("");
 	const [options, setOptions] = React.useState([]);
 	const [loading, setLoading] = React.useState(false);
