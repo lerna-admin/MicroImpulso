@@ -313,7 +313,7 @@ export function ActionsCell({ row, permissions, role, branch }) {
 	const handleRenewLoanRequest = async () => {
 		setIsPending(true);
 		try {
-			await renewRequest({ amount: amount, newDate: selectedDate }, row.id);
+			await renewRequest({ amount: amount, newDate: selectedDate }, row.loanRequest.id);
 			setAlertMsg("¡Renovado exitosamente!");
 			setAlertSeverity("success");
 		} catch (error) {
@@ -389,7 +389,7 @@ export function ActionsCell({ row, permissions, role, branch }) {
 	const onSubmit = React.useCallback(async (dataForm) => {
 		const { user } = dataForm;
 		try {
-			await reasigmentRequest({ agent: user.id }, row.id);
+			await reasigmentRequest({ agent: user.id }, row.loanRequest.id);
 			setAlertMsg("¡Se ha guardado exitosamente!");
 			setAlertSeverity("success");
 		} catch (error) {
@@ -454,7 +454,7 @@ export function ActionsCell({ row, permissions, role, branch }) {
 					disabled={row.loanRequest.status !== "funded"}
 					onClick={() => {
 						popover.handleClose();
-						router.push(paths.dashboard.requests.details(row.id));
+						router.push(paths.dashboard.requests.details(row.loanRequest.id));
 					}}
 				>
 					<Typography>Abonar</Typography>
