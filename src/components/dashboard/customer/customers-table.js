@@ -217,6 +217,7 @@ function ShowAlert({ endDateLoanRequest }) {
 }
 
 export function ActionsCell({ row, permissions, role, branch }) {
+	
 	const router = useRouter();
 	const popover = usePopover();
 	const popoverAlert = usePopover();
@@ -296,7 +297,7 @@ export function ActionsCell({ row, permissions, role, branch }) {
 	const handleApproveLoanRequest = async () => {
 		setIsPending(true);
 		try {
-			await updateRequest({ status: "approved" }, row.id);
+			await updateRequest({ status: "approved" }, row.loanRequest.id);
 			setAlertMsg("¡Aprobado exitosamente!");
 			setAlertSeverity("success");
 		} catch (error) {
@@ -329,9 +330,9 @@ export function ActionsCell({ row, permissions, role, branch }) {
 		setIsPending(true);
 		try {
 			await createTransaction({
-				loanRequestId: row.id,
+				loanRequestId: row.loanRequest.id,
 				transactionType: "disbursement",
-				amount: row.requestedAmount,
+				amount: row.loanRequest.requestedAmount,
 				reference: "Desembolso cliente",
 			});
 			setAlertMsg("¡Desembolsado exitosamente!");
@@ -359,6 +360,7 @@ export function ActionsCell({ row, permissions, role, branch }) {
 					setOptions([]);
 				}
 			}, 700), // Espera 700ms después del último tipo
+		// eslint-disable-next-line react-hooks/exhaustive-deps
 		[]
 	);
 
@@ -383,6 +385,7 @@ export function ActionsCell({ row, permissions, role, branch }) {
 		}
 	};
 
+	// eslint-disable-next-line react-hooks/exhaustive-deps
 	const onSubmit = React.useCallback(async (dataForm) => {
 		const { user } = dataForm;
 		try {
@@ -438,7 +441,7 @@ export function ActionsCell({ row, permissions, role, branch }) {
 					disabled={
 						(role === "ADMIN" && row.loanRequest.status !== "approved") ||
 						canDisburse.granted === false ||
-						row.status !== "approved"
+						row.loanRequest.status !== "approved"
 					}
 					onClick={() => {
 						popover.handleClose();
@@ -700,7 +703,7 @@ export function ActionsCell({ row, permissions, role, branch }) {
 					<DialogContentText id="alert-dialog-description" textAlign={"justify"} sx={{ pb: 2 }}>
 						{`Esta acción no realiza el desembolso automáticamente.
 						Al aceptar, se notificará al cliente ${row.client.name} que su préstamo de ${Number.parseInt(
-							row.requestedAmount
+							row.loanRequest.requestedAmount
 						).toLocaleString("es-CO", {
 							style: "currency",
 							currency: "COP",
