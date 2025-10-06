@@ -75,7 +75,6 @@ export function DetailBalanceList({ dataBalance, user }) {
 			Cookies.set("isAgentClosed", true);
 		}
 	};
-
 	return (
 		<Card variant="outlined">
 			<CardHeader
