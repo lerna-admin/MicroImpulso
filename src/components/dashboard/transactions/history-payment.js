@@ -38,6 +38,7 @@ import { dayjs } from "@/lib/dayjs";
 import { usePopover } from "@/hooks/use-popover";
 import { DataTable } from "@/components/core/data-table";
 import { NotificationAlert } from "@/components/widgets/notifications/notification-alert";
+import { renewRequest } from "@/app/dashboard/requests/hooks/use-requests";
 
 const columns = [
 	{
@@ -142,17 +143,24 @@ export function HistoryPayments({
 		},
 	];
 
+	const today = dayjs();
+
+	const todayPlus = today.add(30, "day");
+
 	const {
 		reset,
 		control,
 		handleSubmit,
 		formState: { errors },
+		watch
 	} = useForm({
 		resolver: zodResolver(schema),
 		defaultValues: {
 			amount: 0,
 		},
 	});
+
+	const montoARenovar = watch("amount");
 
 	const onSubmit = React.useCallback(async ({ amount }) => {
 		try {
@@ -176,6 +184,32 @@ export function HistoryPayments({
 		popoverAlert.handleOpen();
 		router.refresh();
 	});
+
+	const renovarAuto = async () => {
+		try {
+			const data = {
+				loanRequestId: requestId,
+				transactionType: "repayment",
+				amount: Number.parseInt(montoARenovar),
+				reference: "Abono cliente",
+			};
+
+			await createTransaction(data);
+			reset({ amount: 0 });
+
+			setAlertMsg("¡Pago registrado!");
+			setAlertSeverity("success");
+		} catch (error) {
+			setAlertMsg(error.message);
+			setAlertSeverity("error");
+		} finally {
+			await renewRequest({amount: requestedAmount, newDate: todayPlus }, requestId)
+		}
+
+		popover.handleClose();
+		popoverAlert.handleOpen();
+		router.refresh();
+	}
 
 	const handleRegisterPay = () => {
 		if (isAgentClosed === "true") {
@@ -301,6 +335,9 @@ export function HistoryPayments({
 						</Grid>
 					</DialogContent>
 					<DialogActions sx={{ padding: 3 }}>
+						<Button variant="contained" onClick={handleSubmit(renovarAuto)} autoFocus>
+							Renovar inmediatamente
+						</Button>
 						<Button variant="contained" type="submit" autoFocus>
 							Pagar
 						</Button>
