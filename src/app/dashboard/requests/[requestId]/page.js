@@ -17,6 +17,7 @@ import { appConfig } from "@/config/app";
 import { paths } from "@/paths";
 import { PropertyItem } from "@/components/core/property-item";
 import { PropertyList } from "@/components/core/property-list";
+import { ExportComponent } from "@/components/dashboard/export/export-component";
 import { HistoryPayments } from "@/components/dashboard/transactions/history-payment";
 
 import { getRequestById } from "../hooks/use-requests";
@@ -44,6 +45,12 @@ export default async function Page({ params }) {
 	const { requestId } = params;
 	const { client, transactions, requestedAmount, amount } = await getRequestById(requestId);
 
+	const detailRowsToExport = transactions.map((item) => ({
+		Fecha: item.date,
+		Monto: item.amount,
+		"Tipo de Transaccion": item.reference,
+	}));
+
 	return (
 		<Box
 			sx={{
@@ -54,7 +61,7 @@ export default async function Page({ params }) {
 			}}
 		>
 			<Stack spacing={4}>
-				<Stack spacing={3}>
+				<Stack spacing={3} direction={"row"} justifyContent={"space-between"}>
 					<div>
 						<Link
 							color="text.primary"
@@ -67,6 +74,8 @@ export default async function Page({ params }) {
 							Solicitudes
 						</Link>
 					</div>
+
+					<ExportComponent reports={{ reportName: `Historial de transacciones ${client.name}`, detailRowsToExport }} />
 				</Stack>
 				<Grid container spacing={4}>
 					<Grid

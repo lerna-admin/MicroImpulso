@@ -1,9 +1,18 @@
 "use client";
 
 import * as React from "react";
-import { Chip, Typography } from "@mui/material";
-import { CheckCircle, Clock, ExclamationMark, XCircle } from "@phosphor-icons/react/dist/ssr";
+import { useRouter } from "next/navigation";
+import { Chip, IconButton, Menu, MenuItem, Tooltip, Typography } from "@mui/material";
+import {
+	CheckCircle,
+	Clock,
+	DotsThree as DotsThreeIcon,
+	ExclamationMark,
+	XCircle,
+} from "@phosphor-icons/react/dist/ssr";
 
+import { paths } from "@/paths";
+import { usePopover } from "@/hooks/use-popover";
 import { DataTable } from "@/components/core/data-table";
 
 const columns = [
@@ -56,28 +65,73 @@ const columns = [
 		width: "100px",
 		align: "center",
 	},
+
 	{
-		formatter: (row) => {
-			return new Intl.NumberFormat("es-CO", { style: "currency", currency: "COP", minimumFractionDigits: 0 }).format(
-				row.requestedAmount
-			);
-		},
-		name: "Cantidad solicitada",
-		width: "100px",
-		align: "center",
-	},
-	{
-		formatter: (row) => {
-			return new Intl.NumberFormat("es-CO", { style: "currency", currency: "COP", minimumFractionDigits: 0 }).format(
-				row.amount
-			);
-		},
-		name: "Total a pagar",
-		width: "100px",
+		formatter: (row) => <ActionsCell row={row} />,
+		name: "Acciones",
+		hideName: true,
+		width: "70px",
 		align: "right",
 	},
+	// {
+	// 	formatter: (row) => {
+	// 		return new Intl.NumberFormat("es-CO", { style: "currency", currency: "COP", minimumFractionDigits: 0 }).format(
+	// 			row.requestedAmount
+	// 		);
+	// 	},
+	// 	name: "Cantidad solicitada",
+	// 	width: "100px",
+	// 	align: "center",
+	// },
+	// {
+	// 	formatter: (row) => {
+	// 		return new Intl.NumberFormat("es-CO", { style: "currency", currency: "COP", minimumFractionDigits: 0 }).format(
+	// 			row.amount
+	// 		);
+	// 	},
+	// 	name: "Total a pagar",
+	// 	width: "100px",
+	// 	align: "right",
+	// },
 ];
 
 export function CustomersLineItemsTable({ rows }) {
 	return <DataTable columns={columns} rows={rows} />;
+}
+
+export function ActionsCell({ row }) {
+
+	const [anchorEl, setAnchorEl] = React.useState(null);
+	const popover = usePopover();
+	const router = useRouter();
+
+	const handleHistoryPayment = () => {
+		router.push(paths.dashboard.requests.details(row.id));
+	};
+
+	const handleOptions = (event) => {
+		popover.handleOpen();
+		setAnchorEl(event.currentTarget);
+	};
+
+	return (
+		<React.Fragment>
+			<Tooltip title="Más opciones">
+				<IconButton onClick={handleOptions}>
+					<DotsThreeIcon weight="bold" />
+				</IconButton>
+			</Tooltip>
+
+			<Menu
+				anchorEl={anchorEl}
+				open={popover.open}
+				onClose={popover.handleClose}
+				slotProps={{ paper: { elevation: 0 } }}
+			>
+				<MenuItem onClick={handleHistoryPayment}>
+					<Typography>Ver historial de pagos</Typography>
+				</MenuItem>
+			</Menu>
+		</React.Fragment>
+	);
 }

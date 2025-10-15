@@ -68,8 +68,11 @@ export async function createRequest(data) {
 		headers: { "Content-Type": "application/json" },
 		body: JSON.stringify(data),
 	});
-	if (!res.ok) throw new Error("Error al crear solicitud");
-	return await res.json();
+
+	const response = await res.json()
+	
+	if (!res.ok) throw new Error(response.message);
+	return response;
 }
 
 export async function updateRequest(data, id) {
@@ -85,16 +88,6 @@ export async function updateRequest(data, id) {
 export async function renewRequest(data, id) {
 	const res = await fetch(`${BASE_URL}/loan-request/${id}/renew`, {
 		method: "POST",
-		headers: { "Content-Type": "application/json" },
-		body: JSON.stringify(data),
-	});
-	if (!res.ok) throw new Error("Error al actualizar solicitud");
-	return await res.json();
-}
-
-export async function reasigmentRequest(data, id) {
-	const res = await fetch(`${BASE_URL}/loan-request/${id}`, {
-		method: "PATCH",
 		headers: { "Content-Type": "application/json" },
 		body: JSON.stringify(data),
 	});

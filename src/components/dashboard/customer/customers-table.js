@@ -3,7 +3,7 @@
 import * as React from "react";
 import RouterLink from "next/link";
 import { useRouter } from "next/navigation";
-import { reasigmentRequest, renewRequest, updateRequest } from "@/app/dashboard/requests/hooks/use-requests";
+import { renewRequest, updateRequest } from "@/app/dashboard/requests/hooks/use-requests";
 import { createTransaction } from "@/app/dashboard/transactions/hooks/use-transactions";
 import { getAllUsers } from "@/app/dashboard/users/hooks/use-users";
 import { deleteAlphabeticals } from "@/helpers/format-currency";
@@ -217,7 +217,6 @@ function ShowAlert({ endDateLoanRequest }) {
 }
 
 export function ActionsCell({ row, permissions, role, branch }) {
-	
 	const router = useRouter();
 	const popover = usePopover();
 	const popoverAlert = usePopover();
@@ -389,7 +388,7 @@ export function ActionsCell({ row, permissions, role, branch }) {
 	const onSubmit = React.useCallback(async (dataForm) => {
 		const { user } = dataForm;
 		try {
-			await reasigmentRequest({ agent: user.id }, row.loanRequest.id);
+			await updateRequest({ agent: user.id }, row.loanRequest.id);
 			setAlertMsg("¡Se ha guardado exitosamente!");
 			setAlertSeverity("success");
 		} catch (error) {
@@ -404,6 +403,21 @@ export function ActionsCell({ row, permissions, role, branch }) {
 		router.refresh();
 	});
 
+	const handleRequestRejected = async () => {
+		try {
+			await updateRequest({ status: "rejected" }, row.loanRequest.id);
+			setAlertMsg("¡Se ha guardado exitosamente!");
+			setAlertSeverity("success");
+		} catch (error) {
+			setAlertMsg(error.message);
+			setAlertSeverity("error");
+		} finally {
+			popoverAlert.handleOpen();
+			popover.handleClose();
+			reset();
+		}
+	};
+
 	return (
 		<React.Fragment>
 			<Tooltip title="Más opciones">
@@ -411,23 +425,16 @@ export function ActionsCell({ row, permissions, role, branch }) {
 					<DotsThreeIcon weight="bold" />
 				</IconButton>
 			</Tooltip>
+
 			<Menu
-				disabled={row.loanRequest.status !== "funded"}
 				anchorEl={anchorEl}
 				open={popover.open}
 				onClose={popover.handleClose}
 				slotProps={{ paper: { elevation: 0 } }}
 			>
-				<MenuItem onClick={handlePayment}>
+				<MenuItem disabled={row.loanRequest.status !== "funded"} onClick={handlePayment}>
 					<Typography>Abonar</Typography>
 				</MenuItem>
-			</Menu>
-			<Menu
-				anchorEl={anchorEl}
-				open={popover.open}
-				onClose={popover.handleClose}
-				slotProps={{ paper: { elevation: 0 } }}
-			>
 				<MenuItem
 					disabled={row.loanRequest.status !== "new" && row.loanRequest.status !== "under_review"}
 					onClick={() => {
@@ -435,7 +442,7 @@ export function ActionsCell({ row, permissions, role, branch }) {
 						modalApproved.handleOpen();
 					}}
 				>
-					<Typography>Aprobar</Typography>
+					<Typography>Aprobar solicitud</Typography>
 				</MenuItem>
 				<MenuItem
 					disabled={
@@ -448,16 +455,7 @@ export function ActionsCell({ row, permissions, role, branch }) {
 						modalFunded.handleOpen();
 					}}
 				>
-					<Typography>Desembolsar</Typography>
-				</MenuItem>
-				<MenuItem
-					disabled={row.loanRequest.status !== "funded"}
-					onClick={() => {
-						popover.handleClose();
-						router.push(paths.dashboard.requests.details(row.loanRequest.id));
-					}}
-				>
-					<Typography>Abonar</Typography>
+					<Typography>Desembolsar solicitud</Typography>
 				</MenuItem>
 				<MenuItem
 					disabled={row.loanRequest.status !== "funded"}
@@ -466,7 +464,7 @@ export function ActionsCell({ row, permissions, role, branch }) {
 						modalRenew.handleOpen();
 					}}
 				>
-					<Typography>Renovar</Typography>
+					<Typography>Renovar solicitud</Typography>
 				</MenuItem>
 				<MenuItem
 					disabled={role === "AGENT"}
@@ -475,7 +473,10 @@ export function ActionsCell({ row, permissions, role, branch }) {
 						modalReasigment.handleOpen();
 					}}
 				>
-					<Typography>Reasignar</Typography>
+					<Typography>Reasignar solicitud</Typography>
+				</MenuItem>
+				<MenuItem onClick={handleRequestRejected}>
+					<Typography>Rechazar solicitud</Typography>
 				</MenuItem>
 			</Menu>
 

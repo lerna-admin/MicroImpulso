@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useRouter } from "next/navigation";
 import { closeDay } from "@/app/dashboard/balance/hooks/use-balance";
 import { CardHeader, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from "@mui/material";
 import Box from "@mui/material/Box";
@@ -13,8 +14,10 @@ import List from "@mui/material/List";
 import ListItem from "@mui/material/ListItem";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
+import { DatePicker } from "@mui/x-date-pickers";
 import Cookies from "js-cookie";
 
+import { paths } from "@/paths";
 import { dayjs } from "@/lib/dayjs";
 import { usePopover } from "@/hooks/use-popover";
 import { ExportComponent } from "@/components/dashboard/export/export-component.js";
@@ -23,34 +26,63 @@ import { NotificationAlert } from "../../widgets/notifications/notification-aler
 
 dayjs.locale("es");
 
-export function DetailBalanceList({ dataBalance, user }) {
+export function DetailBalanceList({ dataBalance, user, filters }) {
+	const { date } = filters;
+
 	const [assets, setAssets] = React.useState([
-		{ id: 1, name: "Cartera ($)", value: "" },
-		{ id: 2, name: "Cobrado ($)", value: "" },
-		{ id: 3, name: "Clientes (#)", value: "" },
-		{ id: 4, name: "Renovados $ (#)", value: "" },
-		{ id: 5, name: "Nuevos $ (#)", value: "" },
+		{ id: 2, name: "Cartera ($)", value: "" },
+		{ id: 1, name: "Base anterior ($)", value: "" },
+		{ id: 3, name: "Cobrado ($)", value: "" },
+		{ id: 4, name: "Clientes (#)", value: "" },
+		{ id: 5, name: "Renovados $ (#)", value: "" },
+		{ id: 6, name: "Nuevos $ (#)", value: "" },
 	]);
+
+	const [selectedDate, setSelectedDate] = React.useState(dayjs(date));
 
 	const popoverAlert = usePopover();
 	const [alertMsg, setAlertMsg] = React.useState("");
 	const [alertSeverity, setAlertSeverity] = React.useState("");
 
-	const totalAmount = dataBalance.valorRenovados + dataBalance.valorNuevos;
-	const totalRequests = dataBalance.renovados + dataBalance.nuevos;
-
-	const today = dayjs();
-	const formattedDate = `${today.format("DD")} ${today.format("MMMM").toUpperCase()} ${today.format("YYYY, hh:mm A")}`;
+	const totalAmount = dataBalance.baseAnterior + dataBalance.valorCobradoDia - dataBalance.clientesNuevos?.montoPrestado - dataBalance.clientesRenovados?.montoPrestado;
+	
+	const today = dayjs(date);
+	const formattedDate = `${today.format("DD")} ${today.format("MMMM").toUpperCase()} ${today.format("YYYY")}`;
 
 	const popover = usePopover();
+	const router = useRouter();
+
+	const updateSearchParams = React.useCallback(
+		(newFilters) => {
+			const searchParams = new URLSearchParams();
+
+			if (newFilters.date) {
+				searchParams.set("date", newFilters.date);
+			}
+
+			router.push(`${paths.dashboard.balance}?${searchParams.toString()}`);
+		},
+		[router]
+	);
+
+	const handleFilterChange = React.useCallback(
+		(value) => {
+			setSelectedDate(value);
+
+			const dateFormatted = dayjs(value).format("YYYY-MM-DD");
+			updateSearchParams({ ...filters, date: dateFormatted });
+		},
+		[filters, updateSearchParams]
+	);
 
 	React.useEffect(() => {
 		const updates = [
-			{ id: 1, value: parseCurrency(dataBalance.cartera) },
-			{ id: 2, value: parseCurrency(dataBalance.cobrado) },
-			{ id: 3, value: dataBalance.clientes },
-			{ id: 4, value: `${parseCurrency(dataBalance.valorRenovados)} (${dataBalance.renovados})` },
-			{ id: 5, value: `${parseCurrency(dataBalance.valorNuevos)} (${dataBalance.nuevos})` },
+			{ id: 2, value: parseCurrency(dataBalance.valorEnCartera) },
+			{ id: 1, value: parseCurrency(dataBalance.baseAnterior) },
+			{ id: 3, value: parseCurrency(dataBalance.valorCobradoDia) },
+			{ id: 4, value: dataBalance.clientesEnDeuda },
+			{ id: 5, value: `${parseCurrency(dataBalance.clientesRenovados?.montoPrestado)} (${dataBalance.clientesRenovados?.cantidad})` },
+			{ id: 6, value: `${parseCurrency(dataBalance.clientesNuevos?.montoPrestado)} (${dataBalance.clientesNuevos?.cantidad})` },
 		];
 		setAssets((prev) =>
 			prev.map((item) => {
@@ -62,7 +94,6 @@ export function DetailBalanceList({ dataBalance, user }) {
 
 	const handleRoadClousure = async () => {
 		popover.handleClose();
-
 		try {
 			await closeDay(user.id);
 			setAlertMsg("¡Se ha cerrado el dia exitosamente!");
@@ -75,7 +106,6 @@ export function DetailBalanceList({ dataBalance, user }) {
 			Cookies.set("isAgentClosed", true);
 		}
 	};
-
 	return (
 		<Card variant="outlined">
 			<CardHeader
@@ -83,6 +113,7 @@ export function DetailBalanceList({ dataBalance, user }) {
 				title={"Balance de la ruta"}
 				action={
 					<Stack direction="row" spacing={2}>
+						<DatePicker name="movementDate" value={selectedDate} onChange={handleFilterChange} />
 						<ExportComponent balance={assets} />
 						<Button size="xs" variant="contained" onClick={popover.handleOpen}>
 							Cierre
@@ -122,10 +153,7 @@ export function DetailBalanceList({ dataBalance, user }) {
 								<div>
 									<Typography variant="overline">{`Total $ (#)`}</Typography>
 									<Typography variant="h5">
-										{new Intl.NumberFormat("es-CO", {
-											currency: "COP",
-											minimumFractionDigits: 0,
-										}).format(totalAmount) + ` (${totalRequests})`}
+										{parseCurrency(totalAmount)}
 									</Typography>
 								</div>
 							</Stack>

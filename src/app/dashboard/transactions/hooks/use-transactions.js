@@ -6,6 +6,8 @@ export async function createTransaction(data) {
 		headers: { "Content-Type": "application/json" },
 		body: JSON.stringify(data),
 	});
-	if (!res.ok) throw new Error("Error al crear transacción");
-	return await res.json();
+	const response = await res.json();
+	
+	if (!res.ok) throw new Error(response.message);
+	return await response;
 }

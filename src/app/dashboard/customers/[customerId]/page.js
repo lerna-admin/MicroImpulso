@@ -1,7 +1,6 @@
 import * as React from "react";
 import RouterLink from "next/link";
-import { ROLES } from "@/constants/roles";
-import { CardContent, Typography } from "@mui/material";
+import { CardContent } from "@mui/material";
 import Avatar from "@mui/material/Avatar";
 import Box from "@mui/material/Box";
 import Card from "@mui/material/Card";
@@ -15,7 +14,6 @@ import { User as UserIcon } from "@phosphor-icons/react/dist/ssr/User";
 
 import { appConfig } from "@/config/app";
 import { paths } from "@/paths";
-import { getUser } from "@/lib/custom-auth/server";
 import { PropertyList } from "@/components/core/property-list";
 import { CustomerEditForm } from "@/components/dashboard/customer/customer-edit-form";
 import { CustomersLineItemsTable } from "@/components/dashboard/customer/customers-line-items-table";
@@ -29,11 +27,8 @@ export default async function Page({ params }) {
 	const { customerId } = params;
 	const customer = await getCustomerById(customerId);
 	const allRequestByClient = await getAllRequestsByCustomerId(customerId);
-	const {
-		data: { user },
-	} = await getUser();
 
-	const totalRequestsAmountToPay = allRequestByClient.reduce((acc, req) => acc + req.amount, 0);
+	// const totalRequestsAmountToPay = allRequestByClient.reduce((acc, req) => acc + req.amount, 0);
 
 	return (
 		<Box
@@ -84,40 +79,38 @@ export default async function Page({ params }) {
 									<CustomerEditForm customerToEdit={customer}></CustomerEditForm>
 								</PropertyList>
 							</Card>
-							{user.role !== ROLES.AGENTE && (
-								<Card>
-									<CardHeader
-										avatar={
-											<Avatar>
-												<UserIcon fontSize="var(--Icon-fontSize)" />
-											</Avatar>
-										}
-										title="Solicitudes del Cliente"
-									/>
-									<CardContent>
-										<Card sx={{ borderRadius: 1 }} variant="outlined">
-											<Box sx={{ overflowX: "auto" }}>
-												<CustomersLineItemsTable rows={allRequestByClient} />
-											</Box>
-											<Divider />
-											<Box sx={{ display: "flex", justifyContent: "flex-end", p: 2 }}>
-												<Stack spacing={2} sx={{ width: "300px", maxWidth: "100%" }}>
-													<Stack direction="row" sx={{ justifyContent: "space-between" }}>
-														<Typography variant="subtitle1">Total</Typography>
-														<Typography variant="subtitle1">
-															{new Intl.NumberFormat("es-CO", {
-																style: "currency",
-																currency: "COP",
-																minimumFractionDigits: 0,
-															}).format(totalRequestsAmountToPay)}
-														</Typography>
-													</Stack>
+							<Card>
+								<CardHeader
+									avatar={
+										<Avatar>
+											<UserIcon fontSize="var(--Icon-fontSize)" />
+										</Avatar>
+									}
+									title="Solicitudes del Cliente"
+								/>
+								<CardContent>
+									<Card sx={{ borderRadius: 1 }} variant="outlined">
+										<Box sx={{ overflowX: "auto" }}>
+											<CustomersLineItemsTable rows={allRequestByClient} />
+										</Box>
+										{/* <Divider />
+										<Box sx={{ display: "flex", justifyContent: "flex-end", p: 2 }}>
+											<Stack spacing={2} sx={{ width: "300px", maxWidth: "100%" }}>
+												<Stack direction="row" sx={{ justifyContent: "space-between" }}>
+													<Typography variant="subtitle1">Total</Typography>
+													<Typography variant="subtitle1">
+														{new Intl.NumberFormat("es-CO", {
+															style: "currency",
+															currency: "COP",
+															minimumFractionDigits: 0,
+														}).format(totalRequestsAmountToPay)}
+													</Typography>
 												</Stack>
-											</Box>
-										</Card>
-									</CardContent>
-								</Card>
-							)}
+											</Stack>
+										</Box> */}
+									</Card>
+								</CardContent>
+							</Card>
 						</Stack>
 					</Grid>
 				</Grid>
