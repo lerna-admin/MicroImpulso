@@ -50,7 +50,7 @@ const schema = zod
 			}),
 		typeMovement: zod.string().min(1, { message: "El tipo de movimiento es obligatorio" }),
 		category: zod.string().min(1, { message: "La categoria es obligatoria" }),
-		transferUser: zod.string().optional(),
+		transferUser: zod.string().min(1, { message: "El usuario es obligatorio" }),
 		description: zod.string().min(1, { message: "La descripción es obligatoria" }),
 	})
 	.superRefine((data, ctx) => {
@@ -77,13 +77,14 @@ export function CashFlowHeader({ user }) {
 	const typeMovementOptions = [
 		{ label: "ENTRADA", value: "ENTRADA" },
 		{ label: "SALIDA", value: "SALIDA" },
+		{ label: "TRANSFERENCIA", value: "TRANSFERENCIA" },
 	];
 
 	const categoryOptions = [
 		{ label: "ENTRADA GERENCIA", value: "ENTRADA_GERENCIA", type: "ENTRADA" },
 		{ label: "COBRO CLIENTE", value: "COBRO_CLIENTE", type: "ENTRADA" },
 		{ label: "PRESTAMO", value: "PRESTAMO", type: "SALIDA" },
-		{ label: "TRANSFERENCIA", value: "TRANSFERENCIA", type: "SALIDA" },
+		{ label: "TRANSFERENCIA", value: "TRANSFERENCIA", type: "TRANSFERENCIA" },
 		{ label: "GASTO PROVEEDOR", value: "GASTO_PROVEEDOR", type: "SALIDA" },
 	];
 
@@ -135,17 +136,15 @@ export function CashFlowHeader({ user }) {
 
 	const onSubmit = async (dataForm) => {
 		setIsPending(true);
-
 		try {
-			// ! Si es una transferencia envio condicionalmente los campos de userId y date?
-			// ! por el contrario vas a crear otra api para eso?
 			await createCashMovement({
 				typeMovement: dataForm.typeMovement,
-				amount: dataForm.amount,
 				category: dataForm.category,
+				amount: dataForm.amount,
 				description: dataForm.description,
-				userId: user.id,
 				branchId: user.branch.id,
+				origenId: user.id,
+				destinoId: dataForm.transferUser,
 			});
 
 			setAlertMsg("¡Movimiento creado exitosamente!");
@@ -244,12 +243,12 @@ export function CashFlowHeader({ user }) {
 																				color="var(--mui-palette-success-main)"
 																				fontSize="var(--icon-fontSize-md)"
 																			/>
-																		) : (
+																		) : option.value === "SALIDA" ? (
 																			<TrendDownIcon
 																				color="var(--mui-palette-error-main)"
 																				fontSize="var(--icon-fontSize-md)"
 																			/>
-																		)}
+																		) : null}
 																		<Typography>{capitalizeWord(option.label)}</Typography>
 																	</Stack>
 																</MenuItem>
@@ -344,7 +343,7 @@ export function CashFlowHeader({ user }) {
 													</InputLabel>
 													<Select labelId="transferUser" {...field}>
 														{usuariosOptions.map((option) => (
-															<MenuItem key={option.id} value={option.id}>
+															<MenuItem key={option.id} value={option.id.toString()}>
 																{option.name}
 															</MenuItem>
 														))}

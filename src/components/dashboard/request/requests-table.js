@@ -94,6 +94,10 @@ export function RequestsTable({ rows }) {
 						label: "Desembolsado",
 						icon: <CheckCircleIcon color="var(--mui-palette-warning-main)" weight="fill" />,
 					},
+					renewed: {
+						label: "Renovado",
+						icon: <CheckCircleIcon color="var(--mui-palette-info-main)" weight="fill" />,
+					},
 					completed: {
 						label: "Completada",
 						icon: <CheckCircleIcon color="var(--mui-palette-success-main)" weight="fill" />,

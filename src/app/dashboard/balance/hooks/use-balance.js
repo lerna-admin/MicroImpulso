@@ -6,6 +6,12 @@ export async function getClosingSummaryByAgent(agentId) {
 	return await res.json();
 }
 
+export async function getDailyTrace(agentId, date) {
+	const res = await fetch(`${BASE_URL}/cash/daily-trace/by-user/${agentId}?date=${date}`);
+	if (!res.ok) throw new Error("Error al obtener cierre de ruta");
+	return await res.json();
+}
+
 export async function closeDay(agentId) {
 	const res = await fetch(`${BASE_URL}/closing/agent/${agentId}/close-day`, {
 		method: "POST",

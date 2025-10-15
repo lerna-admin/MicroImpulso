@@ -27,6 +27,7 @@ const columns = [
 				PRESTAMO: { label: "Prestamos", color: "error" },
 				ENTRADA_GERENCIA: { label: "Entra caja", color: "success" },
 				GASTO_PROVEEDOR: { label: "Gastos", color: "error" },
+				TRANSFERENCIA: { label: "Transferencia", color: "info" },
 			};
 			const { label, color } = mapping[row.category] ?? { label: "Unknown", color: "secondary" };
 
