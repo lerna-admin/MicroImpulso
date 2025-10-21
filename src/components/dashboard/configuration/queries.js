@@ -95,8 +95,6 @@ export function Queries({ role }) {
 		if (!customerSelected) return;
 		const customer = await getCustomerById(customerSelected.id);
 		const allRequests = await getAllRequestsByCustomerId(customerSelected.id);
-		console.log(customer);
-		console.log(allRequests);
 
 		setCustomer(customer);
 		setAllRequestByCustomer(allRequests);
