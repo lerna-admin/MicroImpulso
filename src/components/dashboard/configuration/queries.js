@@ -95,6 +95,9 @@ export function Queries({ role }) {
 		if (!customerSelected) return;
 		const customer = await getCustomerById(customerSelected.id);
 		const allRequests = await getAllRequestsByCustomerId(customerSelected.id);
+		console.log(customer);
+		console.log(allRequests);
+
 		setCustomer(customer);
 		setAllRequestByCustomer(allRequests);
 	};
@@ -191,11 +194,24 @@ export function Queries({ role }) {
 									}
 									title={
 										<Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-											<Typography variant="body1" color="initial">
-												Perfil
-											</Typography>
-											{customer.client.lead && (
-												<Chip color="success" label={"Importado"} size="small" variant="contained" />
+											<Box sx={{ display: "flex", flexDirection: "row", gap: "1rem" }}>
+												<Typography variant="body1" color="initial">
+													Perfil
+												</Typography>
+												{customer.client.lead && (
+													<Chip
+														sx={{ backgroundColor: "#04aad6a3" }}
+														label={"Importado"}
+														size="small"
+														variant="contained"
+													/>
+												)}
+											</Box>
+
+											{customer.client.status.toLowerCase() === "inactive" ? (
+												<Chip color="error" label={"Inactivo"} size="small" variant="contained" />
+											) : (
+												<Chip color="success" label={"Activo"} size="small" variant="contained" />
 											)}
 										</Box>
 									}

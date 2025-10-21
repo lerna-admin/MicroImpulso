@@ -50,6 +50,10 @@ const columns = [
 					label: "Desembolsado",
 					icon: <CheckCircle color="var(--mui-palette-warning-main)" weight="fill" />,
 				},
+				renewed: {
+					label: "Renovada",
+					icon: <CheckCircle color="var(--mui-palette-info-main)" weight="fill" />,
+				},
 				completed: {
 					label: "Completada",
 					icon: <CheckCircle color="var(--mui-palette-success-main)" weight="fill" />,
