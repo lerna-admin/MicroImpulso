@@ -3,8 +3,10 @@
 import * as React from "react";
 import RouterLink from "next/link";
 import { useRouter } from "next/navigation";
+import { getBranchesById } from "@/app/dashboard/configuration/branch-managment/hooks/use-branches";
 import { createCustomer } from "@/app/dashboard/customers/hooks/use-customers";
 import { createRequest } from "@/app/dashboard/requests/hooks/use-requests";
+import { ROLES } from "@/constants/roles";
 import { deleteAlphabeticals, formatCurrency } from "@/helpers/format-currency";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { MenuItem, Typography } from "@mui/material";
@@ -29,80 +31,87 @@ import { logger } from "@/lib/default-logger";
 import { usePopover } from "@/hooks/use-popover";
 import { NotificationAlert } from "@/components/widgets/notifications/notification-alert";
 
-const schema = zod.object({
-	name: zod
-		.string()
-		.min(3, { message: "Debe tener al menos 3 caracteres" })
-		.max(100, { message: "Máximo 100 caracteres" })
-		.regex(/^[A-Za-zÀ-ÿ\u00F1\u00D1]+(?: [A-Za-zÀ-ÿ\u00F1\u00D1]+)+$/, {
-			message: "Debe ingresar nombre y apellido, solo letras y espacios",
-		}),
-	email: zod
-		.string()
-		.email("Debe ser un correo válido")
-		.min(5, "El correo es obligatorio")
-		.max(255, "El correo es muy largo"),
-
-	phone: zod.string().min(7, "El celular es obligatorio").max(10, "El celular es muy largo").regex(/^\d+$/, {
-		message: "El celular debe contener solo números",
-	}),
-
-	documentType: zod.enum(["CC", "CE", "TE"], {
-		errorMap: () => ({ message: "Debes elegir un tipo de documento" }),
-	}),
-	document: zod
-		.string()
-		.min(5, { message: "El documento es obligatorio" })
-		.max(20, { message: "El documento es muy largo" })
-		.regex(/^\d+$/, {
-			message: "El documento debe contener solo números",
-		}),
-
-	address: zod
-		.string()
-		.min(5, { message: "La dirección es obligatoria" })
-		.max(255, { message: "La dirección es muy larga" }),
-	amount: zod
-		.number({ invalid_type_error: "El monto debe ser un número" })
-		.min(1, { message: "El monto es obligatorio" })
-		.min(50_000, { message: "El monto debe superar los $50.000" })
-		.max(5_000_000, { message: "El monto no puede superar los 5.000.000" }),
-	typePayment: zod.enum(["QUINCENAL", "MENSUAL"], { errorMap: () => ({ message: "Debes elegir un tipo de pago" }) }),
-	datePayment: zod.enum(["15-30", "5-20", "10-25"], {
-		errorMap: () => ({ message: "Debes elegir una fecha de pago" }),
-	}),
-	selectedDate: zod
-		.custom((val) => dayjs.isDayjs(val) && val.isValid(), {
-			message: "La fecha es obligatoria",
-		})
-		.refine((val) => dayjs(val).isAfter(dayjs(), "day"), {
-			message: "La fecha debe ser posterior a hoy",
-		}),
-});
-
-const defaultValues = {
-	name: "",
-	email: "",
-	phone: "",
-	documentType: "",
-	document: "",
-	address: "",
-	amount: 0,
-	typePayment: "",
-	datePayment: "",
-	selectedDate: dayjs(),
-};
-
-const determinarAgent = (user) => {
-	if (user.role === "AGENT") {
-		return user.id;
-	}
-	return null;
-};
-
 export function CustomerCreateForm({ user }) {
 	const router = useRouter();
 	const popoverAlert = usePopover();
+
+	const [agentsOptions, setAgentsOptions] = React.useState([]);
+
+	const defaultValues = {
+		name: "",
+		email: "",
+		phone: "",
+		documentType: "",
+		document: "",
+		address: "",
+		amount: 0,
+		typePayment: "",
+		datePayment: "",
+		selectedDate: dayjs(),
+		selectedAgent: "",
+	};
+
+	const schema = zod
+		.object({
+			name: zod
+				.string()
+				.min(3, { message: "Debe tener al menos 3 caracteres" })
+				.max(100, { message: "Máximo 100 caracteres" })
+				.regex(/^[A-Za-zÀ-ÿ\u00F1\u00D1]+(?: [A-Za-zÀ-ÿ\u00F1\u00D1]+)+$/, {
+					message: "Debe ingresar nombre y apellido, solo letras y espacios",
+				}),
+			email: zod
+				.string()
+				.email("Debe ser un correo válido")
+				.min(5, "El correo es obligatorio")
+				.max(255, "El correo es muy largo"),
+
+			phone: zod.string().min(7, "El celular es obligatorio").max(10, "El celular es muy largo").regex(/^\d+$/, {
+				message: "El celular debe contener solo números",
+			}),
+			documentType: zod.enum(["CC", "CE", "TE"], {
+				errorMap: () => ({ message: "Debes elegir un tipo de documento" }),
+			}),
+			document: zod
+				.string()
+				.min(5, { message: "El documento es obligatorio" })
+				.max(20, { message: "El documento es muy largo" })
+				.regex(/^\d+$/, {
+					message: "El documento debe contener solo números",
+				}),
+			address: zod
+				.string()
+				.min(5, { message: "La dirección es obligatoria" })
+				.max(255, { message: "La dirección es muy larga" }),
+			amount: zod
+				.number({ invalid_type_error: "El monto debe ser un número" })
+				.min(1, { message: "El monto es obligatorio" })
+				.min(50_000, { message: "El monto debe superar los $50.000" })
+				.max(5_000_000, { message: "El monto no puede superar los 5.000.000" }),
+			typePayment: zod.enum(["QUINCENAL", "MENSUAL"], {
+				errorMap: () => ({ message: "Debes elegir un tipo de pago" }),
+			}),
+			datePayment: zod.enum(["15-30", "5-20", "10-25"], {
+				errorMap: () => ({ message: "Debes elegir una fecha de pago" }),
+			}),
+			selectedDate: zod
+				.custom((val) => dayjs.isDayjs(val) && val.isValid(), {
+					message: "La fecha es obligatoria",
+				})
+				.refine((val) => dayjs(val).isAfter(dayjs(), "day"), {
+					message: "La fecha debe ser posterior a hoy",
+				}),
+			selectedAgent: zod.string().optional(),
+		})
+		.superRefine((data, ctx) => {
+			if (user.role === ROLES.ADMIN && !data.selectedAgent?.trim()) {
+				ctx.addIssue({
+					path: ["selectedAgent"],
+					code: zod.ZodIssueCode.custom,
+					message: "El campo agente es obligatorio para administradores",
+				});
+			}
+		});
 
 	const {
 		control,
@@ -114,8 +123,28 @@ export function CustomerCreateForm({ user }) {
 	const [alertMsg, setAlertMsg] = React.useState("");
 	const [alertSeverity, setAlertSeverity] = React.useState("success");
 
+	React.useEffect(() => {
+		if (user.role !== ROLES.ADMIN) return;
+
+		getBranchesById(user.branchId)
+			.then((resp) => {
+				const { agents } = resp;
+				const agentsFiltered = agents.filter((agent) => agent.role === ROLES.AGENTE);
+				setAgentsOptions(agentsFiltered);
+			})
+			.catch((error) => {
+				setAlertMsg(error);
+				setAlertSeverity("error");
+				popoverAlert.handleOpen();
+			});
+	}, []);
+
 	const onSubmit = React.useCallback(
 		async (dataForm) => {
+			const determinarAgentId = (user) => {
+				return user.role === ROLES.AGENTE ? user.id : dataForm.selectedAgent;
+			};
+
 			const bodyCustomer = {
 				name: dataForm.name,
 				email: dataForm.email,
@@ -129,11 +158,11 @@ export function CustomerCreateForm({ user }) {
 				.then(({ id: newClientId }) => {
 					const bodyRequest = {
 						client: newClientId,
-						agent: determinarAgent(user),
+						agent: determinarAgentId(user),
 						status: "new",
 						requestedAmount: dataForm.amount,
 						endDateAt: dataForm.selectedDate,
-						amount: dataForm.amount*1.2,
+						amount: dataForm.amount * 1.2,
 						paymentDay: dataForm.datePayment,
 						type: dataForm.typePayment,
 					};
@@ -377,6 +406,34 @@ export function CustomerCreateForm({ user }) {
 												<InputLabel required>Dia a pagar</InputLabel>
 												<DatePicker {...field} minDate={dayjs()} sx={{ marginTop: "0.5rem" }} />
 												{errors.selectedDate ? <FormHelperText>{errors.selectedDate.message}</FormHelperText> : null}
+											</FormControl>
+										)}
+									/>
+								</Grid>
+								<Grid
+									size={{
+										md: 6,
+										xs: 12,
+									}}
+								>
+									<Controller
+										control={control}
+										name="selectedAgent"
+										render={({ field }) => (
+											<FormControl
+												fullWidth
+												error={Boolean(errors.selectedAgent)}
+												disabled={user.role === ROLES.AGENTE}
+											>
+												<InputLabel required>Agente</InputLabel>
+												<Select {...field}>
+													{agentsOptions.map((option) => (
+														<MenuItem key={option.id} value={option.id.toString()}>
+															{option.name}
+														</MenuItem>
+													))}
+												</Select>
+												{errors.selectedAgent ? <FormHelperText>{errors.selectedAgent.message}</FormHelperText> : null}
 											</FormControl>
 										)}
 									/>
