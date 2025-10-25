@@ -6,7 +6,7 @@ import { createCashMovement } from "@/app/dashboard/cash_flow/hooks/use-cash-flo
 import { getBranchesById } from "@/app/dashboard/configuration/branch-managment/hooks/use-branches";
 import { getAllUsers } from "@/app/dashboard/users/hooks/use-users";
 import { ROLES } from "@/constants/roles";
-import { formatCurrency } from "@/helpers/format-currency";
+import { deleteAlphabeticals, formatCurrency } from "@/helpers/format-currency";
 import { capitalizeWord } from "@/helpers/format-words";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -19,6 +19,7 @@ import {
 	FormHelperText,
 	InputLabel,
 	MenuItem,
+	OutlinedInput,
 	Select,
 	Stack,
 	TextField,
@@ -42,13 +43,9 @@ dayjs.locale("es");
 const schema = zod
 	.object({
 		amount: zod
-			.string()
-			.min(1, "El monto es obligatorio")
-			.transform((val) => val.replaceAll(/\D/g, ""))
-			.transform(Number)
-			.refine((val) => Number.isInteger(val) && val > 0, {
-				message: "Debe ser un número entero mayor a 0",
-			}),
+			.number({ invalid_type_error: "El monto debe ser un número" })
+			.min(1, { message: "El monto es obligatorio" })
+			.min(10_000, { message: "El monto debe superar los $10.000" }),
 		typeMovement: zod.string().min(1, { message: "El tipo de movimiento es obligatorio" }),
 		category: zod.string().min(1, { message: "La categoria es obligatoria" }),
 		transferUser: zod.string().min(1, { message: "El usuario es obligatorio" }),
@@ -149,8 +146,7 @@ export function CashFlowHeader({ user }) {
 	}, [category]);
 
 	const onSubmit = async (dataForm) => {
-		console.log(dataForm);
-		
+
 		setIsPending(true);
 		try {
 			await createCashMovement({
@@ -306,22 +302,37 @@ export function CashFlowHeader({ user }) {
 										control={control}
 										name="amount"
 										render={({ field }) => (
+											// <FormControl fullWidth error={Boolean(errors.amount)}>
+											// 	<TextField
+											// 		{...field}
+											// 		label="Monto"
+											// 		variant="outlined"
+											// 		onChange={(e) => {
+											// 			const formatted = formatCurrency(e.target.value);
+											// 			field.onChange(formatted);
+											// 		}}
+											// 		onKeyDown={(e) => {
+											// 			const isNumberKey = /^[0-9]$/.test(e.key);
+											// 			const isControlKey = ["Backspace", "Delete", "ArrowLeft", "ArrowRight", "Tab"].includes(
+											// 				e.key
+											// 			);
+											// 			if (!isNumberKey && !isControlKey) e.preventDefault();
+											// 		}}
+											// 	/>
+											// 	{errors.amount ? <FormHelperText>{errors.amount.message}</FormHelperText> : null}
+											// </FormControl>
+
 											<FormControl fullWidth error={Boolean(errors.amount)}>
-												<TextField
+												<InputLabel required>Monto</InputLabel>
+												<OutlinedInput
 													{...field}
-													label="Monto"
-													variant="outlined"
+													value={field.value !== undefined && field.value !== null ? formatCurrency(field.value) : ""}
 													onChange={(e) => {
-														const formatted = formatCurrency(e.target.value);
-														field.onChange(formatted);
+														const raw = deleteAlphabeticals(e.target.value);
+														const numericValue = raw ? Number.parseInt(raw, 10) : 0;
+														field.onChange(numericValue);
 													}}
-													onKeyDown={(e) => {
-														const isNumberKey = /^[0-9]$/.test(e.key);
-														const isControlKey = ["Backspace", "Delete", "ArrowLeft", "ArrowRight", "Tab"].includes(
-															e.key
-														);
-														if (!isNumberKey && !isControlKey) e.preventDefault();
-													}}
+													inputProps={{ inputMode: "numeric" }}
 												/>
 												{errors.amount ? <FormHelperText>{errors.amount.message}</FormHelperText> : null}
 											</FormControl>

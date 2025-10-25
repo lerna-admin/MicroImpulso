@@ -17,6 +17,7 @@ import { usePopover } from "@/hooks/use-popover";
 import { NotificationAlert } from "@/components/widgets/notifications/notification-alert";
 
 export function CustomerEditForm({ customerToEdit, onlyRead = false }) {
+
 	const [formData, setFormData] = React.useState({
 		id: "",
 		name: "",
@@ -181,20 +182,20 @@ export function CustomerEditForm({ customerToEdit, onlyRead = false }) {
 									disabled
 									name="startDate"
 									format="MMM D, YYYY hh:mm A"
-									label="Fecha Inicio"
+									label="Fecha de creación"
 									value={dayjs(customerToEdit.createdAt)}
 									onChange={handleChange}
 								/>
 							</FormControl>
 						</Grid>
-						<Grid
+						{/* <Grid
 							size={{
 								md: 6,
 								xs: 12,
 							}}
 						>
 							<FormControl fullWidth>
-								{/* <OutlinedInput defaultValue="" name="endDate" type="date" /> */}
+								<OutlinedInput defaultValue="" name="endDate" type="date" />
 								<DatePicker
 									disabled
 									name="endDate"
@@ -204,7 +205,7 @@ export function CustomerEditForm({ customerToEdit, onlyRead = false }) {
 									onChange={handleChange}
 								/>
 							</FormControl>
-						</Grid>
+						</Grid> */}
 					</Grid>
 					{onlyRead ? null : (
 						<Stack direction="row" spacing={1} sx={{ alignItems: "center", justifyContent: "flex-end" }}>
