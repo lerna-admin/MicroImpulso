@@ -24,7 +24,7 @@ const columns = [
 		formatter: (row) => {
 			const mapping = {
 				COBRO_CLIENTE: { label: "Cobro", color: "success" },
-				PRESTAMO: { label: "Prestamos", color: "error" },
+				"PRESTAMO ADMINISTRADOR": { label: "Prestamo administrador", color: "error" },
 				ENTRADA_GERENCIA: { label: "Entra caja", color: "success" },
 				GASTO_PROVEEDOR: { label: "Gastos", color: "error" },
 				TRANSFERENCIA: { label: "Transferencia", color: "info" },
@@ -50,6 +50,28 @@ const columns = [
 			return dayjs(row.createdAt).utc().format("D MMMM YYYY").toUpperCase();
 		},
 		name: "Fecha de creación",
+		width: "150px",
+	},
+	{
+		formatter: (row) => {
+			<div>
+				<Typography color="text.secondary" variant="body2">
+					{row.origen}
+				</Typography>
+			</div>;
+		},
+		name: "Origen",
+		width: "150px",
+	},
+	{
+		formatter: (row) => {
+			<div>
+				<Typography color="text.secondary" variant="body2">
+					{row.destino}
+				</Typography>
+			</div>;
+		},
+		name: "Destino",
 		width: "150px",
 	},
 	{
@@ -97,7 +119,7 @@ export function MovementsTable({ movementsData, filters }) {
 	const handleFilterChange = React.useCallback(
 		(value) => {
 			setSelectedDate(value);
-			setSearch("")
+			setSearch("");
 			const dateFormatted = dayjs(value).format("YYYY-MM-DD");
 			updateSearchParams({ ...filters, page: 1, limit: limit, date: dateFormatted });
 		},

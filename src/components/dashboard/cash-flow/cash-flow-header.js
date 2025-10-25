@@ -4,6 +4,7 @@ import * as React from "react";
 import { useRouter } from "next/navigation";
 import { createCashMovement } from "@/app/dashboard/cash_flow/hooks/use-cash-flow";
 import { getBranchesById } from "@/app/dashboard/configuration/branch-managment/hooks/use-branches";
+import { getAllUsers } from "@/app/dashboard/users/hooks/use-users";
 import { ROLES } from "@/constants/roles";
 import { formatCurrency } from "@/helpers/format-currency";
 import { capitalizeWord } from "@/helpers/format-words";
@@ -83,7 +84,7 @@ export function CashFlowHeader({ user }) {
 	const categoryOptions = [
 		{ label: "ENTRADA GERENCIA", value: "ENTRADA_GERENCIA", type: "ENTRADA" },
 		{ label: "COBRO CLIENTE", value: "COBRO_CLIENTE", type: "ENTRADA" },
-		{ label: "PRESTAMO", value: "PRESTAMO", type: "SALIDA" },
+		{ label: "PRESTAMO ADMINISTRADOR", value: "PRESTAMO ADMINISTRADOR", type: "SALIDA" },
 		{ label: "TRANSFERENCIA", value: "TRANSFERENCIA", type: "TRANSFERENCIA" },
 		{ label: "GASTO PROVEEDOR", value: "GASTO_PROVEEDOR", type: "SALIDA" },
 	];
@@ -119,6 +120,7 @@ export function CashFlowHeader({ user }) {
 			getBranchesById(user.branch.id)
 				.then((resp) => {
 					const { administrator, agents } = resp;
+
 					if (user.role === ROLES.AGENTE) {
 						setUsuariosOptions([administrator]);
 					} else if (user.role === ROLES.ADMIN) {
@@ -131,10 +133,24 @@ export function CashFlowHeader({ user }) {
 					setAlertSeverity("error");
 				})
 				.finally(popoverAlert.handleOpen());
+		} else if (category === "PRESTAMO ADMINISTRADOR") {
+			getAllUsers({ role: "ADMIN" })
+				.then((resp) => {
+					const { data } = resp;
+					const filteredAdmins = data.map((item) => ({ id: item.id, name: item.name }));
+					setUsuariosOptions(filteredAdmins);
+				})
+				.catch((error) => {
+					setAlertMsg(error);
+					setAlertSeverity("error");
+				})
+				.finally(popoverAlert.handleOpen());
 		}
 	}, [category]);
 
 	const onSubmit = async (dataForm) => {
+		console.log(dataForm);
+		
 		setIsPending(true);
 		try {
 			await createCashMovement({
@@ -144,7 +160,7 @@ export function CashFlowHeader({ user }) {
 				description: dataForm.description,
 				branchId: user.branch.id,
 				origenId: user.id,
-				destinoId: dataForm.transferUser,
+				destinoId: Number(dataForm.transferUser),
 			});
 
 			setAlertMsg("¡Movimiento creado exitosamente!");
@@ -235,24 +251,45 @@ export function CashFlowHeader({ user }) {
 																		</Stack>
 																	</MenuItem>
 																))
-														: typeMovementOptions.map((option) => (
-																<MenuItem key={option.value} value={option.value}>
-																	<Stack direction="row" alignItems="center" spacing={1}>
-																		{option.value === "ENTRADA" ? (
-																			<TrendUpIcon
-																				color="var(--mui-palette-success-main)"
-																				fontSize="var(--icon-fontSize-md)"
-																			/>
-																		) : option.value === "SALIDA" ? (
-																			<TrendDownIcon
-																				color="var(--mui-palette-error-main)"
-																				fontSize="var(--icon-fontSize-md)"
-																			/>
-																		) : null}
-																		<Typography>{capitalizeWord(option.label)}</Typography>
-																	</Stack>
-																</MenuItem>
-															))}
+														: user.role === ROLES.ADMIN
+															? typeMovementOptions.map((option) => (
+																	<MenuItem key={option.value} value={option.value}>
+																		<Stack direction="row" alignItems="center" spacing={1}>
+																			{option.value === "ENTRADA" ? (
+																				<TrendUpIcon
+																					color="var(--mui-palette-success-main)"
+																					fontSize="var(--icon-fontSize-md)"
+																				/>
+																			) : option.value === "SALIDA" ? (
+																				<TrendDownIcon
+																					color="var(--mui-palette-error-main)"
+																					fontSize="var(--icon-fontSize-md)"
+																				/>
+																			) : null}
+																			<Typography>{capitalizeWord(option.label)}</Typography>
+																		</Stack>
+																	</MenuItem>
+																))
+															: typeMovementOptions
+																	.filter((option) => option.value !== "TRANSFERENCIA")
+																	.map((option) => (
+																		<MenuItem key={option.value} value={option.value}>
+																			<Stack direction="row" alignItems="center" spacing={1}>
+																				{option.value === "ENTRADA" ? (
+																					<TrendUpIcon
+																						color="var(--mui-palette-success-main)"
+																						fontSize="var(--icon-fontSize-md)"
+																					/>
+																				) : (
+																					<TrendDownIcon
+																						color="var(--mui-palette-error-main)"
+																						fontSize="var(--icon-fontSize-md)"
+																					/>
+																				)}
+																				<Typography>{capitalizeWord(option.label)}</Typography>
+																			</Stack>
+																		</MenuItem>
+																	))}
 												</Select>
 												{errors.typeMovement ? <FormHelperText>{errors.typeMovement.message}</FormHelperText> : null}
 											</FormControl>
@@ -326,7 +363,7 @@ export function CashFlowHeader({ user }) {
 									/>
 								</Grid>
 
-								{category === "TRANSFERENCIA" ? (
+								{category === "TRANSFERENCIA" || category === "PRESTAMO ADMINISTRADOR" ? (
 									<Grid
 										size={{
 											md: 12,
@@ -339,7 +376,7 @@ export function CashFlowHeader({ user }) {
 											render={({ field }) => (
 												<FormControl fullWidth error={Boolean(errors.transferUser)} disabled={!typeMovement}>
 													<InputLabel id="transferUser">
-														{user.role === ROLES.AGENTE ? "Administrador" : "Agente"}
+														{user.role === ROLES.AGENTE || user.role === ROLES.GERENTE ? "Administrador" : "Agente"}
 													</InputLabel>
 													<Select labelId="transferUser" {...field}>
 														{usuariosOptions.map((option) => (

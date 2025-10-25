@@ -41,7 +41,7 @@ export default async function Page() {
 						</Link>
 					</div>
 				</Stack>
-				<CustomerCreateForm user={{ id: user.id, role: user.role }} />
+				<CustomerCreateForm user={{ id: user.id, role: user.role, branchId: user.branch.id }} />
 			</Stack>
 		</Box>
 	);
