@@ -23,6 +23,8 @@ export async function getCashMovements(
 }
 
 export async function createCashMovement(data) {
+	console.log(data);
+	
 	const res = await fetch(`${BASE_URL}/cash`, {
 		method: "POST",
 		headers: { "Content-Type": "application/json" },

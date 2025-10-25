@@ -417,7 +417,7 @@ export function ActionsCell({ row, permissions, role, branch }) {
 			reset();
 		}
 	};
-
+	
 	return (
 		<React.Fragment>
 			<Tooltip title="Más opciones">
@@ -432,7 +432,7 @@ export function ActionsCell({ row, permissions, role, branch }) {
 				onClose={popover.handleClose}
 				slotProps={{ paper: { elevation: 0 } }}
 			>
-				<MenuItem disabled={row.loanRequest.status !== "funded"} onClick={handlePayment}>
+				<MenuItem disabled={row.loanRequest.status !== "funded" && row.loanRequest.status !== "renewed" } onClick={handlePayment}>
 					<Typography>Abonar</Typography>
 				</MenuItem>
 				<MenuItem

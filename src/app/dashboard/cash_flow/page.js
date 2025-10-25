@@ -34,6 +34,8 @@ export default async function Page({ searchParams }) {
 		limit: movementLimit,
 	} = await getCashMovements(user.branch.id, search, page, limit, date);
 
+	console.log(movementsData);
+
 	return (
 		<Box
 			sx={{

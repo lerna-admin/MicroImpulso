@@ -96,6 +96,10 @@ export function Queries({ role }) {
 		const customer = await getCustomerById(customerSelected.id);
 		const allRequests = await getAllRequestsByCustomerId(customerSelected.id);
 
+		console.log(customer);
+		console.log(allRequests);
+		
+
 		setCustomer(customer);
 		setAllRequestByCustomer(allRequests);
 	};
