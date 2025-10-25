@@ -332,13 +332,6 @@ export const dashboardConfig = {
 					],
 				},
 				{
-					key: "cash_flow",
-					title: "Movimientos de caja",
-					icon: "cash-register",
-					href: paths.dashboard.cash_flow,
-					matcher: { type: "startsWith", href: "/dashboard/cash_flow" },
-				},
-				{
 					key: "balance",
 					title: "Balance de la ruta",
 					icon: "seal-percent",
