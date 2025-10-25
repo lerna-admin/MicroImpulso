@@ -53,24 +53,24 @@ const columns = [
 		width: "150px",
 	},
 	{
-		formatter: (row) => {
+		formatter: (row) => (
 			<div>
 				<Typography color="text.secondary" variant="body2">
-					{row.origen}
+					{row.origen.name}
 				</Typography>
-			</div>;
-		},
+			</div>
+		),
 		name: "Origen",
 		width: "150px",
 	},
 	{
-		formatter: (row) => {
+		formatter: (row) => (
 			<div>
 				<Typography color="text.secondary" variant="body2">
-					{row.destino}
+					{row.destino.name}
 				</Typography>
-			</div>;
-		},
+			</div>
+		),
 		name: "Destino",
 		width: "150px",
 	},
