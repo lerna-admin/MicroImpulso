@@ -224,6 +224,7 @@ export function ActionsCell({ row, permissions, role, branch }) {
 	const modalFunded = usePopover();
 	const modalRenew = usePopover();
 	const modalReasigment = usePopover();
+	const modalRejected = usePopover();
 	const [anchorEl, setAnchorEl] = React.useState(null);
 	const [amount, setAmount] = React.useState(0);
 	const [selectedDate, setSelectedDate] = React.useState(dayjs(row.endDateAt));
@@ -267,10 +268,12 @@ export function ActionsCell({ row, permissions, role, branch }) {
 					message: "Debes seleccionar un usuario",
 				}
 			),
+		motivoRejected: zod.string().min(1, { message: "La descripción es obligatoria" }),
 	});
 
 	const defaultValues = {
 		user: { id: row.agent.id, label: row.agent.name },
+		motivoRejected: "",
 	};
 
 	const {
@@ -278,6 +281,7 @@ export function ActionsCell({ row, permissions, role, branch }) {
 		handleSubmit,
 		formState: { errors },
 		reset,
+		getValues,
 	} = useForm({ defaultValues, resolver: zodResolver(schema) });
 
 	const canDisburse = permissions.find((per) => per.name === "CAN_DISBURSE");
@@ -404,8 +408,9 @@ export function ActionsCell({ row, permissions, role, branch }) {
 	});
 
 	const handleRequestRejected = async () => {
+		const motivoRejectedValue = getValues("motivoRejected");
 		try {
-			await updateRequest({ status: "rejected" }, row.loanRequest.id);
+			await updateRequest({ status: "rejected", notes: motivoRejectedValue }, row.loanRequest.id);
 			setAlertMsg("¡Se ha guardado exitosamente!");
 			setAlertSeverity("success");
 		} catch (error) {
@@ -414,10 +419,11 @@ export function ActionsCell({ row, permissions, role, branch }) {
 		} finally {
 			popoverAlert.handleOpen();
 			popover.handleClose();
+			modalRejected.handleClose();
 			reset();
 		}
 	};
-	
+
 	return (
 		<React.Fragment>
 			<Tooltip title="Más opciones">
@@ -432,7 +438,10 @@ export function ActionsCell({ row, permissions, role, branch }) {
 				onClose={popover.handleClose}
 				slotProps={{ paper: { elevation: 0 } }}
 			>
-				<MenuItem disabled={row.loanRequest.status !== "funded" && row.loanRequest.status !== "renewed" } onClick={handlePayment}>
+				<MenuItem
+					disabled={row.loanRequest.status !== "funded" && row.loanRequest.status !== "renewed"}
+					onClick={handlePayment}
+				>
 					<Typography>Abonar</Typography>
 				</MenuItem>
 				<MenuItem
@@ -475,10 +484,84 @@ export function ActionsCell({ row, permissions, role, branch }) {
 				>
 					<Typography>Reasignar solicitud</Typography>
 				</MenuItem>
-				<MenuItem onClick={handleRequestRejected}>
+				<MenuItem
+					onClick={() => {
+						popover.handleClose();
+						modalRejected.handleOpen();
+					}}
+				>
 					<Typography>Rechazar solicitud</Typography>
 				</MenuItem>
 			</Menu>
+
+			{/* Modal para rechazar solicitud */}
+			<Dialog
+				fullWidth
+				maxWidth={"xs"}
+				open={modalRejected.open}
+				onClose={modalRejected.handleClose}
+				aria-labelledby="alert-dialog-title"
+				aria-describedby="alert-dialog-description"
+			>
+				<DialogTitle id="alert-dialog-title" textAlign={"center"} sx={{ pt: 4 }}>
+					{"Rechazar solicitud"}
+				</DialogTitle>
+
+				<DialogContent>
+					<form onSubmit={handleSubmit(handleRequestRejected)}>
+						<Grid container spacing={3}>
+							<Grid
+								size={{
+									md: 12,
+									xs: 12,
+								}}
+								direction={"row"}
+							>
+								<Controller
+									control={control}
+									name="motivoRejected"
+									render={({ field }) => (
+										<FormControl fullWidth error={Boolean(errors.motivoRejected)}>
+											<TextField
+												label="Motivo"
+												placeholder="Escribe un motivo..."
+												multiline
+												minRows={3}
+												{...field}
+												slotProps={{ htmlInput: { maxLength: 150 } }}
+											/>
+											{errors.motivoRejected ? <FormHelperText>{errors.motivoRejected.message}</FormHelperText> : null}
+										</FormControl>
+									)}
+								/>
+							</Grid>
+							<Grid
+								size={{
+									md: 12,
+									xs: 12,
+								}}
+								display={"flex"}
+								justifyContent={"flex-end"}
+								gap={2}
+							>
+								<Button variant="contained" disabled={isPending} type="submit" autoFocus>
+									Guardar
+								</Button>
+								<Button
+									variant="outlined"
+									onClick={() => {
+										popover.handleClose();
+										modalRejected.handleClose();
+										reset();
+									}}
+								>
+									Cancelar
+								</Button>
+							</Grid>
+						</Grid>
+					</form>
+				</DialogContent>
+			</Dialog>
 
 			{/* Modal para reasignar solicitud */}
 			<Dialog
