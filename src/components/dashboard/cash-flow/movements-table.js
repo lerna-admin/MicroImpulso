@@ -56,7 +56,7 @@ const columns = [
 		formatter: (row) => (
 			<div>
 				<Typography color="text.secondary" variant="body2">
-					{row.origen.name}
+					{row.origen?.name}
 				</Typography>
 			</div>
 		),
@@ -67,7 +67,7 @@ const columns = [
 		formatter: (row) => (
 			<div>
 				<Typography color="text.secondary" variant="body2">
-					{row.destino.name}
+					{row.destino?.name}
 				</Typography>
 			</div>
 		),

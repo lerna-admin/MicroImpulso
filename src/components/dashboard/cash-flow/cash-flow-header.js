@@ -302,26 +302,6 @@ export function CashFlowHeader({ user }) {
 										control={control}
 										name="amount"
 										render={({ field }) => (
-											// <FormControl fullWidth error={Boolean(errors.amount)}>
-											// 	<TextField
-											// 		{...field}
-											// 		label="Monto"
-											// 		variant="outlined"
-											// 		onChange={(e) => {
-											// 			const formatted = formatCurrency(e.target.value);
-											// 			field.onChange(formatted);
-											// 		}}
-											// 		onKeyDown={(e) => {
-											// 			const isNumberKey = /^[0-9]$/.test(e.key);
-											// 			const isControlKey = ["Backspace", "Delete", "ArrowLeft", "ArrowRight", "Tab"].includes(
-											// 				e.key
-											// 			);
-											// 			if (!isNumberKey && !isControlKey) e.preventDefault();
-											// 		}}
-											// 	/>
-											// 	{errors.amount ? <FormHelperText>{errors.amount.message}</FormHelperText> : null}
-											// </FormControl>
-
 											<FormControl fullWidth error={Boolean(errors.amount)}>
 												<InputLabel required>Monto</InputLabel>
 												<OutlinedInput
