@@ -20,6 +20,7 @@ import { CustomersLineItemsTable } from "@/components/dashboard/customer/custome
 
 import { getAllRequestsByCustomerId } from "../../requests/hooks/use-requests";
 import { getCustomerById } from "../hooks/use-customers";
+import CustomerDocumentsCard from "@/components/dashboard/customer/customer-documents-card";
 
 export const metadata = { title: `Detalle | Clientes | Dashboard | ${appConfig.name}` };
 
@@ -79,6 +80,20 @@ export default async function Page({ params }) {
 									<CustomerEditForm customerToEdit={customer}></CustomerEditForm>
 								</PropertyList>
 							</Card>
+							<Card>
+	<CardHeader
+		avatar={
+			<Avatar>
+				<UserIcon fontSize="var(--Icon-fontSize)" />
+			</Avatar>
+		}
+		title="Documentos del cliente"
+	/>
+	<CardContent>
+		<CustomerDocumentsCard customerId={customerId} />
+	</CardContent>
+</Card>
+
 							<Card>
 								<CardHeader
 									avatar={
