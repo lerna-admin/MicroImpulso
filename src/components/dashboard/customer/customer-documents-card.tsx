@@ -32,7 +32,7 @@ const CATEGORY_OPTIONS = [
 ];
 
 async function fetchCustomerDocuments(customerId) {
-	const res = await fetch(`/api/customers/${customerId}/documents`, {
+	const res = await fetch(`/api/documents/client/${customerId}`, {
 		method: "GET",
 	});
 	if (!res.ok) {

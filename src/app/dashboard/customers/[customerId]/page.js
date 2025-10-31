@@ -106,7 +106,7 @@ export default async function Page({ params }) {
 												Dirección 2
 											</Typography>
 											<Typography variant="body1">
-												{customer?.address2 ? customer.client.address2 : "—"}
+												{customer?.client.address2 ? customer.client.address2 : "—"}
 											</Typography>
 										</Box>
 									</Stack>
