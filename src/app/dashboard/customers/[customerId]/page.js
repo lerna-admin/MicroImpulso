@@ -28,7 +28,7 @@ export default async function Page({ params }) {
 	const { customerId } = params;
 	const customer = await getCustomerById(customerId);
 	const allRequestByClient = await getAllRequestsByCustomerId(customerId);
-
+	console.log(customer)
 	return (
 		<Box
 			sx={{
