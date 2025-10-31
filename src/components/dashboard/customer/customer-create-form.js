@@ -100,8 +100,8 @@ export function CustomerCreateForm({ user }) {
 				.string()
 				.min(5, { message: "El documento es obligatorio" })
 				.max(20, { message: "El documento es muy largo" })
-				.regex(/^\d+$/, {
-					message: "El documento debe contener solo números",
+				.regex(/^[A-Za-z0-9]+$/, {
+					message: "El documento solo puede tener letras y números (sin espacios)",
 				}),
 			address: zod
 				.string()
