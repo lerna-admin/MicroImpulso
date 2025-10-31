@@ -19,11 +19,17 @@ export function MovementsPagination({ filters, movementsTotalItems, movementsPag
 		(newFilters) => {
 			const searchParams = new URLSearchParams();
 
+			if (newFilters.date) {
+				searchParams.set("date", newFilters.date);
+			}
 			if (newFilters.page) {
 				searchParams.set("page", newFilters.page);
 			}
 			if (newFilters.limit) {
 				searchParams.set("limit", newFilters.limit);
+			}
+			if (newFilters.search) {
+				searchParams.set("search", newFilters.search);
 			}
 
 			router.push(`${paths.dashboard.cash_flow}?${searchParams.toString()}`);
