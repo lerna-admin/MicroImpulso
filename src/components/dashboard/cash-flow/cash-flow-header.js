@@ -48,7 +48,7 @@ const schema = zod
 			.min(10_000, { message: "El monto debe superar los $10.000" }),
 		typeMovement: zod.string().min(1, { message: "El tipo de movimiento es obligatorio" }),
 		category: zod.string().min(1, { message: "La categoria es obligatoria" }),
-		transferUser: zod.string().min(1, { message: "El usuario es obligatorio" }),
+		transferUser: zod.string().optional(),
 		description: zod.string().min(1, { message: "La descripción es obligatoria" }),
 	})
 	.superRefine((data, ctx) => {
@@ -94,7 +94,7 @@ export function CashFlowHeader({ user }) {
 	} = useForm({
 		resolver: zodResolver(schema),
 		defaultValues: {
-			amount: "",
+			amount: 0,
 			typeMovement: "",
 			category: "",
 			transferUser: "",
@@ -146,7 +146,6 @@ export function CashFlowHeader({ user }) {
 	}, [category]);
 
 	const onSubmit = async (dataForm) => {
-
 		setIsPending(true);
 		try {
 			await createCashMovement({
@@ -367,7 +366,7 @@ export function CashFlowHeader({ user }) {
 											render={({ field }) => (
 												<FormControl fullWidth error={Boolean(errors.transferUser)} disabled={!typeMovement}>
 													<InputLabel id="transferUser">
-														{user.role === ROLES.AGENTE || user.role === ROLES.GERENTE ? "Administrador" : "Agente"}
+														{user.role === ROLES.AGENTE || user.role === ROLES.GERENTE || category === "PRESTAMO ADMINISTRADOR"? "Administrador" : "Agente"}
 													</InputLabel>
 													<Select labelId="transferUser" {...field}>
 														{usuariosOptions.map((option) => (
