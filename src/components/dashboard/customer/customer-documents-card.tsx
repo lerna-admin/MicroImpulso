@@ -24,11 +24,15 @@ import {
 
 // 🔁 centraliza las categorías permitidas.
 // idealmente esto debería venir del backend algún día.
+
+
 const CATEGORY_OPTIONS = [
-	{ value: "IDENTIFICATION", label: "Identificación" },
-	{ value: "CONTRACT", label: "Contrato" },
-	{ value: "INVOICE", label: "Factura" },
+	
+	{ value: "ID", label: "Identificación" },
+	{ value: "WORK_LETTER", label: "Carta Laboral" },
+	{ value: "UTILITY_BILL", label: "Factura" },
 	{ value: "OTHER", label: "Otro" },
+	{ value: "PAYMENT_DETAIL", label: "Desprendible de Pago" }
 ];
 
 async function fetchCustomerDocuments(customerId) {
@@ -259,18 +263,15 @@ export default function CustomerDocumentsCard({ customerId }) {
 							<Table size="small" sx={{ minWidth: 600 }}>
 								<TableHead>
 									<TableRow>
-										<TableCell>Nombre</TableCell>
 										<TableCell>Categoría</TableCell>
-										<TableCell>Fecha</TableCell>
+										<TableCell>Fecha de cargue</TableCell>
 										<TableCell>Acciones</TableCell>
 									</TableRow>
 								</TableHead>
 								<TableBody>
 									{docs.map((doc) => (
 										<TableRow key={doc.id} hover>
-											<TableCell sx={{ maxWidth: 240, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-												{doc.name}
-											</TableCell>
+											
 
 											<TableCell sx={{ minWidth: 180 }}>
 												<FormControl fullWidth size="small">
@@ -293,8 +294,8 @@ export default function CustomerDocumentsCard({ customerId }) {
 
 											<TableCell sx={{ whiteSpace: "nowrap" }}>
 												{/* formateo rápido de fecha */}
-												{doc.uploadedAt
-													? new Date(doc.uploadedAt).toLocaleDateString("es-CO", {
+												{doc.createdAt
+													? new Date(doc.createdAt).toLocaleDateString("es-CO", {
 															year: "numeric",
 															month: "short",
 															day: "numeric",
@@ -308,7 +309,7 @@ export default function CustomerDocumentsCard({ customerId }) {
 													size="small"
 													variant="text"
 													component="a"
-													href={doc.url}
+													href={'/api/documents/'+doc.id+'/file'}
 													target="_blank"
 													rel="noopener noreferrer"
 												>
