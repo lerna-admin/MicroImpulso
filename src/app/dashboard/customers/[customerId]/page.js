@@ -25,7 +25,7 @@ import CustomerDocumentsCard from "@/components/dashboard/customer/customer-docu
 export const metadata = { title: `Detalle | Clientes | Dashboard | ${appConfig.name}` };
 
 export default async function Page({ params }) {
-	const { customerId } = params;
+	const { customerId } = await params;
 	const customer = await getCustomerById(customerId);
 	const allRequestByClient = await getAllRequestsByCustomerId(customerId);
 	return (

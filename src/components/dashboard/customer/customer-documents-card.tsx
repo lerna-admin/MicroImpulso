@@ -39,7 +39,7 @@ async function fetchCustomerDocuments(customerId) {
 		throw new Error("No se pudieron cargar los documentos");
 	}
 	console.log(res.json())
-	return res.json();
+	return res.json().documents;
 }
 
 async function updateDocumentCategory(documentId, category) {
