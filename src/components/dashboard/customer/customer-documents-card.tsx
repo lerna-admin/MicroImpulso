@@ -38,11 +38,12 @@ async function fetchCustomerDocuments(customerId) {
 	if (!res.ok) {
 		throw new Error("No se pudieron cargar los documentos");
 	}
+	console.log(res.json())
 	return res.json();
 }
 
 async function updateDocumentCategory(documentId, category) {
-	const res = await fetch(`/api/documents/${documentId}`, {
+	const res = await fetch(`/api/documents/${documentId}/`, {
 		method: "PATCH",
 		headers: {
 			"Content-Type": "application/json",
