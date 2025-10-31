@@ -97,7 +97,7 @@ export default async function Page({ params }) {
 												Celular 2
 											</Typography>
 											<Typography variant="body1">
-												{customer?.phone2 ? customer.phone2 : "—"}
+												{customer?.client.phone2 ? customer.client.phone2 : "—"}
 											</Typography>
 										</Box>
 
@@ -106,7 +106,7 @@ export default async function Page({ params }) {
 												Dirección 2
 											</Typography>
 											<Typography variant="body1">
-												{customer?.address2 ? customer.address2 : "—"}
+												{customer?.address2 ? customer.client.address2 : "—"}
 											</Typography>
 										</Box>
 									</Stack>
@@ -130,7 +130,7 @@ export default async function Page({ params }) {
 												Nombre de la referencia
 											</Typography>
 											<Typography variant="body1">
-												{customer?.referenceName ? customer.referenceName : "—"}
+												{customer?.client.referenceName ? customer.client.referenceName : "—"}
 											</Typography>
 										</Box>
 
@@ -139,7 +139,7 @@ export default async function Page({ params }) {
 												Teléfono de la referencia
 											</Typography>
 											<Typography variant="body1">
-												{customer?.referencePhone ? customer.referencePhone : "—"}
+												{customer?.client.referencePhone ? customer.client.referencePhone : "—"}
 											</Typography>
 										</Box>
 
@@ -148,7 +148,7 @@ export default async function Page({ params }) {
 												Parentesco / Relación
 											</Typography>
 											<Typography variant="body1">
-												{customer?.referenceRelationship ? customer.referenceRelationship : "—"}
+												{customer?.client.referenceRelationship ? customer.client.referenceRelationship : "—"}
 											</Typography>
 										</Box>
 									</Stack>
