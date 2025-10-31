@@ -38,8 +38,7 @@ async function fetchCustomerDocuments(customerId) {
 	if (!res.ok) {
 		throw new Error("No se pudieron cargar los documentos");
 	}
-	console.log(res.json())
-	return res.json().documents;
+	return res.json();
 }
 
 async function updateDocumentCategory(documentId, category) {
@@ -98,7 +97,7 @@ export default function CustomerDocumentsCard({ customerId }) {
 				setLoading(true);
 				const data = await fetchCustomerDocuments(customerId);
 				if (active) {
-					setDocs(data);
+					setDocs(data.documents);
 					setError(null);
 				}
 			} catch (err) {
