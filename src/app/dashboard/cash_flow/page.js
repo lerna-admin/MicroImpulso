@@ -9,9 +9,9 @@ import { appConfig } from "@/config/app";
 import { getUser } from "@/lib/custom-auth/server";
 import { dayjs } from "@/lib/dayjs";
 import { CashFlowHeader } from "@/components/dashboard/cash-flow/cash-flow-header";
+import { CashFlowSummary } from "@/components/dashboard/cash-flow/cash-flow-summary";
 import { MovementsPagination } from "@/components/dashboard/cash-flow/movements-pagination";
 import { MovementsTable } from "@/components/dashboard/cash-flow/movements-table";
-import { CashFlowSummary } from "@/components/dashboard/cash-flow/cash-flow-summary";
 
 export const metadata = { title: `Movimientos de caja | Dashboard | ${appConfig.name}` };
 
@@ -62,10 +62,10 @@ export default async function Page({ searchParams }) {
 					</Grid>
 					<Grid size={12}>
 						<Card>
-							<MovementsTable movementsData={movementsData} filters={{ page, limit }} />
+							<MovementsTable movementsData={movementsData} filters={{ page, limit, date, search }} />
 							<Divider />
 							<MovementsPagination
-								filters={{ page, limit }}
+								filters={{ page, limit, date, search }}
 								movementsTotalItems={movementsTotalItems}
 								movementsPage={movementsPage - 1}
 								movementLimit={movementLimit}

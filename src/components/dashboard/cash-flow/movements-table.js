@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
+import { IconButton, Menu, MenuItem, Tooltip } from "@mui/material";
 import Box from "@mui/material/Box";
 import Chip from "@mui/material/Chip";
 import Divider from "@mui/material/Divider";
@@ -10,11 +11,14 @@ import OutlinedInput from "@mui/material/OutlinedInput";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 import { DatePicker } from "@mui/x-date-pickers";
+import { DotsThree as DotsThreeIcon } from "@phosphor-icons/react/dist/ssr";
 import { MagnifyingGlass as MagnifyingGlassIcon } from "@phosphor-icons/react/dist/ssr/MagnifyingGlass";
 
 import { paths } from "@/paths";
 import { dayjs } from "@/lib/dayjs";
+import { usePopover } from "@/hooks/use-popover";
 import { DataTable } from "@/components/core/data-table";
+import { NotificationAlert } from "@/components/widgets/notifications/notification-alert";
 
 dayjs.locale("es");
 
@@ -25,6 +29,7 @@ const columns = [
 			const mapping = {
 				COBRO_CLIENTE: { label: "Cobro", color: "success" },
 				"PRESTAMO ADMINISTRADOR": { label: "Prestamo administrador", color: "error" },
+				PRESTAMO: { label: "Prestamo", color: "error" },
 				ENTRADA_GERENCIA: { label: "Entra caja", color: "success" },
 				GASTO_PROVEEDOR: { label: "Gastos", color: "error" },
 				TRANSFERENCIA: { label: "Transferencia", color: "info" },
@@ -84,6 +89,13 @@ const columns = [
 		),
 		name: "Description",
 		width: "250px",
+	},
+	{
+		formatter: (row) => <ActionsCell row={row} />,
+		name: "Acciones",
+		hideName: true,
+		width: "70px",
+		align: "right",
 	},
 ];
 
@@ -157,7 +169,9 @@ export function MovementsTable({ movementsData, filters }) {
 				<DatePicker name="movementDate" value={selectedDate} onChange={handleFilterChange} />
 			</Stack>
 			<Divider />
-			<DataTable columns={columns} rows={movementsData} />
+			<Box sx={{ overflowX: "auto" }}>
+				<DataTable columns={columns} rows={movementsData} />
+			</Box>
 			{movementsData.length === 0 ? (
 				<Box sx={{ p: 3 }}>
 					<Typography color="text.secondary" sx={{ textAlign: "center" }} variant="body2">
@@ -165,6 +179,54 @@ export function MovementsTable({ movementsData, filters }) {
 					</Typography>
 				</Box>
 			) : null}
+		</React.Fragment>
+	);
+}
+
+export function ActionsCell({ row }) {
+
+	const router = useRouter();
+	const popover = usePopover();
+	const popoverAlert = usePopover();
+	const [anchorEl, setAnchorEl] = React.useState(null);
+	const [alertMsg, setAlertMsg] = React.useState("");
+	const [alertSeverity, setAlertSeverity] = React.useState("");
+	const [isPending, setIsPending] = React.useState(false);
+
+	const handleDeleteMovement = () => {
+		console.log("asd");
+	};
+
+	const handleOptions = (event) => {
+		popover.handleOpen();
+		setAnchorEl(event.currentTarget);
+	};
+
+	return (
+		<React.Fragment>
+			<Tooltip title="Más opciones">
+				<IconButton onClick={handleOptions}>
+					<DotsThreeIcon weight="bold" />
+				</IconButton>
+			</Tooltip>
+
+			<Menu
+				anchorEl={anchorEl}
+				open={popover.open}
+				onClose={popover.handleClose}
+				slotProps={{ paper: { elevation: 0 } }}
+			>
+				<MenuItem onClick={handleDeleteMovement}>
+					<Typography>Eliminar movimiento</Typography>
+				</MenuItem>
+			</Menu>
+
+			<NotificationAlert
+				openAlert={popoverAlert.open}
+				onClose={popoverAlert.handleClose}
+				msg={alertMsg}
+				severity={alertSeverity}
+			></NotificationAlert>
 		</React.Fragment>
 	);
 }
