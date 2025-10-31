@@ -1,6 +1,6 @@
 import * as React from "react";
 import RouterLink from "next/link";
-import { CardContent } from "@mui/material";
+import { CardContent, Typography } from "@mui/material";
 import Avatar from "@mui/material/Avatar";
 import Box from "@mui/material/Box";
 import Card from "@mui/material/Card";
@@ -29,8 +29,6 @@ export default async function Page({ params }) {
 	const customer = await getCustomerById(customerId);
 	const allRequestByClient = await getAllRequestsByCustomerId(customerId);
 
-	// const totalRequestsAmountToPay = allRequestByClient.reduce((acc, req) => acc + req.amount, 0);
-
 	return (
 		<Box
 			sx={{
@@ -55,6 +53,7 @@ export default async function Page({ params }) {
 						</Link>
 					</div>
 				</Stack>
+
 				<Grid container spacing={4}>
 					<Grid
 						size={{
@@ -63,6 +62,7 @@ export default async function Page({ params }) {
 						}}
 					>
 						<Stack spacing={4}>
+							{/* PERFIL / EDICIÓN */}
 							<Card>
 								<CardHeader
 									avatar={
@@ -80,20 +80,98 @@ export default async function Page({ params }) {
 									<CustomerEditForm customerToEdit={customer}></CustomerEditForm>
 								</PropertyList>
 							</Card>
-							<Card>
-	<CardHeader
-		avatar={
-			<Avatar>
-				<UserIcon fontSize="var(--Icon-fontSize)" />
-			</Avatar>
-		}
-		title="Documentos del cliente"
-	/>
-	<CardContent>
-		<CustomerDocumentsCard customerId={customerId} />
-	</CardContent>
-</Card>
 
+							{/* CONTACTO ADICIONAL */}
+							<Card>
+								<CardHeader
+									avatar={
+										<Avatar>
+											<UserIcon fontSize="var(--Icon-fontSize)" />
+										</Avatar>
+									}
+									title="Contacto adicional"
+								/>
+								<CardContent>
+									<Stack spacing={2}>
+										<Box>
+											<Typography variant="overline" color="text.secondary" display="block">
+												Celular 2
+											</Typography>
+											<Typography variant="body1">
+												{customer?.phone2 ? customer.phone2 : "—"}
+											</Typography>
+										</Box>
+
+										<Box>
+											<Typography variant="overline" color="text.secondary" display="block">
+												Dirección 2
+											</Typography>
+											<Typography variant="body1">
+												{customer?.address2 ? customer.address2 : "—"}
+											</Typography>
+										</Box>
+									</Stack>
+								</CardContent>
+							</Card>
+
+							{/* REFERENCIA PERSONAL */}
+							<Card>
+								<CardHeader
+									avatar={
+										<Avatar>
+											<UserIcon fontSize="var(--Icon-fontSize)" />
+										</Avatar>
+									}
+									title="Referencia personal"
+								/>
+								<CardContent>
+									<Stack spacing={2}>
+										<Box>
+											<Typography variant="overline" color="text.secondary" display="block">
+												Nombre de la referencia
+											</Typography>
+											<Typography variant="body1">
+												{customer?.referenceName ? customer.referenceName : "—"}
+											</Typography>
+										</Box>
+
+										<Box>
+											<Typography variant="overline" color="text.secondary" display="block">
+												Teléfono de la referencia
+											</Typography>
+											<Typography variant="body1">
+												{customer?.referencePhone ? customer.referencePhone : "—"}
+											</Typography>
+										</Box>
+
+										<Box>
+											<Typography variant="overline" color="text.secondary" display="block">
+												Parentesco / Relación
+											</Typography>
+											<Typography variant="body1">
+												{customer?.referenceRelationship ? customer.referenceRelationship : "—"}
+											</Typography>
+										</Box>
+									</Stack>
+                                </CardContent>
+							</Card>
+
+							{/* DOCUMENTOS */}
+							<Card>
+								<CardHeader
+									avatar={
+										<Avatar>
+											<UserIcon fontSize="var(--Icon-fontSize)" />
+										</Avatar>
+									}
+									title="Documentos del cliente"
+								/>
+								<CardContent>
+									<CustomerDocumentsCard customerId={customerId} />
+								</CardContent>
+							</Card>
+
+							{/* SOLICITUDES */}
 							<Card>
 								<CardHeader
 									avatar={
@@ -108,21 +186,6 @@ export default async function Page({ params }) {
 										<Box sx={{ overflowX: "auto" }}>
 											<CustomersLineItemsTable rows={allRequestByClient} />
 										</Box>
-										{/* <Divider />
-										<Box sx={{ display: "flex", justifyContent: "flex-end", p: 2 }}>
-											<Stack spacing={2} sx={{ width: "300px", maxWidth: "100%" }}>
-												<Stack direction="row" sx={{ justifyContent: "space-between" }}>
-													<Typography variant="subtitle1">Total</Typography>
-													<Typography variant="subtitle1">
-														{new Intl.NumberFormat("es-CO", {
-															style: "currency",
-															currency: "COP",
-															minimumFractionDigits: 0,
-														}).format(totalRequestsAmountToPay)}
-													</Typography>
-												</Stack>
-											</Stack>
-										</Box> */}
 									</Card>
 								</CardContent>
 							</Card>
