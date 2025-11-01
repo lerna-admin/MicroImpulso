@@ -88,7 +88,7 @@ export function CustomerEditForm({ customerToEdit, onlyRead = false }) {
       address: (formData.address || "").trim(),
     };
 
-    const response = await updateCustomer(payload);
+    const response = await updateCustomer(payload, payload.id);
     if (response?.status === 200) {
       popover.handleOpen();
       setTimeout(() => {
