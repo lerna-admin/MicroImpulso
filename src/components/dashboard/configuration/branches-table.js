@@ -23,6 +23,28 @@ import { DataTable } from "@/components/core/data-table";
 
 dayjs.locale("es");
 
+/* ======================= País: mapeo nombre -> ISO-2 ======================= */
+const COUNTRY_NAME_TO_ISO2 = {
+  "COLOMBIA": "CO",
+  "COSTA RICA": "CR",
+  "MÉXICO": "MX",
+  "MEXICO": "MX",
+  "PERÚ": "PE",
+  "PERU": "PE",
+  "CHILE": "CL",
+  "ARGENTINA": "AR",
+  "ECUADOR": "EC",
+  "PANAMÁ": "PA",
+  "PANAMA": "PA",
+  // agrega los que necesites…
+};
+
+function isoFromName(countryName) {
+  if (!countryName) return undefined;
+  const key = String(countryName).trim().toUpperCase();
+  return COUNTRY_NAME_TO_ISO2[key];
+}
+
 /** Emoji de bandera a partir de ISO-2 */
 function flagFromCountryCode(code) {
   if (!code || typeof code !== "string") return "🌐";
@@ -34,6 +56,11 @@ function flagFromCountryCode(code) {
   } catch {
     return "🌐";
   }
+}
+
+function flagFromCountryName(name) {
+  const iso = isoFromName(name);
+  return flagFromCountryCode(iso);
 }
 
 function fmtDate(value) {
@@ -54,14 +81,14 @@ export function BranchesTable({ rows = [] }) {
   const [saving, setSaving] = React.useState(false);
   const [toast, setToast] = React.useState({ open: false, severity: "success", msg: "" });
 
-  // formulario: usar NOMBRES que tu backend espera
+  // formulario (usa los campos que espera el backend)
   const [form, setForm] = React.useState({
     id: null,
     name: "",
     countryIso2: "",
     phoneCountryCode: "",
     acceptsInbound: true,
-    // isActive no existe en la entidad, lo dejamos visual sin enviar
+    // isActive no existe en la entidad, queda solo visual
     isActive: true,
   });
 
@@ -69,7 +96,13 @@ export function BranchesTable({ rows = [] }) {
     setForm({
       id: row?.id ?? null,
       name: row?.name ?? "",
-      countryIso2: (row?.countryIso2 || row?.countryCode || "").toUpperCase(),
+      // si no viene countryIso2, intenta derivarlo desde countryName
+      countryIso2: (
+        row?.countryIso2 ||
+        isoFromName(row?.countryName) ||
+        row?.countryCode || // compat con props antiguas
+        ""
+      ).toUpperCase(),
       phoneCountryCode: String(row?.phoneCountryCode ?? "").replace(/[^\d]/g, ""),
       acceptsInbound: !!row?.acceptsInbound,
       isActive: row?.isActive !== false,
@@ -173,13 +206,30 @@ export function BranchesTable({ rows = [] }) {
     },
     {
       name: "País",
-      width: "180px",
+      width: "220px",
       formatter: (row) => {
-        const iso = (row?.countryIso2 || row?.countryCode || "").toUpperCase();
+        // nombre si viene del backend; si no, deja "—"
+        const name = row?.countryName || "—";
+        // ISO-2: prioriza lo que venga, si no, deriva desde el nombre
+        const iso = (
+          row?.countryIso2 ||
+          isoFromName(row?.countryName) ||
+          row?.countryCode || // compat si tu API devolvía countryCode
+          ""
+        ).toUpperCase();
+
+        // bandera: si hay nombre mapea por nombre, si no por iso
+        const flag = row?.countryName ? flagFromCountryName(row.countryName) : flagFromCountryCode(iso);
+
         return (
           <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
-            <span style={{ fontSize: 18 }}>{flagFromCountryCode(iso)}</span>
-            <Typography variant="body2">{iso || "—"}</Typography>
+            <span style={{ fontSize: 16, lineHeight: 1 }}>{flag}</span>
+            <Stack>
+              <Typography variant="body2">{name}</Typography>
+              <Typography variant="caption" color="text.secondary">
+                {iso || "—"}
+              </Typography>
+            </Stack>
           </Stack>
         );
       },
@@ -302,9 +352,7 @@ export function BranchesTable({ rows = [] }) {
               fullWidth
             />
             <FormControlLabel
-              control={
-                <Switch checked={form.acceptsInbound} onChange={handleChange("acceptsInbound")} />
-              }
+              control={<Switch checked={form.acceptsInbound} onChange={handleChange("acceptsInbound")} />}
               label="Acepta mensajes entrantes"
             />
             {/* isActive visible si te sirve, pero NO se envía al backend */}
