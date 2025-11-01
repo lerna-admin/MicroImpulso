@@ -17,6 +17,7 @@ import FormControlLabel from "@mui/material/FormControlLabel";
 import Snackbar from "@mui/material/Snackbar";
 import Alert from "@mui/material/Alert";
 import CircularProgress from "@mui/material/CircularProgress";
+import ReactCountryFlag from "react-country-flag";
 
 import { dayjs } from "@/lib/dayjs";
 import { DataTable } from "@/components/core/data-table";
@@ -91,19 +92,7 @@ function deriveDisplayName(row, iso) {
   return iso || "—";
 }
 
-/** Bandera emoji desde ISO-2 */
-function flagFromIso2(code) {
-  if (!code || typeof code !== "string") return "🌐";
-  try {
-    const cc = code.trim().toUpperCase();
-    if (cc.length !== 2) return "🌐";
-    const A = 0x1f1e6;
-    return String.fromCodePoint(A + (cc.charCodeAt(0) - 65), A + (cc.charCodeAt(1) - 65));
-  } catch {
-    return "🌐";
-  }
-}
-
+/** Fecha legible */
 function fmtDate(value) {
   if (!value) return "—";
   const d = dayjs(value);
@@ -228,12 +217,29 @@ export function BranchesTable({ rows = [] }) {
       formatter: (row) => {
         const { iso, source } = deriveIso(row);
         const display = deriveDisplayName(row, iso);
-        const flag = flagFromIso2(iso);
         const debug = `ISO: ${iso || "—"} • Source: ${source}`;
+
         return (
           <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
             <Tooltip title={debug}>
-              <span style={{ fontSize: 16, lineHeight: 1 }}>{flag}</span>
+              {/* Bandera SVG confiable */}
+              {iso ? (
+                <ReactCountryFlag
+                  countryCode={iso}
+                  svg
+                  style={{
+                    width: "20px",
+                    height: "14px",
+                    borderRadius: 2,
+                    boxShadow: "0 0 0 1px rgba(0,0,0,0.08)",
+                    display: "inline-block",
+                  }}
+                  aria-label={iso}
+                  title={iso}
+                />
+              ) : (
+                <span style={{ fontSize: 16, lineHeight: 1 }}>🌐</span>
+              )}
             </Tooltip>
             <Stack>
               <Typography variant="body2">{display}</Typography>
