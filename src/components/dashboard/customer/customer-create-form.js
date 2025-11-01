@@ -354,7 +354,7 @@ export function CustomerCreateForm({ user }) {
 										name="phone2"
 										render={({ field }) => (
 											<FormControl error={Boolean(errors.phone2)} fullWidth>
-												<InputLabel>Celular 2 (opcional)</InputLabel>
+												<InputLabel>Celular 2 (Opcional)</InputLabel>
 												<OutlinedInput {...field} />
 												{errors.phone2 ? <FormHelperText>{errors.phone2.message}</FormHelperText> : null}
 											</FormControl>
@@ -385,7 +385,7 @@ export function CustomerCreateForm({ user }) {
 										name="address2"
 										render={({ field }) => (
 											<FormControl error={Boolean(errors.address2)} fullWidth>
-												<InputLabel>Dirección 2 (opcional)</InputLabel>
+												<InputLabel>Dirección 2 (Opcional)</InputLabel>
 												<OutlinedInput {...field} />
 												{errors.address2 ? (
 													<FormHelperText>{errors.address2.message}</FormHelperText>

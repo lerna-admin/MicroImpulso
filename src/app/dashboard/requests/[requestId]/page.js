@@ -1,6 +1,6 @@
 import * as React from "react";
 import RouterLink from "next/link";
-import { LinearProgress } from "@mui/material";
+import { Chip, LinearProgress } from "@mui/material";
 import Avatar from "@mui/material/Avatar";
 import Box from "@mui/material/Box";
 import Card from "@mui/material/Card";
@@ -10,6 +10,7 @@ import Grid from "@mui/material/Grid2";
 import Link from "@mui/material/Link";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
+import { XCircle as XCircleIcon } from "@phosphor-icons/react/dist/ssr";
 import { ArrowLeft as ArrowLeftIcon } from "@phosphor-icons/react/dist/ssr/ArrowLeft";
 import { User as UserIcon } from "@phosphor-icons/react/dist/ssr/User";
 
@@ -43,7 +44,7 @@ function calculatePayments(transactions) {
 
 export default async function Page({ params }) {
 	const { requestId } = params;
-	const { client, transactions, requestedAmount, amount } = await getRequestById(requestId);
+	const { client, transactions, requestedAmount, amount, notes, status } = await getRequestById(requestId);
 
 	const detailRowsToExport = transactions.map((item) => ({
 		Fecha: item.date,
@@ -85,6 +86,46 @@ export default async function Page({ params }) {
 						}}
 					>
 						<Stack spacing={4}>
+							<Card>
+								<CardHeader
+									avatar={
+										<Avatar>
+											<UserIcon fontSize="var(--Icon-fontSize)" />
+										</Avatar>
+									}
+									title={
+										<Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+											<Box sx={{ display: "flex", flexDirection: "row", gap: "1rem" }}>
+												<Typography variant="body1" color="initial">
+													Solicitud
+												</Typography>
+											</Box>
+											{status.toLowerCase() === "rejected" ? (
+												<Chip
+													icon={<XCircleIcon color="var(--mui-palette-error-main)" weight="fill" />}
+													label={"Rechazada"}
+													size="small"
+													variant="outlined"
+												/>
+											) : null}
+										</Box>
+									}
+								/>
+								<PropertyList
+									divider={<Divider />}
+									orientation="vertical"
+									sx={{ "--PropertyItem-padding": "12px 24px" }}
+								>
+									{[
+										{ key: "ID", value: requestId },
+										{ key: "Motivo de rechazo", value: notes },
+									].map((item) =>
+										item.key === "Motivo de rechazo" && status.toLowerCase() !== "rejected" ? null : (
+											<PropertyItem key={item.key} name={item.key} value={item.value} />
+										)
+									)}
+								</PropertyList>
+							</Card>
 							<Card>
 								<CardHeader
 									avatar={
