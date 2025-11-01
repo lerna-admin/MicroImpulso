@@ -23,7 +23,8 @@ import { DataTable } from "@/components/core/data-table";
 
 dayjs.locale("es");
 
-/* ======================= País: mapeo nombre -> ISO-2 ======================= */
+/* ======================= Diccionarios de soporte ======================= */
+// Nombre → ISO-2
 const COUNTRY_NAME_TO_ISO2 = {
   "COLOMBIA": "CO",
   "COSTA RICA": "CR",
@@ -36,17 +37,62 @@ const COUNTRY_NAME_TO_ISO2 = {
   "ECUADOR": "EC",
   "PANAMÁ": "PA",
   "PANAMA": "PA",
-  // agrega los que necesites…
+  // agrega los que necesites
 };
 
-function isoFromName(countryName) {
-  if (!countryName) return undefined;
-  const key = String(countryName).trim().toUpperCase();
-  return COUNTRY_NAME_TO_ISO2[key];
+// Indicativo telefónico → ISO-2 (por si solo llega el code)
+const PHONE_CODE_TO_ISO2 = {
+  "57": "CO",
+  "506": "CR",
+  "52": "MX",
+  "51": "PE",
+  "56": "CL",
+  "54": "AR",
+  "593": "EC",
+  "507": "PA",
+};
+
+/* ======================= Helpers de normalización ======================= */
+const cleanIso2 = (v) => (typeof v === "string" ? v.trim().toUpperCase() : "");
+const cleanName = (v) => (typeof v === "string" ? v.trim() : "");
+const cleanPhoneCode = (v) =>
+  v == null ? "" : String(v).replace(/[^\d]/g, "").trim();
+
+/** Intenta deducir ISO-2 con varias fuentes. Devuelve { iso, source } */
+function deriveIso(row) {
+  // 1) countryIso2 directo
+  let iso = cleanIso2(row?.countryIso2);
+  if (iso.length === 2) return { iso, source: "countryIso2" };
+
+  // 2) countryCode (compat)
+  iso = cleanIso2(row?.countryCode);
+  if (iso.length === 2) return { iso, source: "countryCode" };
+
+  // 3) nombre del país
+  const name = cleanName(row?.countryName);
+  if (name) {
+    const mapped = COUNTRY_NAME_TO_ISO2[name.toUpperCase()];
+    if (mapped) return { iso: mapped, source: "countryName" };
+  }
+
+  // 4) phoneCountryCode
+  const phone = cleanPhoneCode(row?.phoneCountryCode);
+  if (phone && PHONE_CODE_TO_ISO2[phone]) {
+    return { iso: PHONE_CODE_TO_ISO2[phone], source: "phoneCountryCode" };
+  }
+
+  return { iso: "", source: "unknown" };
 }
 
-/** Emoji de bandera a partir de ISO-2 */
-function flagFromCountryCode(code) {
+/** Deriva el nombre a mostrar (si viene del backend) o el ISO si no hay nombre */
+function deriveDisplayName(row, iso) {
+  const name = cleanName(row?.countryName);
+  if (name) return name;
+  return iso || "—";
+}
+
+/** Bandera emoji desde ISO-2 */
+function flagFromIso2(code) {
   if (!code || typeof code !== "string") return "🌐";
   try {
     const cc = code.trim().toUpperCase();
@@ -58,52 +104,40 @@ function flagFromCountryCode(code) {
   }
 }
 
-function flagFromCountryName(name) {
-  const iso = isoFromName(name);
-  return flagFromCountryCode(iso);
-}
-
 function fmtDate(value) {
   if (!value) return "—";
   const d = dayjs(value);
   return d.isValid() ? d.format("YYYY-MM-DD HH:mm") : String(value);
 }
 
+/* ======================= Componente ======================= */
 export function BranchesTable({ rows = [] }) {
-  // estado local para reflejar cambios sin recargar
   const [data, setData] = React.useState(Array.isArray(rows) ? rows : []);
   React.useEffect(() => {
     setData(Array.isArray(rows) ? rows : []);
   }, [rows]);
 
-  // modal edición
   const [open, setOpen] = React.useState(false);
   const [saving, setSaving] = React.useState(false);
   const [toast, setToast] = React.useState({ open: false, severity: "success", msg: "" });
 
-  // formulario (usa los campos que espera el backend)
   const [form, setForm] = React.useState({
     id: null,
     name: "",
     countryIso2: "",
     phoneCountryCode: "",
     acceptsInbound: true,
-    // isActive no existe en la entidad, queda solo visual
+    // visual
     isActive: true,
   });
 
   const handleEdit = (row) => {
+    const { iso } = deriveIso(row);
     setForm({
       id: row?.id ?? null,
       name: row?.name ?? "",
-      // si no viene countryIso2, intenta derivarlo desde countryName
-      countryIso2: (
-        row?.countryIso2 ||
-        isoFromName(row?.countryName) ||
-        row?.countryCode || // compat con props antiguas
-        ""
-      ).toUpperCase(),
-      phoneCountryCode: String(row?.phoneCountryCode ?? "").replace(/[^\d]/g, ""),
+      countryIso2: iso,
+      phoneCountryCode: cleanPhoneCode(row?.phoneCountryCode),
       acceptsInbound: !!row?.acceptsInbound,
       isActive: row?.isActive !== false,
     });
@@ -118,7 +152,6 @@ export function BranchesTable({ rows = [] }) {
   };
 
   const handleSave = async () => {
-    // validaciones mínimas
     if (!form.id) {
       setToast({ open: true, severity: "error", msg: "ID de sede inválido." });
       return;
@@ -127,32 +160,22 @@ export function BranchesTable({ rows = [] }) {
       setToast({ open: true, severity: "error", msg: "El nombre es obligatorio." });
       return;
     }
-    const iso = form.countryIso2.trim().toUpperCase();
+    const iso = cleanIso2(form.countryIso2);
     if (iso.length !== 2) {
-      setToast({
-        open: true,
-        severity: "error",
-        msg: "El código de país debe ser ISO-2 (2 letras).",
-      });
+      setToast({ open: true, severity: "error", msg: "El código de país debe ser ISO-2 (2 letras)." });
       return;
     }
-    const phoneCode = String(form.phoneCountryCode).replace(/[^\d]/g, "");
+    const phoneCode = cleanPhoneCode(form.phoneCountryCode);
     if (!phoneCode) {
-      setToast({
-        open: true,
-        severity: "error",
-        msg: "El indicativo telefónico del país es obligatorio (solo dígitos).",
-      });
+      setToast({ open: true, severity: "error", msg: "El indicativo del país es obligatorio (solo dígitos)." });
       return;
     }
 
-    // payload EXACTO que espera tu backend/entidad
     const payload = {
       name: form.name.trim(),
       countryIso2: iso,
       phoneCountryCode: phoneCode,
       acceptsInbound: !!form.acceptsInbound,
-      // NO enviar isActive porque tu entidad no lo tiene
     };
 
     try {
@@ -162,17 +185,12 @@ export function BranchesTable({ rows = [] }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
-
       if (!res.ok) {
         const err = await safeJson(res);
         throw new Error(err?.message || `Error ${res.status}`);
       }
-
       const updated = await res.json();
-
-      // reflejar cambios localmente
       setData((prev) => prev.map((row) => (row.id === form.id ? { ...row, ...updated } : row)));
-
       setToast({ open: true, severity: "success", msg: "Sede actualizada correctamente." });
       setOpen(false);
     } catch (e) {
@@ -206,26 +224,19 @@ export function BranchesTable({ rows = [] }) {
     },
     {
       name: "País",
-      width: "220px",
+      width: "240px",
       formatter: (row) => {
-        // nombre si viene del backend; si no, deja "—"
-        const name = row?.countryName || "—";
-        // ISO-2: prioriza lo que venga, si no, deriva desde el nombre
-        const iso = (
-          row?.countryIso2 ||
-          isoFromName(row?.countryName) ||
-          row?.countryCode || // compat si tu API devolvía countryCode
-          ""
-        ).toUpperCase();
-
-        // bandera: si hay nombre mapea por nombre, si no por iso
-        const flag = row?.countryName ? flagFromCountryName(row.countryName) : flagFromCountryCode(iso);
-
+        const { iso, source } = deriveIso(row);
+        const display = deriveDisplayName(row, iso);
+        const flag = flagFromIso2(iso);
+        const debug = `ISO: ${iso || "—"} • Source: ${source}`;
         return (
           <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
-            <span style={{ fontSize: 16, lineHeight: 1 }}>{flag}</span>
+            <Tooltip title={debug}>
+              <span style={{ fontSize: 16, lineHeight: 1 }}>{flag}</span>
+            </Tooltip>
             <Stack>
-              <Typography variant="body2">{name}</Typography>
+              <Typography variant="body2">{display}</Typography>
               <Typography variant="caption" color="text.secondary">
                 {iso || "—"}
               </Typography>
@@ -239,7 +250,7 @@ export function BranchesTable({ rows = [] }) {
       width: "130px",
       align: "center",
       formatter: (row) => (
-        <Chip size="small" label={row?.phoneCountryCode ? `+${row.phoneCountryCode}` : "—"} />
+        <Chip size="small" label={row?.phoneCountryCode ? `+${cleanPhoneCode(row.phoneCountryCode)}` : "—"} />
       ),
     },
     {
@@ -347,7 +358,7 @@ export function BranchesTable({ rows = [] }) {
               label="Indicativo del país (solo dígitos, ej: 57)"
               value={form.phoneCountryCode}
               onChange={(e) =>
-                setForm((prev) => ({ ...prev, phoneCountryCode: e.target.value.replace(/[^\d]/g, "") }))
+                setForm((prev) => ({ ...prev, phoneCountryCode: cleanPhoneCode(e.target.value) }))
               }
               fullWidth
             />
@@ -355,7 +366,7 @@ export function BranchesTable({ rows = [] }) {
               control={<Switch checked={form.acceptsInbound} onChange={handleChange("acceptsInbound")} />}
               label="Acepta mensajes entrantes"
             />
-            {/* isActive visible si te sirve, pero NO se envía al backend */}
+            {/* isActive es solo visual */}
             <FormControlLabel
               control={<Switch checked={form.isActive} onChange={handleChange("isActive")} />}
               label="Sede activa (visual)"
