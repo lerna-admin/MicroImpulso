@@ -22,19 +22,16 @@ import {
 	CircularProgress,
 } from "@mui/material";
 
-// 🔁 centraliza las categorías permitidas.
-// idealmente esto debería venir del backend algún día.
-
-
+// Las opciones válidas según DocumentType del backend
 const CATEGORY_OPTIONS = [
-	
 	{ value: "ID", label: "Identificación" },
 	{ value: "WORK_LETTER", label: "Carta Laboral" },
 	{ value: "UTILITY_BILL", label: "Factura" },
 	{ value: "OTHER", label: "Otro" },
-	{ value: "PAYMENT_DETAIL", label: "Desprendible de Pago" }
+	{ value: "PAYMENT_DETAIL", label: "Desprendible de Pago" },
 ];
 
+// GET documentos del cliente
 async function fetchCustomerDocuments(customerId) {
 	const res = await fetch(`/api/documents/client/${customerId}`, {
 		method: "GET",
@@ -45,13 +42,16 @@ async function fetchCustomerDocuments(customerId) {
 	return res.json();
 }
 
-async function updateDocumentCategory(documentId, category) {
+// PATCH clasificación del documento existente
+async function updateDocumentClassification(documentId, classification) {
 	const res = await fetch(`/api/documents/${documentId}/`, {
 		method: "PATCH",
 		headers: {
 			"Content-Type": "application/json",
 		},
-		body: JSON.stringify({ category }),
+		// 🔴 antes mandábamos { category }, esto el backend no lo entiende
+		// ✅ ahora mandamos { classification }
+		body: JSON.stringify({ classification }),
 	});
 	if (!res.ok) {
 		throw new Error("No se pudo actualizar la categoría");
@@ -59,13 +59,11 @@ async function updateDocumentCategory(documentId, category) {
 	return res.json();
 }
 
-// placeholder para subida de archivo
-async function uploadDocument({ file, category, customerId }) {
-	// Esto supone que tu backend va a aceptar multipart/form-data.
-	// Si luego cambias a S3 presigned URL, acá es donde se ajusta.
+// POST subir nuevo documento
+async function uploadDocument({ file, classification, customerId }) {
 	const formData = new FormData();
 	formData.append("file", file);
-	formData.append("category", category);
+	formData.append("classification", classification); // <-- clave correcta
 	formData.append("customerId", customerId);
 
 	const res = await fetch(`/api/documents`, {
@@ -85,15 +83,19 @@ export default function CustomerDocumentsCard({ customerId }) {
 	const [loading, setLoading] = React.useState(true);
 	const [error, setError] = React.useState<string | null>(null);
 
-	// upload form state
+	// estado del formulario de subida
 	const [file, setFile] = React.useState<File | null>(null);
-	const [newCategory, setNewCategory] = React.useState("OTHER");
+
+	// 🔴 antes newCategory
+	// ✅ ahora newClassification (valor inicial OTHER)
+	const [newClassification, setNewClassification] = React.useState("OTHER");
+
 	const [uploading, setUploading] = React.useState(false);
 
-	// track per-row category while user changes it
+	// documento que estamos actualizando (para deshabilitar su select)
 	const [updatingDocId, setUpdatingDocId] = React.useState<string | null>(null);
 
-	// initial load
+	// carga inicial
 	React.useEffect(() => {
 		let active = true;
 		(async () => {
@@ -101,7 +103,9 @@ export default function CustomerDocumentsCard({ customerId }) {
 				setLoading(true);
 				const data = await fetchCustomerDocuments(customerId);
 				if (active) {
-					setDocs(data.documents);
+					// esperamos que el backend responda algo tipo:
+					// { documents: [{ id, classification, createdAt, ...}, ...] }
+					setDocs(data.documents || []);
 					setError(null);
 				}
 			} catch (err) {
@@ -119,46 +123,59 @@ export default function CustomerDocumentsCard({ customerId }) {
 		};
 	}, [customerId]);
 
-	// handle category change for existing doc
-	const handleChangeCategory = async (docId: string, category: string) => {
+	// cambiar clasificación de un doc existente
+	const handleChangeClassification = async (docId: string, nextClassification: string) => {
 		try {
 			setUpdatingDocId(docId);
-			const updated = await updateDocumentCategory(docId, category);
 
-			// actualiza en memoria
+			const updated = await updateDocumentClassification(docId, nextClassification);
+
+			// el backend puede devolver el doc completo o solo { classification: '...' }
+			const resolvedClassification = updated.classification ?? nextClassification;
+
+			// actualizamos la lista local
 			setDocs((prev) =>
-				prev.map((d) => (d.id === docId ? { ...d, category: updated.category ?? category } : d)),
+				prev.map((d) =>
+					d.id === docId
+						? {
+								...d,
+								classification: resolvedClassification,
+						  }
+						: d,
+				),
 			);
 		} catch (err) {
 			console.error(err);
-			// opcional: toast/snackbar
+			// aquí podrías disparar un snackbar/toast
 		} finally {
 			setUpdatingDocId(null);
 		}
 	};
 
-	// handle file upload submit
+	// subir archivo nuevo
 	const handleUpload = async (e: React.FormEvent) => {
 		e.preventDefault();
 		if (!file) {
-			// opcional: toast/snackbar
+			// podrías mostrar notificación "Selecciona un archivo"
 			return;
 		}
 		try {
 			setUploading(true);
+
 			const created = await uploadDocument({
 				file,
-				category: newCategory,
+				classification: newClassification,
 				customerId,
 			});
 
-			// Limpia el form y agrega el doc recién creado
+			// esperamos que `created` sea algo tipo { id, createdAt, classification, ... }
 			setFile(null);
-			setNewCategory("OTHER");
+			setNewClassification("OTHER");
+
+			// agregamos el documento nuevo al inicio
 			setDocs((prev) => [created, ...prev]);
 		} catch (err) {
 			console.error(err);
-			// opcional: toast/snackbar
 		} finally {
 			setUploading(false);
 		}
@@ -209,12 +226,12 @@ export default function CustomerDocumentsCard({ customerId }) {
 					</Box>
 
 					<FormControl sx={{ minWidth: 200 }}>
-						<InputLabel id="new-doc-category-label">Categoría</InputLabel>
+						<InputLabel id="new-doc-classification-label">Categoría</InputLabel>
 						<Select
-							labelId="new-doc-category-label"
+							labelId="new-doc-classification-label"
 							label="Categoría"
-							value={newCategory}
-							onChange={(e) => setNewCategory(e.target.value)}
+							value={newClassification}
+							onChange={(e) => setNewClassification(e.target.value)}
 						>
 							{CATEGORY_OPTIONS.map((opt) => (
 								<MenuItem key={opt.value} value={opt.value}>
@@ -268,18 +285,19 @@ export default function CustomerDocumentsCard({ customerId }) {
 										<TableCell>Acciones</TableCell>
 									</TableRow>
 								</TableHead>
+
 								<TableBody>
 									{docs.map((doc) => (
 										<TableRow key={doc.id} hover>
-											
-
 											<TableCell sx={{ minWidth: 180 }}>
 												<FormControl fullWidth size="small">
 													<Select
-														value={doc.category || "OTHER"}
+														// 🔴 antes: value={doc.category}
+														// ✅ ahora usamos classification
+														value={doc.classification || "OTHER"}
 														onChange={(e) => {
-															const nextCat = e.target.value;
-															handleChangeCategory(doc.id, nextCat);
+															const nextClass = e.target.value;
+															handleChangeClassification(doc.id, nextClass);
 														}}
 														disabled={updatingDocId === doc.id}
 													>
@@ -293,7 +311,6 @@ export default function CustomerDocumentsCard({ customerId }) {
 											</TableCell>
 
 											<TableCell sx={{ whiteSpace: "nowrap" }}>
-												{/* formateo rápido de fecha */}
 												{doc.createdAt
 													? new Date(doc.createdAt).toLocaleDateString("es-CO", {
 															year: "numeric",
@@ -304,12 +321,11 @@ export default function CustomerDocumentsCard({ customerId }) {
 											</TableCell>
 
 											<TableCell>
-												{/* Descargar / Ver */}
 												<Button
 													size="small"
 													variant="text"
 													component="a"
-													href={'/api/documents/'+doc.id+'/file'}
+													href={`/api/documents/${doc.id}/file`}
 													target="_blank"
 													rel="noopener noreferrer"
 												>
