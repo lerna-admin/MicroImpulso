@@ -18,13 +18,13 @@ import { NotificationAlert } from "@/components/widgets/notifications/notificati
 
 export function CustomerEditForm({ customerToEdit, onlyRead = false }) {
   const [formData, setFormData] = React.useState({
-    id: "",              // 👈 id del CLIENTE
+    id: "",
     name: "",
     phone: "",
     email: "",
     document: "",
     address: "",
-    totalLoanAmount: 0,  // numérico
+    totalLoanAmount: 0,
     status: "",
     createdAt: "",
     updatedAt: "",
@@ -39,50 +39,53 @@ export function CustomerEditForm({ customerToEdit, onlyRead = false }) {
 
     const c = customerToEdit.client ?? {};
     setFormData({
-      id: c.id ?? customerToEdit.id ?? "",                 // 👈 toma id del cliente
+      // ⚠️ Garantizamos que el id del CLIENTE esté presente
+      id: c.id ?? customerToEdit.id ?? "",
       name: c.name ?? "",
       phone: c.phone ?? "",
       email: c.email ?? "",
       document: c.document ?? "",
       address: c.address ?? "",
-      totalLoanAmount:
-        Number(customerToEdit.montoPrestado ?? customerToEdit.totalLoanAmount ?? 0),
+      totalLoanAmount: Number(
+        customerToEdit.montoPrestado ?? customerToEdit.totalLoanAmount ?? 0
+      ),
       status: c.status ?? customerToEdit.status ?? "",
       createdAt: customerToEdit.createdAt ?? "",
       updatedAt: customerToEdit.updatedAt ?? "",
     });
   }, [customerToEdit]);
 
-  // onChange genérico para inputs de texto
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  // onChange genérico (JS puro, sin tipos)
+  const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  // (Si algún día quisieras editar fechas)
-  const handleChangeCreatedAt = (v: any) => {
-    setFormData((prev) => ({ ...prev, createdAt: v?.toISOString?.() ?? prev.createdAt }));
+  // Si algún día quisieras editar la fecha (ahora está disabled)
+  const handleChangeCreatedAt = (v) => {
+    setFormData((prev) => ({
+      ...prev,
+      createdAt: v && v.toISOString ? v.toISOString() : prev.createdAt,
+    }));
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Validación mínima
     if (!formData.id) {
       popover.handleOpen();
       console.error("Falta id del cliente");
       return;
     }
 
-    // Arma payload que espera tu API
+    // Payload limpio para tu API
     const payload = {
       id: formData.id,
-      name: formData.name?.trim(),
-      phone: formData.phone?.trim(),
-      email: formData.email?.trim(),
-      document: formData.document?.trim(),
-      address: formData.address?.trim(),
-      // Si tu endpoint espera otros nombres, mapéalos aquí
+      name: (formData.name || "").trim(),
+      phone: (formData.phone || "").trim(),
+      email: (formData.email || "").trim(),
+      document: (formData.document || "").trim(),
+      address: (formData.address || "").trim(),
     };
 
     const response = await updateCustomer(payload);
@@ -97,7 +100,7 @@ export function CustomerEditForm({ customerToEdit, onlyRead = false }) {
   return (
     <>
       <form onSubmit={handleSubmit}>
-        {/* Campo oculto para garantizar que el id viaje en el submit */}
+        {/* Campo oculto: garantiza que el id viaje */}
         <input type="hidden" name="id" value={formData.id} />
 
         <Stack spacing={2} sx={{ p: 3 }}>
@@ -205,7 +208,11 @@ export function CustomerEditForm({ customerToEdit, onlyRead = false }) {
           </Grid>
 
           {onlyRead ? null : (
-            <Stack direction="row" spacing={1} sx={{ alignItems: "center", justifyContent: "flex-end" }}>
+            <Stack
+              direction="row"
+              spacing={1}
+              sx={{ alignItems: "center", justifyContent: "flex-end" }}
+            >
               <Button
                 color="secondary"
                 variant="outlined"
