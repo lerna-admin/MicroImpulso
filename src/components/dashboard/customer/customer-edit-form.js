@@ -176,35 +176,6 @@ export function CustomerEditForm({ customerToEdit, onlyRead = false }) {
               </FormControl>
             </Grid>
 
-            <Grid size={{ md: 6, xs: 12 }}>
-              <FormControl fullWidth>
-                <InputLabel>Monto Prestado</InputLabel>
-                <OutlinedInput
-                  disabled
-                  id="totalLoanAmount"
-                  name="totalLoanAmount"
-                  value={new Intl.NumberFormat("es-CO", {
-                    style: "currency",
-                    currency: "COP",
-                    minimumFractionDigits: 0,
-                  }).format(formData.totalLoanAmount ?? 0)}
-                  label="Monto Prestado"
-                />
-              </FormControl>
-            </Grid>
-
-            <Grid size={{ md: 6, xs: 12 }}>
-              <FormControl fullWidth>
-                <DatePicker
-                  disabled
-                  name="createdAt"
-                  format="MMM D, YYYY hh:mm A"
-                  label="Fecha de creación"
-                  value={formData.createdAt ? dayjs(formData.createdAt) : null}
-                  onChange={handleChangeCreatedAt}
-                />
-              </FormControl>
-            </Grid>
           </Grid>
 
           {onlyRead ? null : (
