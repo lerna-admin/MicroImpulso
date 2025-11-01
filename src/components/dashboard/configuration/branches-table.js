@@ -23,60 +23,45 @@ import { DataTable } from "@/components/core/data-table";
 
 dayjs.locale("es");
 
-/** Convierte un código de país (alpha-2) en bandera emoji. */
+/** Emoji de bandera a partir de ISO-2 */
 function flagFromCountryCode(code) {
   if (!code || typeof code !== "string") return "🌐";
   try {
     const cc = code.trim().toUpperCase();
     if (cc.length !== 2) return "🌐";
-    const A = 0x1f1e6; // base regional indicator
+    const A = 0x1f1e6;
     return String.fromCodePoint(A + (cc.charCodeAt(0) - 65), A + (cc.charCodeAt(1) - 65));
   } catch {
     return "🌐";
   }
 }
 
-/** Formatea fecha segura. */
 function fmtDate(value) {
   if (!value) return "—";
   const d = dayjs(value);
   return d.isValid() ? d.format("YYYY-MM-DD HH:mm") : String(value);
 }
 
-/** Normaliza callingCodes a array de strings sin '+' duplicado. */
-function normalizeCallingCodes(cc) {
-  if (Array.isArray(cc)) return cc.map((v) => String(v).replace(/^\+/, "")).filter(Boolean);
-  if (typeof cc === "string" && cc.trim().length) {
-    return cc.split(",").map((v) => v.trim().replace(/^\+/, "")).filter(Boolean);
-  }
-  return [];
-}
-
-/** Convierte array de indicativos a string CSV (+57,+506). */
-function callingCodesToCsv(cc) {
-  const arr = normalizeCallingCodes(cc);
-  return arr.length ? arr.map((x) => `+${x}`).join(",") : "";
-}
-
 export function BranchesTable({ rows = [] }) {
-  // Estado local para permitir edición inmediata sin recargar
+  // estado local para reflejar cambios sin recargar
   const [data, setData] = React.useState(Array.isArray(rows) ? rows : []);
   React.useEffect(() => {
     setData(Array.isArray(rows) ? rows : []);
   }, [rows]);
 
-  // Modal de edición
+  // modal edición
   const [open, setOpen] = React.useState(false);
   const [saving, setSaving] = React.useState(false);
   const [toast, setToast] = React.useState({ open: false, severity: "success", msg: "" });
 
+  // formulario: usar NOMBRES que tu backend espera
   const [form, setForm] = React.useState({
     id: null,
     name: "",
-    countryName: "",
-    countryCode: "",
-    callingCodesCsv: "",
+    countryIso2: "",
+    phoneCountryCode: "",
     acceptsInbound: true,
+    // isActive no existe en la entidad, lo dejamos visual sin enviar
     isActive: true,
   });
 
@@ -84,9 +69,8 @@ export function BranchesTable({ rows = [] }) {
     setForm({
       id: row?.id ?? null,
       name: row?.name ?? "",
-      countryName: row?.countryName ?? "",
-      countryCode: row?.countryCode ?? "",
-      callingCodesCsv: callingCodesToCsv(row?.callingCodes),
+      countryIso2: (row?.countryIso2 || row?.countryCode || "").toUpperCase(),
+      phoneCountryCode: String(row?.phoneCountryCode ?? "").replace(/[^\d]/g, ""),
       acceptsInbound: !!row?.acceptsInbound,
       isActive: row?.isActive !== false,
     });
@@ -101,7 +85,7 @@ export function BranchesTable({ rows = [] }) {
   };
 
   const handleSave = async () => {
-    // Validaciones mínimas
+    // validaciones mínimas
     if (!form.id) {
       setToast({ open: true, severity: "error", msg: "ID de sede inválido." });
       return;
@@ -110,18 +94,32 @@ export function BranchesTable({ rows = [] }) {
       setToast({ open: true, severity: "error", msg: "El nombre es obligatorio." });
       return;
     }
-    if (!form.countryCode.trim() || form.countryCode.trim().length !== 2) {
-      setToast({ open: true, severity: "error", msg: "El código de país debe ser de 2 letras (ISO 3166-1 alpha-2)." });
+    const iso = form.countryIso2.trim().toUpperCase();
+    if (iso.length !== 2) {
+      setToast({
+        open: true,
+        severity: "error",
+        msg: "El código de país debe ser ISO-2 (2 letras).",
+      });
+      return;
+    }
+    const phoneCode = String(form.phoneCountryCode).replace(/[^\d]/g, "");
+    if (!phoneCode) {
+      setToast({
+        open: true,
+        severity: "error",
+        msg: "El indicativo telefónico del país es obligatorio (solo dígitos).",
+      });
       return;
     }
 
+    // payload EXACTO que espera tu backend/entidad
     const payload = {
       name: form.name.trim(),
-      countryName: form.countryName.trim(),
-      countryCode: form.countryCode.trim().toUpperCase(),
-      callingCodes: normalizeCallingCodes(form.callingCodesCsv),
+      countryIso2: iso,
+      phoneCountryCode: phoneCode,
       acceptsInbound: !!form.acceptsInbound,
-      isActive: !!form.isActive,
+      // NO enviar isActive porque tu entidad no lo tiene
     };
 
     try {
@@ -139,10 +137,8 @@ export function BranchesTable({ rows = [] }) {
 
       const updated = await res.json();
 
-      // Reflejar cambios en la tabla
-      setData((prev) =>
-        prev.map((row) => (row.id === form.id ? { ...row, ...updated } : row))
-      );
+      // reflejar cambios localmente
+      setData((prev) => prev.map((row) => (row.id === form.id ? { ...row, ...updated } : row)));
 
       setToast({ open: true, severity: "success", msg: "Sede actualizada correctamente." });
       setOpen(false);
@@ -177,38 +173,24 @@ export function BranchesTable({ rows = [] }) {
     },
     {
       name: "País",
-      width: "220px",
+      width: "180px",
       formatter: (row) => {
-        const code = row?.countryCode;
-        const name = row?.countryName;
+        const iso = (row?.countryIso2 || row?.countryCode || "").toUpperCase();
         return (
           <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
-            <span style={{ fontSize: 18 }}>{flagFromCountryCode(code)}</span>
-            <Stack>
-              <Typography variant="body2">{name || "—"}</Typography>
-              <Typography variant="caption" color="text.secondary">
-                {code || "—"}
-              </Typography>
-            </Stack>
+            <span style={{ fontSize: 18 }}>{flagFromCountryCode(iso)}</span>
+            <Typography variant="body2">{iso || "—"}</Typography>
           </Stack>
         );
       },
     },
     {
-      name: "Indicativos",
-      width: "260px",
-      formatter: (row) => {
-        const list = normalizeCallingCodes(row?.callingCodes);
-        return list.length ? (
-          <Stack direction="row" spacing={0.5} sx={{ flexWrap: "wrap" }}>
-            {list.map((cc, i) => (
-              <Chip key={`${cc}-${i}`} size="small" label={`+${cc}`} />
-            ))}
-          </Stack>
-        ) : (
-          <Typography color="text.secondary" variant="body2">—</Typography>
-        );
-      },
+      name: "Indicativo",
+      width: "130px",
+      align: "center",
+      formatter: (row) => (
+        <Chip size="small" label={row?.phoneCountryCode ? `+${row.phoneCountryCode}` : "—"} />
+      ),
     },
     {
       name: "Entrantes",
@@ -220,19 +202,6 @@ export function BranchesTable({ rows = [] }) {
           color={row?.acceptsInbound ? "success" : "default"}
           variant={row?.acceptsInbound ? "filled" : "outlined"}
           label={row?.acceptsInbound ? "Sí" : "No"}
-        />
-      ),
-    },
-    {
-      name: "Estado",
-      width: "120px",
-      align: "center",
-      formatter: (row) => (
-        <Chip
-          size="small"
-          color={row?.isActive === false ? "default" : "primary"}
-          variant={row?.isActive === false ? "outlined" : "filled"}
-          label={row?.isActive === false ? "Inactiva" : "Activa"}
         />
       ),
     },
@@ -289,7 +258,7 @@ export function BranchesTable({ rows = [] }) {
 
   return (
     <React.Fragment>
-      {/* Contenedor con scroll horizontal para evitar cortes */}
+      {/* Scroll horizontal para evitar cortes */}
       <Box sx={{ width: "100%", overflowX: "auto" }}>
         <Box sx={{ minWidth: 1200 }}>
           <DataTable columns={columns} rows={data} />
@@ -317,48 +286,38 @@ export function BranchesTable({ rows = [] }) {
               required
             />
             <TextField
-              label="País (nombre)"
-              value={form.countryName}
-              onChange={handleChange("countryName")}
-              fullWidth
-            />
-            <TextField
-              label="Código país (ISO 3166-1 alpha-2, ej: CO)"
-              value={form.countryCode}
-              onChange={handleChange("countryCode")}
+              label="Código país (ISO-2, ej: CO)"
+              value={form.countryIso2}
+              onChange={handleChange("countryIso2")}
               fullWidth
               inputProps={{ maxLength: 2, style: { textTransform: "uppercase" } }}
-              helperText="Debe tener 2 letras. Se usa para la bandera y validaciones."
+              helperText="Debe tener 2 letras (ISO 3166-1 alpha-2)."
             />
             <TextField
-              label="Indicativos (CSV) ej: +57,+506"
-              value={form.callingCodesCsv}
-              onChange={handleChange("callingCodesCsv")}
+              label="Indicativo del país (solo dígitos, ej: 57)"
+              value={form.phoneCountryCode}
+              onChange={(e) =>
+                setForm((prev) => ({ ...prev, phoneCountryCode: e.target.value.replace(/[^\d]/g, "") }))
+              }
               fullWidth
-              helperText="Separados por coma. Se normalizan al guardar."
             />
             <FormControlLabel
               control={
-                <Switch
-                  checked={form.acceptsInbound}
-                  onChange={handleChange("acceptsInbound")}
-                />
+                <Switch checked={form.acceptsInbound} onChange={handleChange("acceptsInbound")} />
               }
               label="Acepta mensajes entrantes"
             />
+            {/* isActive visible si te sirve, pero NO se envía al backend */}
             <FormControlLabel
-              control={
-                <Switch
-                  checked={form.isActive}
-                  onChange={handleChange("isActive")}
-                />
-              }
-              label="Sede activa"
+              control={<Switch checked={form.isActive} onChange={handleChange("isActive")} />}
+              label="Sede activa (visual)"
             />
           </Stack>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleClose} disabled={saving}>Cancelar</Button>
+          <Button onClick={handleClose} disabled={saving}>
+            Cancelar
+          </Button>
           <Button
             onClick={handleSave}
             variant="contained"
@@ -389,7 +348,7 @@ export function BranchesTable({ rows = [] }) {
   );
 }
 
-/** Intenta parsear JSON sin lanzar excepción. */
+/** Parseo seguro de JSON en errores */
 async function safeJson(res) {
   try {
     return await res.json();
