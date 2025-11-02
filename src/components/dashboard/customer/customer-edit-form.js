@@ -70,32 +70,31 @@ export function CustomerEditForm({ customerToEdit, onlyRead = false }) {
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
+  e.preventDefault();
 
-    if (!formData.id) {
-      popover.handleOpen();
-      console.error("Falta id del cliente");
-      return;
-    }
+  if (!formData.id) {
+    popover.handleOpen();
+    console.error("Falta id del cliente");
+    return;
+  }
 
-    // Payload limpio para tu API
-    const payload = {
-      id: formData.id,
-      name: (formData.name || "").trim(),
-      phone: (formData.phone || "").trim(),
-      email: (formData.email || "").trim(),
-      document: (formData.document || "").trim(),
-      address: (formData.address || "").trim(),
-    };
-
-    const response = await updateCustomer(payload, payload.id);
-    if (response?.status === 200) {
-      popover.handleOpen();
-      setTimeout(() => {
-        router.push(paths.dashboard.customers.list);
-      }, 1500);
-    }
+  const payload = {
+    id: formData.id,
+    name: (formData.name || "").trim(),
+    phone: (formData.phone || "").trim(),
+    email: (formData.email || "").trim(),
+    document: (formData.document || "").trim(),
+    address: (formData.address || "").trim(),
   };
+
+  const response = await updateCustomer(payload, payload.id);
+  if (response?.status === 200) {
+    popover.handleOpen();
+    // 👇 Mantenerse en la misma página y revalidar datos
+    router.refresh();
+  }
+};
+
 
   return (
     <>
