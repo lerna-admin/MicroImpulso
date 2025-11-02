@@ -34,9 +34,9 @@ import { NotificationAlert } from "@/components/widgets/notifications/notificati
 const COUNTRIES = [
   { iso2: "CO", name: "Colombia", phoneCode: "57" },
   { iso2: "CR", name: "Costa Rica", phoneCode: "506" },
-] as const;
+];
 
-function flagFromCountryCode(code?: string) {
+function flagFromCountryCode(code) {
   if (!code || typeof code !== "string") return "🌐";
   try {
     const cc = code.trim().toUpperCase();
@@ -54,21 +54,18 @@ export function CustomerCreateForm({ user }) {
 
   const [agentsOptions, setAgentsOptions] = React.useState([]);
 
-  // Si el usuario ya pertenece a una sede, intenta tomar su país por defecto
-  // (si no lo conoces aquí, dejamos "CO" por defecto)
   const DEFAULT_COUNTRY = "CO";
 
   const defaultValues = {
-    countryIso2: DEFAULT_COUNTRY,     // <— nuevo
+    countryIso2: DEFAULT_COUNTRY,
     name: "",
     email: "",
-    localPhone: "",                   // <— nuevo: número local sin indicativo
-    localPhone2: "",                  // <— nuevo opcional
+    localPhone: "",
+    localPhone2: "",
     documentType: "",
     document: "",
     address: "",
     address2: "",
-    // datos de referencia
     referenceName: "",
     referencePhone: "",
     referenceRelationship: "",
@@ -100,7 +97,6 @@ export function CustomerCreateForm({ user }) {
         .min(5, "El correo es obligatorio")
         .max(255, "El correo es muy largo"),
 
-      // ahora validamos localPhone (sin indicativo del país)
       localPhone: zod
         .string()
         .min(7, "El celular es obligatorio")
@@ -147,7 +143,6 @@ export function CustomerCreateForm({ user }) {
         }),
       selectedAgent: zod.string().optional(),
 
-      // Datos de referencia
       referenceName: zod
         .string()
         .min(3, { message: "El nombre de la referencia es obligatorio" })
@@ -187,24 +182,24 @@ export function CustomerCreateForm({ user }) {
   const countryIso2 = watch("countryIso2");
 
   const [alertMsg, setAlertMsg] = React.useState("");
+  theAlertSeverity = React.useState("success")[0]; // avoid unused var warning in some setups
   const [alertSeverity, setAlertSeverity] = React.useState("success");
 
   // ====== carga de agentes por país ======
-  const fetchAgentsByCountry = React.useCallback(async (iso2: string) => {
+  const fetchAgentsByCountry = React.useCallback(async (iso2) => {
     try {
       const res = await fetch(`/api/branches?countryIso2=${encodeURIComponent(iso2)}`);
       if (!res.ok) throw new Error(`Error ${res.status}`);
       const branches = await res.json();
 
-      // branches: [{..., agents:[{id, role, name, ...}]}]
       const allAgents = (branches || [])
-        .flatMap((b: any) => Array.isArray(b.agents) ? b.agents : [])
-        .filter((a: any) => a?.role === ROLES.AGENTE);
+        .flatMap((b) => (Array.isArray(b.agents) ? b.agents : []))
+        .filter((a) => a && a.role === ROLES.AGENTE);
 
-      // Elimina duplicados por id
-      const uniq = new Map(allAgents.map((a: any) => [a.id, a]));
-      setAgentsOptions(Array.from(uniq.values()));
-    } catch (error: any) {
+      // dedupe
+      const uniqMap = new Map(allAgents.map((a) => [a.id, a]));
+      setAgentsOptions(Array.from(uniqMap.values()));
+    } catch (error) {
       setAlertMsg(error?.message || "No fue posible cargar agentes");
       setAlertSeverity("error");
       popoverAlert.handleOpen();
@@ -212,24 +207,19 @@ export function CustomerCreateForm({ user }) {
     }
   }, [popoverAlert]);
 
-  // Al montar y al cambiar de país, cargar agentes (si ADMIN debe poder elegir)
   React.useEffect(() => {
     if (user.role === ROLES.ADMIN) {
       fetchAgentsByCountry(countryIso2);
     } else {
-      // si es AGENTE, limpiar y no forzar carga
       setAgentsOptions([]);
-      // asegurar que no quede seleccionado algún id previo
       setValue("selectedAgent", "");
     }
   }, [countryIso2, user.role, fetchAgentsByCountry, setValue]);
 
-  // ====== composición de teléfonos con indicativo ======
-  function composePhone(iso2: string, local: string) {
-    const c = COUNTRIES.find((c) => c.iso2 === iso2);
-    if (!c) return local.replace(/\D/g, "");
+  function composePhone(iso2, local) {
+    const c = COUNTRIES.find((x) => x.iso2 === iso2);
     const localDigits = String(local || "").replace(/\D/g, "");
-    return `${c.phoneCode}${localDigits}`; // ej: 57 + 310XXXXXXX -> "57310...."
+    return (c ? c.phoneCode : "") + localDigits;
   }
 
   const onSubmit = React.useCallback(
@@ -237,30 +227,27 @@ export function CustomerCreateForm({ user }) {
       try {
         const agentId = user.role === ROLES.AGENTE ? user.id : dataForm.selectedAgent;
 
-        // teléfonos compuestos
         const phone = composePhone(dataForm.countryIso2, dataForm.localPhone);
         const phone2 = dataForm.localPhone2 ? composePhone(dataForm.countryIso2, dataForm.localPhone2) : null;
 
-        // cuerpo para crear cliente
         const bodyCustomer = {
           name: dataForm.name,
           email: dataForm.email,
-          phone,                         // <- con indicativo
-          phone2,                        // <- opcional con indicativo
+          phone,
+          phone2,
           documentType: dataForm.documentType,
           document: dataForm.document,
           address: dataForm.address,
           address2: dataForm.address2 || null,
-          // datos de referencia
           referenceName: dataForm.referenceName,
           referencePhone: dataForm.referencePhone,
           referenceRelationship: dataForm.referenceRelationship,
           status: "PROSPECT",
         };
 
-        const { id: newClientId } = await createCustomer(bodyCustomer);
+        const created = await createCustomer(bodyCustomer);
+        const newClientId = created && created.id;
 
-        // solicitud asociada
         const bodyRequest = {
           client: newClientId,
           agent: agentId,
@@ -275,16 +262,16 @@ export function CustomerCreateForm({ user }) {
 
         setAlertMsg("¡Creado exitosamente!");
         setAlertSeverity("success");
-      } catch (error: any) {
+      } catch (error) {
         setAlertMsg(error?.message || "Error al crear");
         setAlertSeverity("error");
         logger.error(error);
       } finally {
         popoverAlert.handleOpen();
-        reset({ ...defaultValues, countryIso2 }); // conserva el país seleccionado
+        reset({ ...defaultValues, countryIso2 });
       }
     },
-    [reset, popoverAlert, defaultValues, logger, countryIso2, user]
+    [reset, popoverAlert, countryIso2, user]
   );
 
   return (
@@ -330,7 +317,7 @@ export function CustomerCreateForm({ user }) {
                           ))}
                         </Select>
                         {errors.countryIso2 ? (
-                          <FormHelperText>{errors.countryIso2.message as string}</FormHelperText>
+                          <FormHelperText>{errors.countryIso2.message}</FormHelperText>
                         ) : null}
                       </FormControl>
                     )}
@@ -387,10 +374,7 @@ export function CustomerCreateForm({ user }) {
                               />
                             }
                             inputProps={{ inputMode: "numeric" }}
-                            onChange={(e) => {
-                              // Solo dígitos
-                              field.onChange(e.target.value.replace(/\D/g, ""));
-                            }}
+                            onChange={(e) => field.onChange(e.target.value.replace(/\D/g, ""))}
                           />
                           {errors.localPhone ? (
                             <FormHelperText>{errors.localPhone.message}</FormHelperText>
@@ -650,14 +634,14 @@ export function CustomerCreateForm({ user }) {
                         <InputLabel required>Día a pagar</InputLabel>
                         <DatePicker {...field} minDate={dayjs()} sx={{ marginTop: "0.5rem" }} />
                         {errors.selectedDate ? (
-                          <FormHelperText>{errors.selectedDate.message as string}</FormHelperText>
+                          <FormHelperText>{errors.selectedDate.message}</FormHelperText>
                         ) : null}
                       </FormControl>
                     )}
                   />
                 </Grid>
 
-                {/* Agente (solo seleccionable por admin; para agente se autocompleta con su id) */}
+                {/* Agente */}
                 <Grid size={{ md: 6, xs: 12 }}>
                   <Controller
                     control={control}
@@ -671,10 +655,10 @@ export function CustomerCreateForm({ user }) {
                         <InputLabel required>Agente</InputLabel>
                         <Select {...field}>
                           {user.role === ROLES.AGENTE ? (
-                            <MenuItem value={user.id.toString()}>{user.name || "Yo"}</MenuItem>
+                            <MenuItem value={String(user.id)}>{user.name || "Yo"}</MenuItem>
                           ) : (
-                            agentsOptions.map((option: any) => (
-                              <MenuItem key={option.id} value={option.id.toString()}>
+                            agentsOptions.map((option) => (
+                              <MenuItem key={option.id} value={String(option.id)}>
                                 {option.name}
                               </MenuItem>
                             ))
