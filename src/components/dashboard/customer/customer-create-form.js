@@ -8,7 +8,7 @@ import { createRequest } from "@/app/dashboard/requests/hooks/use-requests";
 import { ROLES } from "@/constants/roles";
 import { deleteAlphabeticals, formatCurrency } from "@/helpers/format-currency";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { MenuItem, Typography, Chip, Box } from "@mui/material";
+import { MenuItem, Typography, Chip, Box, Tooltip } from "@mui/material";
 import Button from "@mui/material/Button";
 import Card from "@mui/material/Card";
 import CardActions from "@mui/material/CardActions";
@@ -56,6 +56,9 @@ export function CustomerCreateForm({ user }) {
   const [alertMsg, setAlertMsg] = React.useState("");
   const [alertSeverity, setAlertSeverity] = React.useState("success");
 
+  // ID del cliente creado (si no hay, no se puede crear solicitud)
+  const [createdClientId, setCreatedClientId] = React.useState(null);
+
   const DEFAULT_COUNTRY = "CO";
 
   const defaultValues = {
@@ -69,7 +72,7 @@ export function CustomerCreateForm({ user }) {
     address: "",
     address2: "",
     referenceName: "",
-    referencePhone: "", // ← local (sin indicativo)
+    referencePhone: "",
     referenceRelationship: "",
     amount: 0,
     typePayment: "",
@@ -78,7 +81,7 @@ export function CustomerCreateForm({ user }) {
     selectedAgent: "",
   };
 
-  // ========== Validación ==========
+  // ========= Esquema general (para crear solicitud) =========
   const schema = zod
     .object({
       countryIso2: zod
@@ -154,7 +157,7 @@ export function CustomerCreateForm({ user }) {
         .string()
         .min(7, { message: "El celular de la referencia es obligatorio" })
         .max(10, { message: "El celular es muy largo" })
-        .regex(/^\d+$/, { message: "El celular debe contener solo números" }), // ← local (sin indicativo)
+        .regex(/^\d+$/, { message: "El celular debe contener solo números" }),
       referenceRelationship: zod
         .string()
         .min(3, { message: "El parentesco es obligatorio" })
@@ -170,6 +173,31 @@ export function CustomerCreateForm({ user }) {
       }
     });
 
+  // ========= Esquema sólo cliente =========
+  const clientOnlySchema = zod.object({
+    countryIso2: zod
+      .string()
+      .length(2, "Selecciona un país válido")
+      .refine((v) => COUNTRIES.some((c) => c.iso2 === v), "País no soportado"),
+    name: zod
+      .string()
+      .min(3, { message: "Debe tener al menos 3 caracteres" })
+      .max(100, { message: "Máximo 100 caracteres" })
+      .regex(/^[A-Za-zÀ-ÿ\u00F1\u00D1]+(?: [A-Za-zÀ-ÿ\u00F1\u00D1]+)+$/, {
+        message: "Debe ingresar nombre y apellido, solo letras y espacios",
+      }),
+    email: zod.string().email("Debe ser un correo válido").min(5).max(255),
+    localPhone: zod.string().min(7).max(10).regex(/^\d+$/),
+    localPhone2: zod.string().optional(),
+    documentType: zod.enum(["CC", "CE", "TE"]),
+    document: zod.string().min(5).max(20).regex(/^[A-Za-z0-9]+$/),
+    address: zod.string().min(5).max(255),
+    address2: zod.string().max(255).optional(),
+    referenceName: zod.string().min(3).max(100).regex(/^[A-Za-zÀ-ÿ\u00F1\u00D1]+(?: [A-Za-zÀ-ÿ\u00F1\u00D1]+)+$/),
+    referencePhone: zod.string().min(7).max(10).regex(/^\d+$/),
+    referenceRelationship: zod.string().min(3).max(50),
+  });
+
   const {
     control,
     handleSubmit,
@@ -177,6 +205,7 @@ export function CustomerCreateForm({ user }) {
     reset,
     watch,
     setValue,
+    getValues,
   } = useForm({ defaultValues, resolver: zodResolver(schema) });
 
   const countryIso2 = watch("countryIso2");
@@ -185,7 +214,6 @@ export function CustomerCreateForm({ user }) {
   const fetchAgentsByCountry = React.useCallback(
     async (iso2) => {
       try {
-        // Endpoint sugerido: /api/branches?countryIso2=XX
         const res = await fetch(`/api/branches?countryIso2=${encodeURIComponent(iso2)}`);
         if (!res.ok) throw new Error(`Error ${res.status}`);
         const branches = await res.json();
@@ -218,38 +246,72 @@ export function CustomerCreateForm({ user }) {
   function composePhone(iso2, local) {
     const c = COUNTRIES.find((x) => x.iso2 === iso2);
     const localDigits = String(local || "").replace(/\D/g, "");
-    return (c ? c.phoneCode : "") + localDigits; // sin '+', como usa tu backend
+    return (c ? c.phoneCode : "") + localDigits; // sin '+'
   }
 
+  // ====== Guardar SOLO cliente ======
+  const handleSaveClientOnly = React.useCallback(async () => {
+    try {
+      const values = getValues();
+      const parsed = clientOnlySchema.safeParse(values);
+      if (!parsed.success) {
+        const firstIssue = parsed.error.issues?.[0];
+        setAlertMsg(firstIssue?.message || "Revisa los campos del cliente");
+        setAlertSeverity("error");
+        popoverAlert.handleOpen();
+        return;
+      }
+
+      const phone = composePhone(values.countryIso2, values.localPhone);
+      const phone2 = values.localPhone2 ? composePhone(values.countryIso2, values.localPhone2) : null;
+      const referencePhone = composePhone(values.countryIso2, values.referencePhone);
+
+      const bodyCustomer = {
+        name: values.name,
+        email: values.email,
+        phone,
+        phone2,
+        documentType: values.documentType,
+        document: values.document,
+        address: values.address,
+        address2: values.address2 || null,
+        referenceName: values.referenceName,
+        referencePhone,
+        referenceRelationship: values.referenceRelationship,
+        status: "PROSPECT",
+      };
+
+      const created = await createCustomer(bodyCustomer);
+      const newId = created?.id ?? null;
+      setCreatedClientId(newId);
+
+      setAlertMsg(newId ? "¡Cliente creado exitosamente!" : "No se pudo obtener el ID del cliente");
+      setAlertSeverity(newId ? "success" : "warning");
+    } catch (error) {
+      setAlertMsg(error?.message || "Error al crear el cliente");
+      setAlertSeverity("error");
+      logger.error(error);
+    } finally {
+      popoverAlert.handleOpen();
+    }
+  }, [clientOnlySchema, popoverAlert, getValues]);
+
+  // ====== Guardar SOLO solicitud ======
   const onSubmit = React.useCallback(
     async (dataForm) => {
       try {
-        const agentId = user.role === ROLES.AGENTE ? user.id : dataForm.selectedAgent;
+        // Guard adicional por si el botón se habilitara por error
+        if (!createdClientId) {
+          setAlertMsg("Primero debes guardar el cliente antes de crear la solicitud.");
+          setAlertSeverity("error");
+          popoverAlert.handleOpen();
+          return;
+        }
 
-        const phone = composePhone(dataForm.countryIso2, dataForm.localPhone);
-        const phone2 = dataForm.localPhone2 ? composePhone(dataForm.countryIso2, dataForm.localPhone2) : null;
-        const referencePhone = composePhone(dataForm.countryIso2, dataForm.referencePhone); // ← ahora con indicativo
-
-        const bodyCustomer = {
-          name: dataForm.name,
-          email: dataForm.email,
-          phone,
-          phone2,
-          documentType: dataForm.documentType,
-          document: dataForm.document,
-          address: dataForm.address,
-          address2: dataForm.address2 || null,
-          referenceName: dataForm.referenceName,
-          referencePhone, // ← compuesto
-          referenceRelationship: dataForm.referenceRelationship,
-          status: "PROSPECT",
-        };
-
-        const created = await createCustomer(bodyCustomer);
-        const newClientId = created && created.id;
+        const agentId = user.role === ROLES.AGENTE ? String(user.id) : dataForm.selectedAgent;
 
         const bodyRequest = {
-          client: newClientId,
+          client: createdClientId,
           agent: agentId,
           status: "new",
           requestedAmount: dataForm.amount,
@@ -260,19 +322,24 @@ export function CustomerCreateForm({ user }) {
         };
         await createRequest(bodyRequest);
 
-        setAlertMsg("¡Creado exitosamente!");
+        setAlertMsg("¡Solicitud creada exitosamente!");
         setAlertSeverity("success");
+
+        // Reset para nuevo flujo
+        setCreatedClientId(null);
+        reset({ ...defaultValues, countryIso2 });
       } catch (error) {
-        setAlertMsg(error?.message || "Error al crear");
+        setAlertMsg(error?.message || "Error al crear la solicitud");
         setAlertSeverity("error");
         logger.error(error);
       } finally {
         popoverAlert.handleOpen();
-        reset({ ...defaultValues, countryIso2 });
       }
     },
-    [reset, popoverAlert, countryIso2, user]
+    [createdClientId, reset, popoverAlert, countryIso2, user]
   );
+
+  const solicitudDisabled = !createdClientId;
 
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
@@ -316,9 +383,7 @@ export function CustomerCreateForm({ user }) {
                             </MenuItem>
                           ))}
                         </Select>
-                        {errors.countryIso2 ? (
-                          <FormHelperText>{errors.countryIso2.message}</FormHelperText>
-                        ) : null}
+                        {errors.countryIso2 ? <FormHelperText>{errors.countryIso2.message}</FormHelperText> : null}
                       </FormControl>
                     )}
                   />
@@ -370,9 +435,7 @@ export function CustomerCreateForm({ user }) {
                             inputProps={{ inputMode: "numeric" }}
                             onChange={(e) => field.onChange(e.target.value.replace(/\D/g, ""))}
                           />
-                          {errors.localPhone ? (
-                            <FormHelperText>{errors.localPhone.message}</FormHelperText>
-                          ) : null}
+                          {errors.localPhone ? <FormHelperText>{errors.localPhone.message}</FormHelperText> : null}
                         </FormControl>
                       );
                     }}
@@ -395,9 +458,7 @@ export function CustomerCreateForm({ user }) {
                             inputProps={{ inputMode: "numeric" }}
                             onChange={(e) => field.onChange(e.target.value.replace(/\D/g, ""))}
                           />
-                          {errors.localPhone2 ? (
-                            <FormHelperText>{errors.localPhone2.message}</FormHelperText>
-                          ) : null}
+                          {errors.localPhone2 ? <FormHelperText>{errors.localPhone2.message}</FormHelperText> : null}
                         </FormControl>
                       );
                     }}
@@ -417,9 +478,7 @@ export function CustomerCreateForm({ user }) {
                           <MenuItem value="CE">Cedula de Extranjeria</MenuItem>
                           <MenuItem value="TE">Tarjeta de extranjería</MenuItem>
                         </Select>
-                        {errors.documentType ? (
-                          <FormHelperText>{errors.documentType.message}</FormHelperText>
-                        ) : null}
+                        {errors.documentType ? <FormHelperText>{errors.documentType.message}</FormHelperText> : null}
                       </FormControl>
                     )}
                   />
@@ -433,9 +492,7 @@ export function CustomerCreateForm({ user }) {
                       <FormControl error={Boolean(errors.document)} fullWidth>
                         <InputLabel required>N. de documento</InputLabel>
                         <OutlinedInput {...field} />
-                        {errors.document ? (
-                          <FormHelperText>{errors.document.message}</FormHelperText>
-                        ) : null}
+                        {errors.document ? <FormHelperText>{errors.document.message}</FormHelperText> : null}
                       </FormControl>
                     )}
                   />
@@ -492,9 +549,7 @@ export function CustomerCreateForm({ user }) {
                       <FormControl error={Boolean(errors.referenceName)} fullWidth>
                         <InputLabel required>Nombre completo de la referencia</InputLabel>
                         <OutlinedInput {...field} />
-                        {errors.referenceName ? (
-                          <FormHelperText>{errors.referenceName.message}</FormHelperText>
-                        ) : null}
+                        {errors.referenceName ? <FormHelperText>{errors.referenceName.message}</FormHelperText> : null}
                       </FormControl>
                     )}
                   />
@@ -516,7 +571,7 @@ export function CustomerCreateForm({ user }) {
                   />
                 </Grid>
 
-                {/* Teléfono de referencia (local) con indicativo del país seleccionado */}
+                {/* Teléfono de referencia */}
                 <Grid size={{ md: 6, xs: 12 }}>
                   <Controller
                     control={control}
@@ -541,8 +596,22 @@ export function CustomerCreateForm({ user }) {
                   />
                 </Grid>
               </Grid>
+
+              {/* Info del cliente creado */}
+              {createdClientId ? (
+                <Box sx={{ pt: 1 }}>
+                  <Chip color="success" label={`Cliente guardado (ID: ${createdClientId})`} />
+                </Box>
+              ) : null}
             </Stack>
           </CardContent>
+
+          {/* Botón para crear SOLO el cliente */}
+          <CardActions sx={{ justifyContent: "flex-end" }}>
+            <Button variant="contained" type="button" onClick={handleSaveClientOnly}>
+              Guardar cliente
+            </Button>
+          </CardActions>
         </Card>
 
         {/* ==================== SOLICITUD ==================== */}
@@ -588,9 +657,7 @@ export function CustomerCreateForm({ user }) {
                           <MenuItem value="QUINCENAL">Quincenal</MenuItem>
                           <MenuItem value="MENSUAL">Mensual</MenuItem>
                         </Select>
-                        {errors.typePayment ? (
-                          <FormHelperText>{errors.typePayment.message}</FormHelperText>
-                        ) : null}
+                        {errors.typePayment ? <FormHelperText>{errors.typePayment.message}</FormHelperText> : null}
                       </FormControl>
                     )}
                   />
@@ -608,9 +675,7 @@ export function CustomerCreateForm({ user }) {
                           <MenuItem value="5-20">5 - 20</MenuItem>
                           <MenuItem value="10-25">10 - 25</MenuItem>
                         </Select>
-                        {errors.datePayment ? (
-                          <FormHelperText>{errors.datePayment.message}</FormHelperText>
-                        ) : null}
+                        {errors.datePayment ? <FormHelperText>{errors.datePayment.message}</FormHelperText> : null}
                       </FormControl>
                     )}
                   />
@@ -624,9 +689,7 @@ export function CustomerCreateForm({ user }) {
                       <FormControl error={Boolean(errors.selectedDate)} fullWidth>
                         <InputLabel required>Día a pagar</InputLabel>
                         <DatePicker {...field} minDate={dayjs()} sx={{ marginTop: "0.5rem" }} />
-                        {errors.selectedDate ? (
-                          <FormHelperText>{errors.selectedDate.message}</FormHelperText>
-                        ) : null}
+                        {errors.selectedDate ? <FormHelperText>{errors.selectedDate.message}</FormHelperText> : null}
                       </FormControl>
                     )}
                   />
@@ -655,9 +718,7 @@ export function CustomerCreateForm({ user }) {
                             ))
                           )}
                         </Select>
-                        {errors.selectedAgent ? (
-                          <FormHelperText>{errors.selectedAgent.message}</FormHelperText>
-                        ) : null}
+                        {errors.selectedAgent ? <FormHelperText>{errors.selectedAgent.message}</FormHelperText> : null}
                       </FormControl>
                     )}
                   />
@@ -670,9 +731,21 @@ export function CustomerCreateForm({ user }) {
             <Button variant="outlined" component={RouterLink} href={paths.dashboard.customers.list}>
               Cancelar
             </Button>
-            <Button variant="contained" type="submit">
-              Guardar
-            </Button>
+
+            {/* Botón de “Guardar solicitud”: solo aparece si hay cliente creado */}
+            {createdClientId ? (
+              <Button variant="contained" type="submit" disabled={!createdClientId} aria-disabled={!createdClientId}>
+                Guardar
+              </Button>
+            ) : (
+              <Tooltip title="Primero guarda el cliente para habilitar la solicitud">
+                <span>
+                  <Button variant="contained" disabled aria-disabled>
+                    Guardar
+                  </Button>
+                </span>
+              </Tooltip>
+            )}
           </CardActions>
         </Card>
       </Stack>
