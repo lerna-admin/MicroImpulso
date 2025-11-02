@@ -1,8 +1,9 @@
+// src/components/dashboard/customer/customer-create-form.js
 "use client";
 
 import * as React from "react";
 import RouterLink from "next/link";
-import { MenuItem, Chip, Box, Divider } from "@mui/material";
+import { MenuItem, Chip, Box, Divider, Tooltip } from "@mui/material";
 import Button from "@mui/material/Button";
 import Card from "@mui/material/Card";
 import CardActions from "@mui/material/CardActions";
@@ -51,6 +52,41 @@ function composePhone(iso2, local) {
   return (c ? c.phoneCode : "") + localDigits; // sin '+'
 }
 
+/** Normaliza enlaces: si no trae protocolo, antepone https:// */
+function normalizeLink(val) {
+  const s = String(val || "").trim();
+  if (!s) return "";
+  if (/^https?:\/\//i.test(s)) return s;
+  return `https://${s}`;
+}
+
+/** Valida y normaliza un custom field según su tipo */
+function sanitizeCustomField(cf) {
+  const key = String(cf.key || "").trim();
+  if (!key) return null;
+
+  const type = cf.type === "number" || cf.type === "link" ? cf.type : "text";
+  let value = cf.value;
+
+  if (type === "number") {
+    const num = Number(value);
+    if (Number.isFinite(num)) value = num;
+    else return null; // descarta si no es número válido
+  } else if (type === "link") {
+    const url = normalizeLink(value);
+    try {
+      new URL(url);
+      value = url;
+    } catch {
+      return null; // enlace inválido
+    }
+  } else {
+    value = String(value ?? "").trim();
+  }
+
+  return { key, type, value };
+}
+
 export function CustomerCreateForm({ user }) {
   const [alertMsg, setAlertMsg] = React.useState("");
   const [alertSeverity, setAlertSeverity] = React.useState("success");
@@ -58,6 +94,10 @@ export function CustomerCreateForm({ user }) {
 
   // ID del cliente creado (habilita sección de solicitud)
   const [createdClientId, setCreatedClientId] = React.useState(null);
+
+  // Campos personalizados (mismo comportamiento que en Edit)
+  const [customFields, setCustomFields] = React.useState([]);
+  const [cfErrors, setCfErrors] = React.useState({}); // {index: {key?: string, value?: string}}
 
   const DEFAULT_COUNTRY = "CO";
 
@@ -166,16 +206,70 @@ export function CustomerCreateForm({ user }) {
     setOpenAlert(true);
   };
 
+  // === Custom Fields handlers (igual que en Edit) ===
+  const addCustomField = () => {
+    setCustomFields((prev) => [...prev, { key: "", type: "text", value: "" }]);
+  };
+
+  const removeCustomField = (index) => {
+    setCustomFields((prev) => prev.filter((_, i) => i !== index));
+    setCfErrors((prev) => {
+      const copy = { ...prev };
+      delete copy[index];
+      return copy;
+    });
+  };
+
+  const updateCustomField = (index, patch) => {
+    setCustomFields((prev) => prev.map((item, i) => (i === index ? { ...item, ...patch } : item)));
+    setCfErrors((prev) => ({ ...prev, [index]: {} }));
+  };
+
+  const validateCustomFields = () => {
+    const errs = {};
+    customFields.forEach((cf, i) => {
+      const e = {};
+      const key = String(cf.key || "").trim();
+      if (!key) e.key = "La clave es obligatoria";
+
+      if (cf.type === "number") {
+        const num = Number(cf.value);
+        if (!Number.isFinite(num)) e.value = "Debe ser un número válido";
+      } else if (cf.type === "link") {
+        const url = normalizeLink(cf.value);
+        try {
+          new URL(url);
+        } catch {
+          e.value = "Enlace inválido";
+        }
+      }
+      if (Object.keys(e).length) errs[i] = e;
+    });
+    setCfErrors(errs);
+    return Object.keys(errs).length === 0;
+  };
+
   // ====== Guardar SOLO cliente ======
   const handleSaveClientOnly = async () => {
     try {
       const values = getValues();
+
+      // valida cliente
       const parsed = clientOnlySchema.safeParse(values);
       if (!parsed.success) {
         const firstIssue = parsed.error.issues?.[0];
         openToast(firstIssue?.message || "Revisa los campos del cliente", "error");
         return;
       }
+
+      // valida custom fields
+      if (!validateCustomFields()) {
+        openToast("Corrige los campos personalizados", "error");
+        return;
+      }
+
+      // sanitiza custom fields (elimina los vacíos/incorrectos)
+      const sanitizedCFs = customFields.map(sanitizeCustomField).filter(Boolean);
 
       const phone = composePhone(values.countryIso2, values.localPhone);
       const phone2 = values.localPhone2 ? composePhone(values.countryIso2, values.localPhone2) : null;
@@ -194,6 +288,8 @@ export function CustomerCreateForm({ user }) {
         referencePhone,
         referenceRelationship: values.referenceRelationship,
         status: "PROSPECT",
+        // 👇 ahora sí enviamos customFields al backend
+        customFields: sanitizedCFs,
       };
 
       const created = await createCustomer(bodyCustomer);
@@ -215,6 +311,7 @@ export function CustomerCreateForm({ user }) {
         return;
       }
 
+      // validación local de solicitud
       const parsedReq = requestSchemaOnly.safeParse({
         amount: dataForm.amount,
         typePayment: dataForm.typePayment,
@@ -246,6 +343,8 @@ export function CustomerCreateForm({ user }) {
 
       // reiniciar para un nuevo flujo
       setCreatedClientId(null);
+      setCustomFields([]);
+      setCfErrors({});
       reset({ ...defaultValues, countryIso2: DEFAULT_COUNTRY });
     } catch (err) {
       openToast(err?.message || "Error al crear la solicitud", "error");
@@ -498,12 +597,105 @@ export function CustomerCreateForm({ user }) {
             </Grid>
           </Stack>
         </CardContent>
+
         <CardActions sx={{ justifyContent: "flex-end" }}>
           {/* IMPORTANTE: no es submit */}
           <Button variant="contained" type="button" onClick={handleSaveClientOnly}>
             Guardar cliente
           </Button>
         </CardActions>
+      </Card>
+
+      {/* ==================== CAMPOS PERSONALIZADOS ==================== */}
+      <Card sx={{ mt: 3 }} variant="outlined">
+        <CardContent>
+          <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 1 }}>
+            <Typography variant="h6">Campos personalizados</Typography>
+            <Tooltip title="Agregar campo">
+              <Button onClick={addCustomField} size="small" variant="outlined">
+                + Agregar campo
+              </Button>
+            </Tooltip>
+          </Box>
+          <Divider sx={{ mb: 2 }} />
+
+          {customFields.length === 0 ? (
+            <Typography variant="body2" sx={{ opacity: 0.7 }}>
+              No hay campos personalizados.
+            </Typography>
+          ) : (
+            <Stack spacing={2}>
+              {customFields.map((cf, idx) => {
+                const err = cfErrors[idx] || {};
+                return (
+                  <Grid container spacing={2} key={`cf-${idx}`}>
+                    {/* Clave */}
+                    <Grid size={{ md: 4, xs: 12 }}>
+                      <FormControl fullWidth error={Boolean(err.key)}>
+                        <InputLabel>Nombre del campo</InputLabel>
+                        <OutlinedInput
+                          value={cf.key}
+                          onChange={(e) => updateCustomField(idx, { key: e.target.value })}
+                          label="Nombre del campo"
+                          placeholder="p.ej. Facebook, Ingresos, Observaciones"
+                        />
+                        {err.key ? <FormHelperText>{err.key}</FormHelperText> : null}
+                      </FormControl>
+                    </Grid>
+
+                    {/* Tipo */}
+                    <Grid size={{ md: 3, xs: 12 }}>
+                      <FormControl fullWidth>
+                        <InputLabel>Tipo</InputLabel>
+                        <Select
+                          label="Tipo"
+                          value={cf.type}
+                          onChange={(e) => updateCustomField(idx, { type: e.target.value })}
+                        >
+                          <MenuItem value="text">Texto</MenuItem>
+                          <MenuItem value="number">Número</MenuItem>
+                          <MenuItem value="link">Enlace</MenuItem>
+                        </Select>
+                      </FormControl>
+                    </Grid>
+
+                    {/* Valor */}
+                    <Grid size={{ md: 4, xs: 12 }}>
+                      <FormControl fullWidth error={Boolean(err.value)}>
+                        <InputLabel>
+                          {cf.type === "number" ? "Valor numérico" : cf.type === "link" ? "URL" : "Valor"}
+                        </InputLabel>
+                        <OutlinedInput
+                          value={cf.value}
+                          onChange={(e) => {
+                            let v = e.target.value;
+                            if (cf.type === "number") v = v.replace(/[^0-9.\-]/g, "");
+                            updateCustomField(idx, { value: v });
+                          }}
+                          label={cf.type === "number" ? "Valor numérico" : cf.type === "link" ? "URL" : "Valor"}
+                          placeholder={cf.type === "link" ? "https://ejemplo.com" : ""}
+                        />
+                        {err.value ? <FormHelperText>{err.value}</FormHelperText> : null}
+                      </FormControl>
+                    </Grid>
+
+                    {/* Eliminar */}
+                    <Grid
+                      size={{ md: 1, xs: 12 }}
+                      sx={{ display: "flex", alignItems: "center", justifyContent: "flex-end" }}
+                    >
+                      <Tooltip title="Eliminar">
+                        <Button onClick={() => removeCustomField(idx)} size="small" color="error" variant="outlined">
+                          Eliminar
+                        </Button>
+                      </Tooltip>
+                    </Grid>
+                  </Grid>
+                );
+              })}
+            </Stack>
+          )}
+        </CardContent>
       </Card>
 
       {/* ==================== SOLICITUD ==================== */}
@@ -513,7 +705,7 @@ export function CustomerCreateForm({ user }) {
             Crear solicitud
           </Typography>
 
-        <Stack spacing={3} paddingTop={3} divider={<Divider />}>
+          <Stack spacing={3} paddingTop={3} divider={<Divider />}>
             <Grid container spacing={3}>
               <Grid size={{ md: 6, xs: 12 }}>
                 <Controller
