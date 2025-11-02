@@ -30,7 +30,7 @@ import { logger } from "@/lib/default-logger";
 import { usePopover } from "@/hooks/use-popover";
 import { NotificationAlert } from "@/components/widgets/notifications/notification-alert";
 
-/* ====== Países soportados (extiende esta lista cuando quieras) ====== */
+/* ====== Países soportados ====== */
 const COUNTRIES = [
   { iso2: "CO", name: "Colombia", phoneCode: "57" },
   { iso2: "CR", name: "Costa Rica", phoneCode: "506" },
@@ -53,6 +53,8 @@ export function CustomerCreateForm({ user }) {
   const popoverAlert = usePopover();
 
   const [agentsOptions, setAgentsOptions] = React.useState([]);
+  const [alertMsg, setAlertMsg] = React.useState("");
+  const [alertSeverity, setAlertSeverity] = React.useState("success");
 
   const DEFAULT_COUNTRY = "CO";
 
@@ -135,9 +137,7 @@ export function CustomerCreateForm({ user }) {
         errorMap: () => ({ message: "Debes elegir una fecha de pago" }),
       }),
       selectedDate: zod
-        .custom((val) => dayjs.isDayjs(val) && val.isValid(), {
-          message: "La fecha es obligatoria",
-        })
+        .custom((val) => dayjs.isDayjs(val) && val.isValid(), { message: "La fecha es obligatoria" })
         .refine((val) => dayjs(val).isAfter(dayjs(), "day"), {
           message: "La fecha debe ser posterior a hoy",
         }),
@@ -181,31 +181,30 @@ export function CustomerCreateForm({ user }) {
 
   const countryIso2 = watch("countryIso2");
 
-  const [alertMsg, setAlertMsg] = React.useState("");
-  theAlertSeverity = React.useState("success")[0]; // avoid unused var warning in some setups
-  const [alertSeverity, setAlertSeverity] = React.useState("success");
-
   // ====== carga de agentes por país ======
-  const fetchAgentsByCountry = React.useCallback(async (iso2) => {
-    try {
-      const res = await fetch(`/api/branches?countryIso2=${encodeURIComponent(iso2)}`);
-      if (!res.ok) throw new Error(`Error ${res.status}`);
-      const branches = await res.json();
+  const fetchAgentsByCountry = React.useCallback(
+    async (iso2) => {
+      try {
+        // Endpoint sugerido: /api/branches?countryIso2=XX
+        const res = await fetch(`/api/branches?countryIso2=${encodeURIComponent(iso2)}`);
+        if (!res.ok) throw new Error(`Error ${res.status}`);
+        const branches = await res.json();
 
-      const allAgents = (branches || [])
-        .flatMap((b) => (Array.isArray(b.agents) ? b.agents : []))
-        .filter((a) => a && a.role === ROLES.AGENTE);
+        const allAgents = (branches || [])
+          .flatMap((b) => (Array.isArray(b.agents) ? b.agents : []))
+          .filter((a) => a && a.role === ROLES.AGENTE);
 
-      // dedupe
-      const uniqMap = new Map(allAgents.map((a) => [a.id, a]));
-      setAgentsOptions(Array.from(uniqMap.values()));
-    } catch (error) {
-      setAlertMsg(error?.message || "No fue posible cargar agentes");
-      setAlertSeverity("error");
-      popoverAlert.handleOpen();
-      setAgentsOptions([]);
-    }
-  }, [popoverAlert]);
+        const uniqMap = new Map(allAgents.map((a) => [a.id, a]));
+        setAgentsOptions(Array.from(uniqMap.values()));
+      } catch (error) {
+        setAlertMsg(error?.message || "No fue posible cargar agentes");
+        setAlertSeverity("error");
+        popoverAlert.handleOpen();
+        setAgentsOptions([]);
+      }
+    },
+    [popoverAlert]
+  );
 
   React.useEffect(() => {
     if (user.role === ROLES.ADMIN) {
@@ -219,7 +218,7 @@ export function CustomerCreateForm({ user }) {
   function composePhone(iso2, local) {
     const c = COUNTRIES.find((x) => x.iso2 === iso2);
     const localDigits = String(local || "").replace(/\D/g, "");
-    return (c ? c.phoneCode : "") + localDigits;
+    return (c ? c.phoneCode : "") + localDigits; // sin '+', como usa tu backend
   }
 
   const onSubmit = React.useCallback(
@@ -366,13 +365,7 @@ export function CustomerCreateForm({ user }) {
                           <InputLabel required>N. de celular (local)</InputLabel>
                           <OutlinedInput
                             {...field}
-                            startAdornment={
-                              <Chip
-                                label={c ? `+${c.phoneCode}` : "+??"}
-                                size="small"
-                                sx={{ mr: 1 }}
-                              />
-                            }
+                            startAdornment={<Chip label={c ? `+${c.phoneCode}` : "+??"} size="small" sx={{ mr: 1 }} />}
                             inputProps={{ inputMode: "numeric" }}
                             onChange={(e) => field.onChange(e.target.value.replace(/\D/g, ""))}
                           />
@@ -397,13 +390,7 @@ export function CustomerCreateForm({ user }) {
                           <InputLabel>Celular 2 (local, opcional)</InputLabel>
                           <OutlinedInput
                             {...field}
-                            startAdornment={
-                              <Chip
-                                label={c ? `+${c.phoneCode}` : "+??"}
-                                size="small"
-                                sx={{ mr: 1 }}
-                              />
-                            }
+                            startAdornment={<Chip label={c ? `+${c.phoneCode}` : "+??"} size="small" sx={{ mr: 1 }} />}
                             inputProps={{ inputMode: "numeric" }}
                             onChange={(e) => field.onChange(e.target.value.replace(/\D/g, ""))}
                           />
@@ -477,9 +464,7 @@ export function CustomerCreateForm({ user }) {
                       <FormControl error={Boolean(errors.address2)} fullWidth>
                         <InputLabel>Dirección 2 (opcional)</InputLabel>
                         <OutlinedInput {...field} />
-                        {errors.address2 ? (
-                          <FormHelperText>{errors.address2.message}</FormHelperText>
-                        ) : null}
+                        {errors.address2 ? <FormHelperText>{errors.address2.message}</FormHelperText> : null}
                       </FormControl>
                     )}
                   />
