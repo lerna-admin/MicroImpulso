@@ -42,6 +42,7 @@ export default async function Page() {
           </div>
         </Stack>
 
+        <CustomerCreateForm user={{ id: user.id, role: user.role, branchId: user.branch.id }} />
       </Stack>
     </Box>
   );

@@ -8,19 +8,12 @@ import { createRequest } from "@/app/dashboard/requests/hooks/use-requests";
 import { ROLES } from "@/constants/roles";
 import { deleteAlphabeticals, formatCurrency } from "@/helpers/format-currency";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { MenuItem, Typography, Chip, Box, Tooltip } from "@mui/material";
+import {
+  MenuItem, Typography, Chip, Box, Tooltip,
+  FormControl, FormHelperText, InputLabel, OutlinedInput,
+  Select, Stack, Card, CardContent, CardActions, Snackbar, Grid as MuiGrid
+} from "@mui/material";
 import Button from "@mui/material/Button";
-import Card from "@mui/material/Card";
-import CardActions from "@mui/material/CardActions";
-import CardContent from "@mui/material/CardContent";
-import FormControl from "@mui/material/FormControl";
-import FormHelperText from "@mui/material/FormHelperText";
-import Grid from "@mui/material/Grid2";
-import InputLabel from "@mui/material/InputLabel";
-import OutlinedInput from "@mui/material/OutlinedInput";
-import Select from "@mui/material/Select";
-import Stack from "@mui/material/Stack";
-import Snackbar from "@mui/material/Snackbar";
 import MuiAlert from "@mui/material/Alert";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { Controller, useForm } from "react-hook-form";
@@ -56,8 +49,6 @@ export function CustomerCreateForm({ user }) {
   const [agentsOptions, setAgentsOptions] = React.useState([]);
   const [alertMsg, setAlertMsg] = React.useState("");
   const [alertSeverity, setAlertSeverity] = React.useState("success");
-
-  // ID del cliente creado (si no hay, no se puede crear solicitud)
   const [createdClientId, setCreatedClientId] = React.useState(null);
 
   const DEFAULT_COUNTRY = "CO";
@@ -85,84 +76,30 @@ export function CustomerCreateForm({ user }) {
   // ========= Esquema general (para crear solicitud) =========
   const schema = zod
     .object({
-      countryIso2: zod
-        .string()
-        .length(2, "Selecciona un país válido")
+      countryIso2: zod.string().length(2, "Selecciona un país válido")
         .refine((v) => COUNTRIES.some((c) => c.iso2 === v), "País no soportado"),
-
-      name: zod
-        .string()
-        .min(3, { message: "Debe tener al menos 3 caracteres" })
-        .max(100, { message: "Máximo 100 caracteres" })
-        .regex(/^[A-Za-zÀ-ÿ\u00F1\u00D1]+(?: [A-Za-zÀ-ÿ\u00F1\u00D1]+)+$/, {
-          message: "Debe ingresar nombre y apellido, solo letras y espacios",
-        }),
-      email: zod
-        .string()
-        .email("Debe ser un correo válido")
-        .min(5, "El correo es obligatorio")
-        .max(255, "El correo es muy largo"),
-
-      localPhone: zod
-        .string()
-        .min(7, "El celular es obligatorio")
-        .max(10, "El celular es muy largo")
-        .regex(/^\d+$/, { message: "El celular debe contener solo números" }),
-
-      localPhone2: zod
-        .string()
-        .optional()
-        .refine((val) => !val || (/^\d+$/.test(val) && val.length >= 7 && val.length <= 10), {
-          message: "El celular 2 debe ser numérico (7 a 10 dígitos)",
-        }),
-
-      documentType: zod.enum(["CC", "CE", "TE"], {
-        errorMap: () => ({ message: "Debes elegir un tipo de documento" }),
+      name: zod.string().min(3).max(100)
+        .regex(/^[A-Za-zÀ-ÿ\u00F1\u00D1]+(?: [A-Za-zÀ-ÿ\u00F1\u00D1]+)+$/, { message: "Debe ingresar nombre y apellido, solo letras y espacios" }),
+      email: zod.string().email().min(5).max(255),
+      localPhone: zod.string().min(7).max(10).regex(/^\d+$/),
+      localPhone2: zod.string().optional().refine((val) => !val || (/^\d+$/.test(val) && val.length >= 7 && val.length <= 10), {
+        message: "El celular 2 debe ser numérico (7 a 10 dígitos)",
       }),
-      document: zod
-        .string()
-        .min(5, { message: "El documento es obligatorio" })
-        .max(20, { message: "El documento es muy largo" })
-        .regex(/^[A-Za-z0-9]+$/, {
-          message: "El documento solo puede tener letras y números (sin espacios)",
-        }),
-      address: zod.string().min(5, { message: "La dirección es obligatoria" }).max(255),
+      documentType: zod.enum(["CC", "CE", "TE"], { errorMap: () => ({ message: "Debes elegir un tipo de documento" }) }),
+      document: zod.string().min(5).max(20).regex(/^[A-Za-z0-9]+$/),
+      address: zod.string().min(5).max(255),
       address2: zod.string().max(255).optional(),
-
-      amount: zod
-        .number({ invalid_type_error: "El monto debe ser un número" })
-        .min(1, { message: "El monto es obligatorio" })
-        .min(50_000, { message: "El monto debe superar los $50.000" })
-        .max(5_000_000, { message: "El monto no puede superar los 5.000.000" }),
-      typePayment: zod.enum(["QUINCENAL", "MENSUAL"], {
-        errorMap: () => ({ message: "Debes elegir un tipo de pago" }),
-      }),
-      datePayment: zod.enum(["15-30", "5-20", "10-25"], {
-        errorMap: () => ({ message: "Debes elegir una fecha de pago" }),
-      }),
+      amount: zod.number({ invalid_type_error: "El monto debe ser un número" }).min(1).min(50_000).max(5_000_000),
+      typePayment: zod.enum(["QUINCENAL", "MENSUAL"], { errorMap: () => ({ message: "Debes elegir un tipo de pago" }) }),
+      datePayment: zod.enum(["15-30", "5-20", "10-25"], { errorMap: () => ({ message: "Debes elegir una fecha de pago" }) }),
       selectedDate: zod
         .custom((val) => dayjs.isDayjs(val) && val.isValid(), { message: "La fecha es obligatoria" })
-        .refine((val) => dayjs(val).isAfter(dayjs(), "day"), {
-          message: "La fecha debe ser posterior a hoy",
-        }),
+        .refine((val) => dayjs(val).isAfter(dayjs(), "day"), { message: "La fecha debe ser posterior a hoy" }),
       selectedAgent: zod.string().optional(),
-
-      referenceName: zod
-        .string()
-        .min(3, { message: "El nombre de la referencia es obligatorio" })
-        .max(100, { message: "Máximo 100 caracteres" })
-        .regex(/^[A-Za-zÀ-ÿ\u00F1\u00D1]+(?: [A-Za-zÀ-ÿ\u00F1\u00D1]+)+$/, {
-          message: "Debe ingresar nombre y apellido, solo letras y espacios",
-        }),
-      referencePhone: zod
-        .string()
-        .min(7, { message: "El celular de la referencia es obligatorio" })
-        .max(10, { message: "El celular es muy largo" })
-        .regex(/^\d+$/, { message: "El celular debe contener solo números" }),
-      referenceRelationship: zod
-        .string()
-        .min(3, { message: "El parentesco es obligatorio" })
-        .max(50, { message: "Máximo 50 caracteres" }),
+      referenceName: zod.string().min(3).max(100)
+        .regex(/^[A-Za-zÀ-ÿ\u00F1\u00D1]+(?: [A-Za-zÀ-ÿ\u00F1\u00D1]+)+$/, { message: "Debe ingresar nombre y apellido, solo letras y espacios" }),
+      referencePhone: zod.string().min(7).max(10).regex(/^\d+$/),
+      referenceRelationship: zod.string().min(3).max(50),
     })
     .superRefine((data, ctx) => {
       if (user.role === ROLES.ADMIN && !data.selectedAgent?.trim()) {
@@ -176,37 +113,24 @@ export function CustomerCreateForm({ user }) {
 
   // ========= Esquema sólo cliente =========
   const clientOnlySchema = zod.object({
-    countryIso2: zod
-      .string()
-      .length(2, "Selecciona un país válido")
-      .refine((v) => COUNTRIES.some((c) => c.iso2 === v), "País no soportado"),
-    name: zod
-      .string()
-      .min(3, { message: "Debe tener al menos 3 caracteres" })
-      .max(100, { message: "Máximo 100 caracteres" })
-      .regex(/^[A-Za-zÀ-ÿ\u00F1\u00D1]+(?: [A-Za-zÀ-ÿ\u00F1\u00D1]+)+$/, {
-        message: "Debe ingresar nombre y apellido, solo letras y espacios",
-      }),
-    email: zod.string().email("Debe ser un correo válido").min(5).max(255),
+    countryIso2: zod.string().length(2).refine((v) => COUNTRIES.some((c) => c.iso2 === v), "País no soportado"),
+    name: zod.string().min(3).max(100)
+      .regex(/^[A-Za-zÀ-ÿ\u00F1\u00D1]+(?: [A-Za-zÀ-ÿ\u00F1\u00D1]+)+$/, { message: "Debe ingresar nombre y apellido, solo letras y espacios" }),
+    email: zod.string().email().min(5).max(255),
     localPhone: zod.string().min(7).max(10).regex(/^\d+$/),
     localPhone2: zod.string().optional(),
     documentType: zod.enum(["CC", "CE", "TE"]),
     document: zod.string().min(5).max(20).regex(/^[A-Za-z0-9]+$/),
     address: zod.string().min(5).max(255),
     address2: zod.string().max(255).optional(),
-    referenceName: zod.string().min(3).max(100).regex(/^[A-Za-zÀ-ÿ\u00F1\u00D1]+(?: [A-Za-zÀ-ÿ\u00F1\u00D1]+)+$/),
+    referenceName: zod.string().min(3).max(100)
+      .regex(/^[A-Za-zÀ-ÿ\u00F1\u00D1]+(?: [A-Za-zÀ-ÿ\u00F1\u00D1]+)+$/),
     referencePhone: zod.string().min(7).max(10).regex(/^\d+$/),
     referenceRelationship: zod.string().min(3).max(50),
   });
 
   const {
-    control,
-    handleSubmit,
-    formState: { errors },
-    reset,
-    watch,
-    setValue,
-    getValues,
+    control, handleSubmit, formState: { errors }, reset, watch, setValue, getValues,
   } = useForm({ defaultValues, resolver: zodResolver(schema) });
 
   const countryIso2 = watch("countryIso2");
@@ -325,7 +249,6 @@ export function CustomerCreateForm({ user }) {
         setAlertMsg("¡Solicitud creada exitosamente!");
         setAlertSeverity("success");
 
-        // Reset para nuevo flujo
         setCreatedClientId(null);
         reset({ ...defaultValues, countryIso2 });
       } catch (error) {
@@ -343,6 +266,16 @@ export function CustomerCreateForm({ user }) {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
+      {/* Kill-switch local contra overlays huérfanos */}
+      <style>{`
+        /* Evita que un Backdrop/Modal huérfano bloquee clics */
+        .MuiBackdrop-root { pointer-events: none !important; }
+        .MuiModal-root[aria-hidden="true"] { display: none !important; }
+
+        /* Popper default de algunos pickers/menus puede estirarse: aseguremos z-index y no cubrir layout */
+        .MuiPopover-root, .MuiPopper-root, .MuiTooltip-popper { z-index: 1200 !important; }
+      `}</style>
+
       <Stack spacing={4}>
         {/* ==================== DATOS DEL CLIENTE ==================== */}
         <Card>
@@ -352,9 +285,9 @@ export function CustomerCreateForm({ user }) {
             </Typography>
 
             <Stack spacing={3} paddingTop={3}>
-              <Grid container spacing={3}>
+              <MuiGrid container spacing={3}>
                 {/* País */}
-                <Grid size={{ md: 6, xs: 12 }}>
+                <MuiGrid item md={6} xs={12}>
                   <Controller
                     control={control}
                     name="countryIso2"
@@ -363,6 +296,7 @@ export function CustomerCreateForm({ user }) {
                         <InputLabel required>País</InputLabel>
                         <Select
                           {...field}
+                          MenuProps={{ disablePortal: true, keepMounted: false }}
                           renderValue={(v) => {
                             const c = COUNTRIES.find((x) => x.iso2 === v);
                             return (
@@ -387,10 +321,10 @@ export function CustomerCreateForm({ user }) {
                       </FormControl>
                     )}
                   />
-                </Grid>
+                </MuiGrid>
 
                 {/* Nombre */}
-                <Grid size={{ md: 6, xs: 12 }}>
+                <MuiGrid item md={6} xs={12}>
                   <Controller
                     control={control}
                     name="name"
@@ -402,10 +336,10 @@ export function CustomerCreateForm({ user }) {
                       </FormControl>
                     )}
                   />
-                </Grid>
+                </MuiGrid>
 
                 {/* Correo */}
-                <Grid size={{ md: 6, xs: 12 }}>
+                <MuiGrid item md={6} xs={12}>
                   <Controller
                     control={control}
                     name="email"
@@ -417,10 +351,10 @@ export function CustomerCreateForm({ user }) {
                       </FormControl>
                     )}
                   />
-                </Grid>
+                </MuiGrid>
 
                 {/* Celular local */}
-                <Grid size={{ md: 6, xs: 12 }}>
+                <MuiGrid item md={6} xs={12}>
                   <Controller
                     control={control}
                     name="localPhone"
@@ -440,10 +374,10 @@ export function CustomerCreateForm({ user }) {
                       );
                     }}
                   />
-                </Grid>
+                </MuiGrid>
 
                 {/* Celular local 2 (opcional) */}
-                <Grid size={{ md: 6, xs: 12 }}>
+                <MuiGrid item md={6} xs={12}>
                   <Controller
                     control={control}
                     name="localPhone2"
@@ -463,17 +397,17 @@ export function CustomerCreateForm({ user }) {
                       );
                     }}
                   />
-                </Grid>
+                </MuiGrid>
 
                 {/* Documento */}
-                <Grid size={{ md: 6, xs: 12 }}>
+                <MuiGrid item md={6} xs={12}>
                   <Controller
                     control={control}
                     name="documentType"
                     render={({ field }) => (
                       <FormControl error={Boolean(errors.documentType)} fullWidth>
                         <InputLabel required>Tipo de documento</InputLabel>
-                        <Select {...field}>
+                        <Select {...field} MenuProps={{ disablePortal: true, keepMounted: false }}>
                           <MenuItem value="CC">Cedula de Ciudadania</MenuItem>
                           <MenuItem value="CE">Cedula de Extranjeria</MenuItem>
                           <MenuItem value="TE">Tarjeta de extranjería</MenuItem>
@@ -482,9 +416,9 @@ export function CustomerCreateForm({ user }) {
                       </FormControl>
                     )}
                   />
-                </Grid>
+                </MuiGrid>
 
-                <Grid size={{ md: 6, xs: 12 }}>
+                <MuiGrid item md={6} xs={12}>
                   <Controller
                     control={control}
                     name="document"
@@ -496,10 +430,10 @@ export function CustomerCreateForm({ user }) {
                       </FormControl>
                     )}
                   />
-                </Grid>
+                </MuiGrid>
 
                 {/* Dirección */}
-                <Grid size={{ md: 6, xs: 12 }}>
+                <MuiGrid item md={6} xs={12}>
                   <Controller
                     control={control}
                     name="address"
@@ -511,10 +445,10 @@ export function CustomerCreateForm({ user }) {
                       </FormControl>
                     )}
                   />
-                </Grid>
+                </MuiGrid>
 
                 {/* Dirección 2 opcional */}
-                <Grid size={{ md: 6, xs: 12 }}>
+                <MuiGrid item md={6} xs={12}>
                   <Controller
                     control={control}
                     name="address2"
@@ -526,8 +460,8 @@ export function CustomerCreateForm({ user }) {
                       </FormControl>
                     )}
                   />
-                </Grid>
-              </Grid>
+                </MuiGrid>
+              </MuiGrid>
             </Stack>
           </CardContent>
         </Card>
@@ -540,8 +474,8 @@ export function CustomerCreateForm({ user }) {
             </Typography>
 
             <Stack spacing={3} paddingTop={3}>
-              <Grid container spacing={3}>
-                <Grid size={{ md: 6, xs: 12 }}>
+              <MuiGrid container spacing={3}>
+                <MuiGrid item md={6} xs={12}>
                   <Controller
                     control={control}
                     name="referenceName"
@@ -553,9 +487,9 @@ export function CustomerCreateForm({ user }) {
                       </FormControl>
                     )}
                   />
-                </Grid>
+                </MuiGrid>
 
-                <Grid size={{ md: 6, xs: 12 }}>
+                <MuiGrid item md={6} xs={12}>
                   <Controller
                     control={control}
                     name="referenceRelationship"
@@ -563,16 +497,14 @@ export function CustomerCreateForm({ user }) {
                       <FormControl error={Boolean(errors.referenceRelationship)} fullWidth>
                         <InputLabel required>Parentesco / Relación</InputLabel>
                         <OutlinedInput {...field} />
-                        {errors.referenceRelationship ? (
-                          <FormHelperText>{errors.referenceRelationship.message}</FormHelperText>
-                        ) : null}
+                        {errors.referenceRelationship ? <FormHelperText>{errors.referenceRelationship.message}</FormHelperText> : null}
                       </FormControl>
                     )}
                   />
-                </Grid>
+                </MuiGrid>
 
                 {/* Teléfono de referencia */}
-                <Grid size={{ md: 6, xs: 12 }}>
+                <MuiGrid item md={6} xs={12}>
                   <Controller
                     control={control}
                     name="referencePhone"
@@ -587,17 +519,14 @@ export function CustomerCreateForm({ user }) {
                             inputProps={{ inputMode: "numeric" }}
                             onChange={(e) => field.onChange(e.target.value.replace(/\D/g, ""))}
                           />
-                          {errors.referencePhone ? (
-                            <FormHelperText>{errors.referencePhone.message}</FormHelperText>
-                          ) : null}
+                          {errors.referencePhone ? <FormHelperText>{errors.referencePhone.message}</FormHelperText> : null}
                         </FormControl>
                       );
                     }}
                   />
-                </Grid>
-              </Grid>
+                </MuiGrid>
+              </MuiGrid>
 
-              {/* Info del cliente creado */}
               {createdClientId ? (
                 <Box sx={{ pt: 1 }}>
                   <Chip color="success" label={`Cliente guardado (ID: ${createdClientId})`} />
@@ -606,7 +535,6 @@ export function CustomerCreateForm({ user }) {
             </Stack>
           </CardContent>
 
-          {/* Botón para crear SOLO el cliente */}
           <CardActions sx={{ justifyContent: "flex-end" }}>
             <Button variant="contained" type="button" onClick={handleSaveClientOnly}>
               Guardar cliente
@@ -622,8 +550,8 @@ export function CustomerCreateForm({ user }) {
             </Typography>
 
             <Stack spacing={3} paddingTop={3}>
-              <Grid container spacing={3}>
-                <Grid size={{ md: 6, xs: 12 }}>
+              <MuiGrid container spacing={3}>
+                <MuiGrid item md={6} xs={12}>
                   <Controller
                     control={control}
                     name="amount"
@@ -644,16 +572,16 @@ export function CustomerCreateForm({ user }) {
                       </FormControl>
                     )}
                   />
-                </Grid>
+                </MuiGrid>
 
-                <Grid size={{ md: 6, xs: 12 }}>
+                <MuiGrid item md={6} xs={12}>
                   <Controller
                     control={control}
                     name="typePayment"
                     render={({ field }) => (
                       <FormControl error={Boolean(errors.typePayment)} fullWidth>
                         <InputLabel required>Tipo de pago</InputLabel>
-                        <Select {...field}>
+                        <Select {...field} MenuProps={{ disablePortal: true, keepMounted: false }}>
                           <MenuItem value="QUINCENAL">Quincenal</MenuItem>
                           <MenuItem value="MENSUAL">Mensual</MenuItem>
                         </Select>
@@ -661,16 +589,16 @@ export function CustomerCreateForm({ user }) {
                       </FormControl>
                     )}
                   />
-                </Grid>
+                </MuiGrid>
 
-                <Grid size={{ md: 6, xs: 12 }}>
+                <MuiGrid item md={6} xs={12}>
                   <Controller
                     control={control}
                     name="datePayment"
                     render={({ field }) => (
                       <FormControl error={Boolean(errors.datePayment)} fullWidth>
                         <InputLabel required>Fecha de pago</InputLabel>
-                        <Select {...field}>
+                        <Select {...field} MenuProps={{ disablePortal: true, keepMounted: false }}>
                           <MenuItem value="15-30">15 - 30</MenuItem>
                           <MenuItem value="5-20">5 - 20</MenuItem>
                           <MenuItem value="10-25">10 - 25</MenuItem>
@@ -679,24 +607,29 @@ export function CustomerCreateForm({ user }) {
                       </FormControl>
                     )}
                   />
-                </Grid>
+                </MuiGrid>
 
-                <Grid size={{ md: 6, xs: 12 }}>
+                <MuiGrid item md={6} xs={12}>
                   <Controller
                     control={control}
                     name="selectedDate"
                     render={({ field }) => (
                       <FormControl error={Boolean(errors.selectedDate)} fullWidth>
                         <InputLabel required>Día a pagar</InputLabel>
-                        <DatePicker {...field} minDate={dayjs()} sx={{ marginTop: "0.5rem" }} />
+                        <DatePicker
+                          {...field}
+                          minDate={dayjs()}
+                          sx={{ marginTop: "0.5rem" }}
+                          slotProps={{ popper: { disablePortal: true } }}
+                        />
                         {errors.selectedDate ? <FormHelperText>{errors.selectedDate.message}</FormHelperText> : null}
                       </FormControl>
                     )}
                   />
-                </Grid>
+                </MuiGrid>
 
                 {/* Agente */}
-                <Grid size={{ md: 6, xs: 12 }}>
+                <MuiGrid item md={6} xs={12}>
                   <Controller
                     control={control}
                     name="selectedAgent"
@@ -707,7 +640,7 @@ export function CustomerCreateForm({ user }) {
                         disabled={user.role === ROLES.AGENTE}
                       >
                         <InputLabel required>Agente</InputLabel>
-                        <Select {...field}>
+                        <Select {...field} MenuProps={{ disablePortal: true, keepMounted: false }}>
                           {user.role === ROLES.AGENTE ? (
                             <MenuItem value={String(user.id)}>{user.name || "Yo"}</MenuItem>
                           ) : (
@@ -722,8 +655,8 @@ export function CustomerCreateForm({ user }) {
                       </FormControl>
                     )}
                   />
-                </Grid>
-              </Grid>
+                </MuiGrid>
+              </MuiGrid>
             </Stack>
           </CardContent>
 
@@ -732,13 +665,16 @@ export function CustomerCreateForm({ user }) {
               Cancelar
             </Button>
 
-            {/* Botón de “Guardar solicitud”: solo aparece si hay cliente creado */}
             {createdClientId ? (
-              <Button variant="contained" type="submit" disabled={!createdClientId} aria-disabled={!createdClientId}>
-                Guardar
-              </Button>
+              <Tooltip title="Guardar solicitud" disablePortal>
+                <span>
+                  <Button variant="contained" type="submit" disabled={solicitudDisabled} aria-disabled={solicitudDisabled}>
+                    Guardar
+                  </Button>
+                </span>
+              </Tooltip>
             ) : (
-              <Tooltip title="Primero guarda el cliente para habilitar la solicitud" disableInteractive>
+              <Tooltip title="Primero guarda el cliente para habilitar la solicitud" disablePortal disableInteractive>
                 <span>
                   <Button variant="contained" disabled aria-disabled>
                     Guardar
@@ -750,7 +686,7 @@ export function CustomerCreateForm({ user }) {
         </Card>
       </Stack>
 
-      {/* Snackbar no bloqueante (reemplaza NotificationAlert) */}
+      {/* Snackbar no bloqueante */}
       <Snackbar
         open={popoverAlert.open}
         autoHideDuration={3500}
