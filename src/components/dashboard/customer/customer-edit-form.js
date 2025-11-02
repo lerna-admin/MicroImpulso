@@ -20,10 +20,7 @@ import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
 import CardActions from "@mui/material/CardActions";
 import Divider from "@mui/material/Divider";
-import IconButton from "@mui/material/IconButton";
 import Tooltip from "@mui/material/Tooltip";
-import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
-import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 
 import { paths } from "@/paths";
 import { usePopover } from "@/hooks/use-popover";
@@ -163,7 +160,7 @@ export function CustomerEditForm({ customerToEdit, onlyRead = false }) {
         value: f.value ?? "",
       }))
     );
-    setCfErrors({ });
+    setCfErrors({});
   }, [customerToEdit]);
 
   // onChange genérico
@@ -237,9 +234,7 @@ export function CustomerEditForm({ customerToEdit, onlyRead = false }) {
     const phone = composePhone(formData.countryIso2, formData.localPhone);
 
     // normalizar CFs y descartar vacíos/incorrectos
-    const sanitizedCFs = customFields
-      .map(sanitizeCustomField)
-      .filter(Boolean);
+    const sanitizedCFs = customFields.map(sanitizeCustomField).filter(Boolean);
 
     const payload = {
       id: formData.id,
@@ -409,9 +404,9 @@ export function CustomerEditForm({ customerToEdit, onlyRead = false }) {
                 <Typography variant="h6">Campos personalizados</Typography>
                 {!onlyRead && (
                   <Tooltip title="Agregar campo">
-                    <IconButton onClick={addCustomField} size="small">
-                      <AddCircleOutlineIcon fontSize="small" />
-                    </IconButton>
+                    <Button onClick={addCustomField} size="small" variant="outlined">
+                      + Agregar campo
+                    </Button>
                   </Tooltip>
                 )}
               </Box>
@@ -433,15 +428,11 @@ export function CustomerEditForm({ customerToEdit, onlyRead = false }) {
                             <InputLabel>Nombre del campo</InputLabel>
                             <OutlinedInput
                               value={cf.key}
-                              onChange={(e) =>
-                                updateCustomField(idx, { key: e.target.value })
-                              }
+                              onChange={(e) => updateCustomField(idx, { key: e.target.value })}
                               label="Nombre del campo"
                               placeholder="p.ej. Facebook, Ingresos, Observaciones"
                             />
-                            {err.key ? (
-                              <FormHelperText>{err.key}</FormHelperText>
-                            ) : null}
+                            {err.key ? <FormHelperText>{err.key}</FormHelperText> : null}
                           </FormControl>
                         </Grid>
 
@@ -452,9 +443,7 @@ export function CustomerEditForm({ customerToEdit, onlyRead = false }) {
                             <Select
                               label="Tipo"
                               value={cf.type}
-                              onChange={(e) =>
-                                updateCustomField(idx, { type: e.target.value })
-                              }
+                              onChange={(e) => updateCustomField(idx, { type: e.target.value })}
                             >
                               <MenuItem value="text">Texto</MenuItem>
                               <MenuItem value="number">Número</MenuItem>
@@ -467,11 +456,7 @@ export function CustomerEditForm({ customerToEdit, onlyRead = false }) {
                         <Grid size={{ md: 4, xs: 12 }}>
                           <FormControl fullWidth error={Boolean(err.value)} disabled={onlyRead}>
                             <InputLabel>
-                              {cf.type === "number"
-                                ? "Valor numérico"
-                                : cf.type === "link"
-                                ? "URL"
-                                : "Valor"}
+                              {cf.type === "number" ? "Valor numérico" : cf.type === "link" ? "URL" : "Valor"}
                             </InputLabel>
                             <OutlinedInput
                               value={cf.value}
@@ -483,39 +468,23 @@ export function CustomerEditForm({ customerToEdit, onlyRead = false }) {
                                 }
                                 updateCustomField(idx, { value: v });
                               }}
-                              label={
-                                cf.type === "number"
-                                  ? "Valor numérico"
-                                  : cf.type === "link"
-                                  ? "URL"
-                                  : "Valor"
-                              }
-                              placeholder={
-                                cf.type === "link" ? "https://ejemplo.com" : ""
-                              }
+                              label={cf.type === "number" ? "Valor numérico" : cf.type === "link" ? "URL" : "Valor"}
+                              placeholder={cf.type === "link" ? "https://ejemplo.com" : ""}
                             />
-                            {err.value ? (
-                              <FormHelperText>{err.value}</FormHelperText>
-                            ) : null}
+                            {err.value ? <FormHelperText>{err.value}</FormHelperText> : null}
                           </FormControl>
                         </Grid>
 
                         {/* Eliminar */}
                         <Grid
                           size={{ md: 1, xs: 12 }}
-                          sx={{ display: "flex", alignItems: "center", justifyContent: "flex-end" }}
+                          sx={{ display: "flex", alignItems: "center", justifyContent: "flex-end", gap: 1 }}
                         >
                           {!onlyRead && (
                             <Tooltip title="Eliminar">
-                              <span>
-                                <IconButton
-                                  onClick={() => removeCustomField(idx)}
-                                  size="small"
-                                  color="error"
-                                >
-                                  <DeleteOutlineIcon fontSize="small" />
-                                </IconButton>
-                              </span>
+                              <Button onClick={() => removeCustomField(idx)} size="small" color="error" variant="outlined">
+                                Eliminar
+                              </Button>
                             </Tooltip>
                           )}
                         </Grid>
@@ -544,11 +513,7 @@ export function CustomerEditForm({ customerToEdit, onlyRead = false }) {
         </Stack>
       </form>
 
-      <NotificationAlert
-        openAlert={popover.open}
-        onClose={popover.handleClose}
-        msg={"Perfil actualizado!"}
-      />
+      <NotificationAlert openAlert={popover.open} onClose={popover.handleClose} msg={"Perfil actualizado!"} />
     </>
   );
 }

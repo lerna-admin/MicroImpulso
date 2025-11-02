@@ -2,14 +2,7 @@
 
 import * as React from "react";
 import RouterLink from "next/link";
-import {
-  MenuItem,
-  Typography,
-  Chip,
-  Box,
-  TextField,
-  Divider,
-} from "@mui/material";
+import { MenuItem, Chip, Box, Divider } from "@mui/material";
 import Button from "@mui/material/Button";
 import Card from "@mui/material/Card";
 import CardActions from "@mui/material/CardActions";
@@ -21,6 +14,7 @@ import InputLabel from "@mui/material/InputLabel";
 import OutlinedInput from "@mui/material/OutlinedInput";
 import Select from "@mui/material/Select";
 import Stack from "@mui/material/Stack";
+import Typography from "@mui/material/Typography";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { Controller, useForm } from "react-hook-form";
 import { z as zod } from "zod";
@@ -175,7 +169,6 @@ export function CustomerCreateForm({ user }) {
   // ====== Guardar SOLO cliente ======
   const handleSaveClientOnly = async () => {
     try {
-      // validación local de cliente
       const values = getValues();
       const parsed = clientOnlySchema.safeParse(values);
       if (!parsed.success) {
@@ -222,7 +215,6 @@ export function CustomerCreateForm({ user }) {
         return;
       }
 
-      // validación local de solicitud
       const parsedReq = requestSchemaOnly.safeParse({
         amount: dataForm.amount,
         typePayment: dataForm.typePayment,
@@ -269,6 +261,7 @@ export function CustomerCreateForm({ user }) {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} onKeyDown={onKeyDown}>
+      {/* ==================== CLIENTE ==================== */}
       <Card>
         <CardContent>
           <Typography variant="h5" paddingTop={3}>
@@ -520,7 +513,7 @@ export function CustomerCreateForm({ user }) {
             Crear solicitud
           </Typography>
 
-          <Stack spacing={3} paddingTop={3} divider={<Divider />}>
+        <Stack spacing={3} paddingTop={3} divider={<Divider />}>
             <Grid container spacing={3}>
               <Grid size={{ md: 6, xs: 12 }}>
                 <Controller
