@@ -19,23 +19,22 @@ export default async function Page() {
 
   return (
     <>
-      {/* 🔧 Hotfix de ruta: neutraliza cualquier Backdrop/Modal “perdido” que bloquee clics */}
-      <style jsx global>{`
-        /* Evita que un Backdrop global capture clics en esta ruta */
-        .MuiBackdrop-root {
-          pointer-events: none !important;
-        }
-        /* Asegura que Popper/Tooltip no coloquen una capa por encima del layout */
-        .MuiPopover-root,
-        .MuiPopper-root,
-        .MuiTooltip-popper {
-          z-index: 1200 !important; /* Debajo de AppBar/Drawer si los tuyos usan 1300+ */
-        }
-        /* Si algún Modal quedó abierto por error, no bloqueará interacciones */
-        .MuiModal-root {
-          pointer-events: none !important;
-        }
-      `}</style>
+      {/* 🔧 Hotfix: estilos globales SIN styled-jsx para que no bloquee los clics */}
+      <style
+        // NOTA: esto NO es styled-jsx; es un <style> plano, compatible con Server Components
+        dangerouslySetInnerHTML={{
+          __html: `
+            /* Evitar que un Backdrop o Modal huérfano bloquee clics en esta ruta */
+            .MuiBackdrop-root { pointer-events: none !important; }
+            .MuiModal-root    { pointer-events: none !important; }
+
+            /* Mantener popovers/tooltip en un z-index razonable para no tapar el layout */
+            .MuiPopover-root,
+            .MuiPopper-root,
+            .MuiTooltip-popper { z-index: 1200 !important; }
+          `,
+        }}
+      />
 
       <Box
         sx={{
@@ -60,6 +59,7 @@ export default async function Page() {
               </Link>
             </div>
           </Stack>
+
           <CustomerCreateForm user={{ id: user.id, role: user.role, branchId: user.branch.id }} />
         </Stack>
       </Box>
