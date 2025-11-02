@@ -100,6 +100,7 @@ function sanitizeCustomField(cf) {
 
 export function CustomerCreateForm({ user }) {
 <<<<<<< HEAD
+<<<<<<< HEAD
   const [alertMsg, setAlertMsg] = React.useState("");
   const [alertSeverity, setAlertSeverity] = React.useState("success");
   const [openAlert, setOpenAlert] = React.useState(false);
@@ -534,6 +535,11 @@ export function CustomerCreateForm({ user }) {
                   )}
                 />
               </Grid>
+=======
+  const [alertMsg, setAlertMsg] = React.useState("");
+  const [alertSeverity, setAlertSeverity] = React.useState("success");
+  const [openAlert, setOpenAlert] = React.useState(false);
+>>>>>>> b621a4d2db6baaf2a4b4dbc69bea4aaca24d1e52
 
               {/* Dirección 2 */}
               <Grid size={{ md: 6, xs: 12 }}>
@@ -927,11 +933,24 @@ export function CustomerCreateForm({ user }) {
 				.min(5, { message: "La dirección es obligatoria" })
 				.max(255, { message: "La dirección es muy larga" }),
 
+<<<<<<< HEAD
 			// 👇 address2 opcional, con límite razonable
 			address2: zod
 				.string()
 				.max(255, { message: "La dirección 2 es muy larga" })
 				.optional(),
+=======
+          {customFields.length === 0 ? (
+            <Typography variant="body2" sx={{ opacity: 0.7 }}>
+              No hay campos personalizados.
+            </Typography>
+          ) : (
+            <Stack spacing={2}>
+              {customFields.map((cf, idx) => {
+                const err = cfErrors[idx] || {};
+                const canOpen = cf.type === "link" && isValidUrl(cf.value);
+                const openHref = canOpen ? normalizeLink(cf.value) : undefined;
+>>>>>>> b621a4d2db6baaf2a4b4dbc69bea4aaca24d1e52
 
 			amount: zod
 				.number({ invalid_type_error: "El monto debe ser un número" })
@@ -990,6 +1009,7 @@ export function CustomerCreateForm({ user }) {
 		reset,
 	} = useForm({ defaultValues, resolver: zodResolver(schema) });
 
+<<<<<<< HEAD
 	const [alertMsg, setAlertMsg] = React.useState("");
 	const [alertSeverity, setAlertSeverity] = React.useState("success");
 
@@ -1278,6 +1298,44 @@ export function CustomerCreateForm({ user }) {
 						</Stack>
 					</CardContent>
 				</Card>
+=======
+                    {/* Acciones: Abrir (para link) + Eliminar */}
+                    <Grid
+                      size={{ md: 2, xs: 12 }}
+                      sx={{ display: "flex", alignItems: "center", justifyContent: { xs: "flex-start", md: "flex-end" }, gap: 1 }}
+                    >
+                      {cf.type === "link" && (
+                        <Tooltip title={canOpen ? "Abrir en nueva pestaña" : "URL inválida"}>
+                          <span>
+                            <Button
+                              size="small"
+                              variant="outlined"
+                              component="a"
+                              href={openHref}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              disabled={!canOpen}
+                            >
+                              Abrir
+                            </Button>
+                          </span>
+                        </Tooltip>
+                      )}
+
+                      <Tooltip title="Eliminar">
+                        <Button onClick={() => removeCustomField(idx)} size="small" color="error" variant="outlined">
+          Eliminar
+                        </Button>
+                      </Tooltip>
+                    </Grid>
+                  </Grid>
+                );
+              })}
+            </Stack>
+          )}
+        </CardContent>
+      </Card>
+>>>>>>> b621a4d2db6baaf2a4b4dbc69bea4aaca24d1e52
 
 				{/* ==================== SOLICITUD ==================== */}
 				<Card>
@@ -1414,6 +1472,7 @@ export function CustomerCreateForm({ user }) {
 				</Card>
 			</Stack>
 
+<<<<<<< HEAD
 			<NotificationAlert
 				openAlert={popoverAlert.open}
 				onClose={popoverAlert.handleClose}
@@ -1423,4 +1482,14 @@ export function CustomerCreateForm({ user }) {
 		</form>
 	);
 >>>>>>> 1e1be20510e7019395b70e2381f275d960d6d891
+=======
+      <NotificationAlert
+        openAlert={openAlert}
+        onClose={() => setOpenAlert(false)}
+        msg={alertMsg}
+        severity={alertSeverity}
+      />
+    </form>
+  );
+>>>>>>> b621a4d2db6baaf2a4b4dbc69bea4aaca24d1e52
 }
