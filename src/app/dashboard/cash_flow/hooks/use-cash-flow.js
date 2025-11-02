@@ -22,9 +22,16 @@ export async function getCashMovements(
 	return await res.json();
 }
 
+export async function deleteCashMovement(id) {
+	const res = await fetch(`${BASE_URL}/cash/${id}`, {
+		method: "DELETE",
+		headers: { "Content-Type": "application/json" },
+	});
+	if (!res.ok) throw new Error("Error al borrar un movimiento de caja");
+	return await res.json();
+}
+
 export async function createCashMovement(data) {
-	console.log(data);
-	
 	const res = await fetch(`${BASE_URL}/cash`, {
 		method: "POST",
 		headers: { "Content-Type": "application/json" },

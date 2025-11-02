@@ -44,8 +44,12 @@ export function DetailBalanceList({ dataBalance, user, filters }) {
 	const [alertMsg, setAlertMsg] = React.useState("");
 	const [alertSeverity, setAlertSeverity] = React.useState("");
 
-	const totalAmount = dataBalance.baseAnterior + dataBalance.valorCobradoDia - dataBalance.clientesNuevos?.montoPrestado - dataBalance.clientesRenovados?.montoPrestado;
-	
+	const totalAmount =
+		dataBalance.baseAnterior +
+		dataBalance.valorCobradoDia -
+		dataBalance.clientesNuevos?.montoPrestado -
+		dataBalance.clientesRenovados?.montoPrestado;
+
 	const today = dayjs(date);
 	const formattedDate = `${today.format("DD")} ${today.format("MMMM").toUpperCase()} ${today.format("YYYY")}`;
 
@@ -81,8 +85,14 @@ export function DetailBalanceList({ dataBalance, user, filters }) {
 			{ id: 1, value: parseCurrency(dataBalance.baseAnterior) },
 			{ id: 3, value: parseCurrency(dataBalance.valorCobradoDia) },
 			{ id: 4, value: dataBalance.clientesEnDeuda },
-			{ id: 5, value: `${parseCurrency(dataBalance.clientesRenovados?.montoPrestado)} (${dataBalance.clientesRenovados?.cantidad})` },
-			{ id: 6, value: `${parseCurrency(dataBalance.clientesNuevos?.montoPrestado)} (${dataBalance.clientesNuevos?.cantidad})` },
+			{
+				id: 5,
+				value: `${parseCurrency(dataBalance.clientesRenovados?.montoPrestado)} (${dataBalance.clientesRenovados?.cantidad})`,
+			},
+			{
+				id: 6,
+				value: `${parseCurrency(dataBalance.clientesNuevos?.montoPrestado)} (${dataBalance.clientesNuevos?.cantidad})`,
+			},
 		];
 		setAssets((prev) =>
 			prev.map((item) => {
@@ -152,9 +162,13 @@ export function DetailBalanceList({ dataBalance, user, filters }) {
 
 								<div>
 									<Typography variant="overline">{`Total $ (#)`}</Typography>
-									<Typography variant="h5">
-										{parseCurrency(totalAmount)}
-									</Typography>
+									<Stack spacing={2} flex flexDirection={"row"} justifyContent={"space-between"}>
+										<Typography variant="h5" alignSelf={"center"}>{parseCurrency(totalAmount)}</Typography>
+
+										<Button size="xs" variant="contained" onClick={()=>console.log("Descargar")}>
+											Descargar Detalle
+										</Button>
+									</Stack>
 								</div>
 							</Stack>
 						</CardContent>

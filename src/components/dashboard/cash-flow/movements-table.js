@@ -2,7 +2,18 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
-import { IconButton, Menu, MenuItem, Tooltip } from "@mui/material";
+import { deleteCashMovement } from "@/app/dashboard/cash_flow/hooks/use-cash-flow";
+import {
+	Button,
+	Dialog,
+	DialogContent,
+	DialogContentText,
+	DialogTitle,
+	IconButton,
+	Menu,
+	MenuItem,
+	Tooltip,
+} from "@mui/material";
 import Box from "@mui/material/Box";
 import Chip from "@mui/material/Chip";
 import Divider from "@mui/material/Divider";
@@ -184,17 +195,29 @@ export function MovementsTable({ movementsData, filters }) {
 }
 
 export function ActionsCell({ row }) {
-
 	const router = useRouter();
 	const popover = usePopover();
 	const popoverAlert = usePopover();
+	const modalDeleteMov = usePopover();
 	const [anchorEl, setAnchorEl] = React.useState(null);
 	const [alertMsg, setAlertMsg] = React.useState("");
 	const [alertSeverity, setAlertSeverity] = React.useState("");
 	const [isPending, setIsPending] = React.useState(false);
 
-	const handleDeleteMovement = () => {
-		console.log("asd");
+	const handleDeleteMovement = async () => {
+		try {
+			await deleteCashMovement(row.id);
+			setAlertMsg("¡Borrado exitosamente!");
+			setAlertSeverity("success");
+		} catch (error) {
+			setAlertMsg(error.message);
+			setAlertSeverity("error");
+		} finally {
+			popoverAlert.handleOpen();
+			modalDeleteMov.handleClose();
+			setIsPending(false);
+			router.refresh();
+		}
 	};
 
 	const handleOptions = (event) => {
@@ -216,10 +239,49 @@ export function ActionsCell({ row }) {
 				onClose={popover.handleClose}
 				slotProps={{ paper: { elevation: 0 } }}
 			>
-				<MenuItem onClick={handleDeleteMovement}>
+				<MenuItem
+					onClick={() => {
+						popover.handleClose();
+						modalDeleteMov.handleOpen();
+					}}
+				>
 					<Typography>Eliminar movimiento</Typography>
 				</MenuItem>
 			</Menu>
+
+			{/* Modal para eliminar movimiento*/}
+			<Dialog
+				fullWidth
+				maxWidth={"xs"}
+				open={modalDeleteMov.open}
+				onClose={modalDeleteMov.handleClose}
+				aria-labelledby="alert-dialog-title"
+				aria-describedby="alert-dialog-description"
+			>
+				<DialogTitle id="alert-dialog-title" textAlign={"center"} sx={{ pt: 4 }}>
+					{"Confirmación"}
+				</DialogTitle>
+
+				<DialogContent>
+					<DialogContentText id="alert-dialog-description" textAlign={"center"} sx={{ pb: 3 }}>
+						{`¿Desea eliminar este movimiento de caja?`}
+					</DialogContentText>
+					<Box component={"div"} display={"flex"} justifyContent={"flex-end"} gap={2}>
+						<Button variant="contained" disabled={isPending} onClick={handleDeleteMovement} autoFocus>
+							Aceptar
+						</Button>
+						<Button
+							variant="outlined"
+							onClick={() => {
+								popover.handleClose();
+								modalDeleteMov.handleClose();
+							}}
+						>
+							Cancelar
+						</Button>
+					</Box>
+				</DialogContent>
+			</Dialog>
 
 			<NotificationAlert
 				openAlert={popoverAlert.open}
