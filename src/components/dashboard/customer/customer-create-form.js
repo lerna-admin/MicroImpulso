@@ -632,7 +632,7 @@ export function CustomerCreateForm({ user }) {
             <Stack spacing={2}>
               {customFields.map((cf, idx) => {
                 const err = cfErrors[idx] || {};
-                const canOpen = cf.type === "link";
+                const canOpen = cf.type === "link" && isValidUrl(cf.value);
                 const openHref = canOpen ? normalizeLink(cf.value) : undefined;
 
                 return (
@@ -692,10 +692,8 @@ export function CustomerCreateForm({ user }) {
                       size={{ md: 2, xs: 12 }}
                       sx={{ display: "flex", alignItems: "center", justifyContent: { xs: "flex-start", md: "flex-end" }, gap: 1 }}
                     >
-                      {/* Botón Abrir solo para tipo link */}
                       {cf.type === "link" && (
                         <Tooltip title={canOpen ? "Abrir en nueva pestaña" : "URL inválida"}>
-                          {/* span para que el Tooltip funcione con botón disabled */}
                           <span>
                             <Button
                               size="small"
@@ -714,7 +712,7 @@ export function CustomerCreateForm({ user }) {
 
                       <Tooltip title="Eliminar">
                         <Button onClick={() => removeCustomField(idx)} size="small" color="error" variant="outlined">
-                          Eliminar
+          Eliminar
                         </Button>
                       </Tooltip>
                     </Grid>
