@@ -420,7 +420,7 @@ return (
     <Stack spacing={2}>
     {customFields.map((cf, idx) => {
       const err = cfErrors[idx] || {};
-      const canOpen = cf.type === "link" && isValidUrl(cf.value);
+      const canOpen = cf.type === "link";
       const openHref = canOpen ? normalizeLink(cf.value) : undefined;
       
       return (
