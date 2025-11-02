@@ -60,6 +60,17 @@ function normalizeLink(val) {
   return `https://${s}`;
 }
 
+/** Valida url (después de normalizar) */
+function isValidUrl(val) {
+  const url = normalizeLink(val);
+  try {
+    new URL(url);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 /** Valida y normaliza un custom field según su tipo */
 function sanitizeCustomField(cf) {
   const key = String(cf.key || "").trim();
@@ -71,14 +82,14 @@ function sanitizeCustomField(cf) {
   if (type === "number") {
     const num = Number(value);
     if (Number.isFinite(num)) value = num;
-    else return null; // descarta si no es número válido
+    else return null;
   } else if (type === "link") {
     const url = normalizeLink(value);
     try {
       new URL(url);
       value = url;
     } catch {
-      return null; // enlace inválido
+      return null;
     }
   } else {
     value = String(value ?? "").trim();
@@ -95,7 +106,7 @@ export function CustomerCreateForm({ user }) {
   // ID del cliente creado (habilita sección de solicitud)
   const [createdClientId, setCreatedClientId] = React.useState(null);
 
-  // Campos personalizados (mismo comportamiento que en Edit)
+  // Campos personalizados
   const [customFields, setCustomFields] = React.useState([]);
   const [cfErrors, setCfErrors] = React.useState({}); // {index: {key?: string, value?: string}}
 
@@ -206,7 +217,7 @@ export function CustomerCreateForm({ user }) {
     setOpenAlert(true);
   };
 
-  // === Custom Fields handlers (igual que en Edit) ===
+  // === Custom Fields handlers ===
   const addCustomField = () => {
     setCustomFields((prev) => [...prev, { key: "", type: "text", value: "" }]);
   };
@@ -236,12 +247,7 @@ export function CustomerCreateForm({ user }) {
         const num = Number(cf.value);
         if (!Number.isFinite(num)) e.value = "Debe ser un número válido";
       } else if (cf.type === "link") {
-        const url = normalizeLink(cf.value);
-        try {
-          new URL(url);
-        } catch {
-          e.value = "Enlace inválido";
-        }
+        if (!isValidUrl(cf.value)) e.value = "Enlace inválido";
       }
       if (Object.keys(e).length) errs[i] = e;
     });
@@ -268,7 +274,7 @@ export function CustomerCreateForm({ user }) {
         return;
       }
 
-      // sanitiza custom fields (elimina los vacíos/incorrectos)
+      // sanitiza custom fields
       const sanitizedCFs = customFields.map(sanitizeCustomField).filter(Boolean);
 
       const phone = composePhone(values.countryIso2, values.localPhone);
@@ -288,7 +294,6 @@ export function CustomerCreateForm({ user }) {
         referencePhone,
         referenceRelationship: values.referenceRelationship,
         status: "PROSPECT",
-        // 👇 ahora sí enviamos customFields al backend
         customFields: sanitizedCFs,
       };
 
@@ -627,8 +632,11 @@ export function CustomerCreateForm({ user }) {
             <Stack spacing={2}>
               {customFields.map((cf, idx) => {
                 const err = cfErrors[idx] || {};
+                const canOpen = cf.type === "link" && isValidUrl(cf.value);
+                const openHref = canOpen ? normalizeLink(cf.value) : undefined;
+
                 return (
-                  <Grid container spacing={2} key={`cf-${idx}`}>
+                  <Grid container spacing={2} key={`cf-${idx}`} alignItems="center">
                     {/* Clave */}
                     <Grid size={{ md: 4, xs: 12 }}>
                       <FormControl fullWidth error={Boolean(err.key)}>
@@ -660,7 +668,7 @@ export function CustomerCreateForm({ user }) {
                     </Grid>
 
                     {/* Valor */}
-                    <Grid size={{ md: 4, xs: 12 }}>
+                    <Grid size={{ md: 3, xs: 12 }}>
                       <FormControl fullWidth error={Boolean(err.value)}>
                         <InputLabel>
                           {cf.type === "number" ? "Valor numérico" : cf.type === "link" ? "URL" : "Valor"}
@@ -679,11 +687,31 @@ export function CustomerCreateForm({ user }) {
                       </FormControl>
                     </Grid>
 
-                    {/* Eliminar */}
+                    {/* Acciones: Abrir (para link) + Eliminar */}
                     <Grid
-                      size={{ md: 1, xs: 12 }}
-                      sx={{ display: "flex", alignItems: "center", justifyContent: "flex-end" }}
+                      size={{ md: 2, xs: 12 }}
+                      sx={{ display: "flex", alignItems: "center", justifyContent: { xs: "flex-start", md: "flex-end" }, gap: 1 }}
                     >
+                      {/* Botón Abrir solo para tipo link */}
+                      {cf.type === "link" && (
+                        <Tooltip title={canOpen ? "Abrir en nueva pestaña" : "URL inválida"}>
+                          {/* span para que el Tooltip funcione con botón disabled */}
+                          <span>
+                            <Button
+                              size="small"
+                              variant="outlined"
+                              component="a"
+                              href={openHref}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              disabled={!canOpen}
+                            >
+                              Abrir
+                            </Button>
+                          </span>
+                        </Tooltip>
+                      )}
+
                       <Tooltip title="Eliminar">
                         <Button onClick={() => removeCustomField(idx)} size="small" color="error" variant="outlined">
                           Eliminar
