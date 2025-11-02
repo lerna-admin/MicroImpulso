@@ -21,7 +21,6 @@ import InputLabel from "@mui/material/InputLabel";
 import OutlinedInput from "@mui/material/OutlinedInput";
 import Select from "@mui/material/Select";
 import Stack from "@mui/material/Stack";
-import TypographyMUI from "@mui/material/Typography";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { Controller, useForm } from "react-hook-form";
 import { z as zod } from "zod";
@@ -161,7 +160,6 @@ export function CustomerCreateForm({ user }) {
     reset,
     watch,
     getValues,
-    setValue,
   } = useForm({
     defaultValues,
   });
@@ -606,9 +604,8 @@ export function CustomerCreateForm({ user }) {
                       <FormControl error={Boolean(errors.selectedAgent)} fullWidth disabled={!createdClientId}>
                         <InputLabel required>Agente</InputLabel>
                         <Select {...field}>
-                          {/* Rellena con tus opciones reales */}
                           <MenuItem value="">Selecciona un agente</MenuItem>
-                          {/* Ejemplo: <MenuItem value="123">Juan Pérez</MenuItem> */}
+                          {/* TODO: popular desde tu API */}
                         </Select>
                         {errors.selectedAgent ? <FormHelperText>{errors.selectedAgent.message}</FormHelperText> : null}
                       </FormControl>

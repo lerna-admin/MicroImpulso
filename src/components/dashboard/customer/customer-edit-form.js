@@ -22,7 +22,8 @@ import CardActions from "@mui/material/CardActions";
 import Divider from "@mui/material/Divider";
 import IconButton from "@mui/material/IconButton";
 import Tooltip from "@mui/material/Tooltip";
-import { Plus, Trash2 } from "lucide-react";
+import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
+import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 
 import { paths } from "@/paths";
 import { usePopover } from "@/hooks/use-popover";
@@ -93,7 +94,6 @@ function sanitizeCustomField(cf) {
   } else if (type === "link") {
     const url = normalizeLink(value);
     try {
-      // simple comprobación de URL
       new URL(url);
       value = url;
     } catch {
@@ -163,7 +163,7 @@ export function CustomerEditForm({ customerToEdit, onlyRead = false }) {
         value: f.value ?? "",
       }))
     );
-    setCfErrors({});
+    setCfErrors({ });
   }, [customerToEdit]);
 
   // onChange genérico
@@ -410,7 +410,7 @@ export function CustomerEditForm({ customerToEdit, onlyRead = false }) {
                 {!onlyRead && (
                   <Tooltip title="Agregar campo">
                     <IconButton onClick={addCustomField} size="small">
-                      <Plus size={18} />
+                      <AddCircleOutlineIcon fontSize="small" />
                     </IconButton>
                   </Tooltip>
                 )}
@@ -513,7 +513,7 @@ export function CustomerEditForm({ customerToEdit, onlyRead = false }) {
                                   size="small"
                                   color="error"
                                 >
-                                  <Trash2 size={18} />
+                                  <DeleteOutlineIcon fontSize="small" />
                                 </IconButton>
                               </span>
                             </Tooltip>
@@ -525,23 +525,22 @@ export function CustomerEditForm({ customerToEdit, onlyRead = false }) {
                 </Stack>
               )}
             </CardContent>
-          </Card>
 
-          {/* =================== Acciones =================== */}
-          {!onlyRead && (
-            <CardActions sx={{ justifyContent: "flex-end" }}>
-              <Button
-                color="secondary"
-                variant="outlined"
-                onClick={() => router.push(paths.dashboard.customers.list)}
-              >
-                Cancelar
-              </Button>
-              <Button type="submit" variant="contained">
-                Confirmar
-              </Button>
-            </CardActions>
-          )}
+            {!onlyRead && (
+              <CardActions sx={{ justifyContent: "flex-end" }}>
+                <Button
+                  color="secondary"
+                  variant="outlined"
+                  onClick={() => router.push(paths.dashboard.customers.list)}
+                >
+                  Cancelar
+                </Button>
+                <Button type="submit" variant="contained">
+                  Confirmar
+                </Button>
+              </CardActions>
+            )}
+          </Card>
         </Stack>
       </form>
 
