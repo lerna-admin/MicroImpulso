@@ -53,6 +53,7 @@ const getColorByDaysLeft = (daysLeft) => {
 };
 
 export function CustomersTable({ rows, permissions, role, branch }) {
+	console.log(rows)
 	const columns = [
 		{
 			formatter: (row) => (
