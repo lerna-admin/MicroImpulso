@@ -69,7 +69,7 @@ export function CustomerCreateForm({ user }) {
     address: "",
     address2: "",
     referenceName: "",
-    referencePhone: "",
+    referencePhone: "", // ← local (sin indicativo)
     referenceRelationship: "",
     amount: 0,
     typePayment: "",
@@ -154,7 +154,7 @@ export function CustomerCreateForm({ user }) {
         .string()
         .min(7, { message: "El celular de la referencia es obligatorio" })
         .max(10, { message: "El celular es muy largo" })
-        .regex(/^\d+$/, { message: "El celular debe contener solo números" }),
+        .regex(/^\d+$/, { message: "El celular debe contener solo números" }), // ← local (sin indicativo)
       referenceRelationship: zod
         .string()
         .min(3, { message: "El parentesco es obligatorio" })
@@ -228,6 +228,7 @@ export function CustomerCreateForm({ user }) {
 
         const phone = composePhone(dataForm.countryIso2, dataForm.localPhone);
         const phone2 = dataForm.localPhone2 ? composePhone(dataForm.countryIso2, dataForm.localPhone2) : null;
+        const referencePhone = composePhone(dataForm.countryIso2, dataForm.referencePhone); // ← ahora con indicativo
 
         const bodyCustomer = {
           name: dataForm.name,
@@ -239,7 +240,7 @@ export function CustomerCreateForm({ user }) {
           address: dataForm.address,
           address2: dataForm.address2 || null,
           referenceName: dataForm.referenceName,
-          referencePhone: dataForm.referencePhone,
+          referencePhone, // ← compuesto
           referenceRelationship: dataForm.referenceRelationship,
           status: "PROSPECT",
         };
@@ -353,7 +354,7 @@ export function CustomerCreateForm({ user }) {
                   />
                 </Grid>
 
-                {/* Celular local (sin indicativo) */}
+                {/* Celular local */}
                 <Grid size={{ md: 6, xs: 12 }}>
                   <Controller
                     control={control}
@@ -515,23 +516,28 @@ export function CustomerCreateForm({ user }) {
                   />
                 </Grid>
 
+                {/* Teléfono de referencia (local) con indicativo del país seleccionado */}
                 <Grid size={{ md: 6, xs: 12 }}>
                   <Controller
                     control={control}
                     name="referencePhone"
-                    render={({ field }) => (
-                      <FormControl error={Boolean(errors.referencePhone)} fullWidth>
-                        <InputLabel required>Teléfono de la referencia</InputLabel>
-                        <OutlinedInput
-                          {...field}
-                          inputProps={{ inputMode: "numeric" }}
-                          onChange={(e) => field.onChange(e.target.value.replace(/\D/g, ""))}
-                        />
-                        {errors.referencePhone ? (
-                          <FormHelperText>{errors.referencePhone.message}</FormHelperText>
-                        ) : null}
-                      </FormControl>
-                    )}
+                    render={({ field }) => {
+                      const c = COUNTRIES.find((x) => x.iso2 === countryIso2);
+                      return (
+                        <FormControl error={Boolean(errors.referencePhone)} fullWidth>
+                          <InputLabel required>Teléfono de la referencia</InputLabel>
+                          <OutlinedInput
+                            {...field}
+                            startAdornment={<Chip label={c ? `+${c.phoneCode}` : "+??"} size="small" sx={{ mr: 1 }} />}
+                            inputProps={{ inputMode: "numeric" }}
+                            onChange={(e) => field.onChange(e.target.value.replace(/\D/g, ""))}
+                          />
+                          {errors.referencePhone ? (
+                            <FormHelperText>{errors.referencePhone.message}</FormHelperText>
+                          ) : null}
+                        </FormControl>
+                      );
+                    }}
                   />
                 </Grid>
               </Grid>
