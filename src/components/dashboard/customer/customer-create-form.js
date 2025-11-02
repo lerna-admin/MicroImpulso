@@ -20,6 +20,8 @@ import InputLabel from "@mui/material/InputLabel";
 import OutlinedInput from "@mui/material/OutlinedInput";
 import Select from "@mui/material/Select";
 import Stack from "@mui/material/Stack";
+import Snackbar from "@mui/material/Snackbar";
+import MuiAlert from "@mui/material/Alert";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { Controller, useForm } from "react-hook-form";
 import { z as zod } from "zod";
@@ -28,7 +30,6 @@ import { paths } from "@/paths";
 import { dayjs } from "@/lib/dayjs";
 import { logger } from "@/lib/default-logger";
 import { usePopover } from "@/hooks/use-popover";
-import { NotificationAlert } from "@/components/widgets/notifications/notification-alert";
 
 /* ====== Países soportados ====== */
 const COUNTRIES = [
@@ -300,7 +301,6 @@ export function CustomerCreateForm({ user }) {
   const onSubmit = React.useCallback(
     async (dataForm) => {
       try {
-        // Guard adicional por si el botón se habilitara por error
         if (!createdClientId) {
           setAlertMsg("Primero debes guardar el cliente antes de crear la solicitud.");
           setAlertSeverity("error");
@@ -738,7 +738,7 @@ export function CustomerCreateForm({ user }) {
                 Guardar
               </Button>
             ) : (
-              <Tooltip title="Primero guarda el cliente para habilitar la solicitud">
+              <Tooltip title="Primero guarda el cliente para habilitar la solicitud" disableInteractive>
                 <span>
                   <Button variant="contained" disabled aria-disabled>
                     Guardar
@@ -750,12 +750,23 @@ export function CustomerCreateForm({ user }) {
         </Card>
       </Stack>
 
-      <NotificationAlert
-        openAlert={popoverAlert.open}
+      {/* Snackbar no bloqueante (reemplaza NotificationAlert) */}
+      <Snackbar
+        open={popoverAlert.open}
+        autoHideDuration={3500}
         onClose={popoverAlert.handleClose}
-        msg={alertMsg}
-        severity={alertSeverity}
-      />
+        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+      >
+        <MuiAlert
+          elevation={6}
+          variant="filled"
+          onClose={popoverAlert.handleClose}
+          severity={alertSeverity || "info"}
+          sx={{ width: "100%" }}
+        >
+          {alertMsg || "Operación completada."}
+        </MuiAlert>
+      </Snackbar>
     </form>
   );
 }
