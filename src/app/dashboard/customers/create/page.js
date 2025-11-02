@@ -1,6 +1,5 @@
 // src/app/dashboard/customers/create/page.js
 import * as React from "react";
-import dynamic from "next/dynamic";
 import RouterLink from "next/link";
 import Box from "@mui/material/Box";
 import Link from "@mui/material/Link";
@@ -10,33 +9,17 @@ import { ArrowLeft as ArrowLeftIcon } from "@phosphor-icons/react/dist/ssr/Arrow
 import { appConfig } from "@/config/app";
 import { paths } from "@/paths";
 import { getUser } from "@/lib/custom-auth/server";
+import { CustomerCreateForm } from "@/components/dashboard/customer/customer-create-form";
 
 // Meta
 export const metadata = { title: `Crear | Clientes | Dashboard | ${appConfig.name}` };
-
-// 👇 Carga dinámica SOLO en el cliente para aislar cualquier overlay/portal de MUI
-const CustomerCreateForm = dynamic(
-  () =>
-    import("@/components/dashboard/customer/customer-create-form").then(
-      (m) => m.CustomerCreateForm
-    ),
-  {
-    ssr: false,
-    // Loader liviano mientras hidrata el cliente
-    loading: () => (
-      <Box sx={{ py: 6, textAlign: "center", opacity: 0.7 }}>
-        Cargando formulario…
-      </Box>
-    ),
-  }
-);
 
 export default async function Page() {
   const {
     data: { user },
   } = await getUser();
 
-  // Sanitiza props mínimas que requiere el form (evita undefined)
+  // Sanitiza props mínimas que requiere el form
   const userProp = {
     id: user?.id ?? null,
     role: user?.role ?? null,
@@ -45,13 +28,11 @@ export default async function Page() {
 
   return (
     <>
-      {/* Estilos globales seguros (no styled-jsx) para evitar que un Backdrop/Modal huérfano capture clics */}
+      {/* Estilos globales seguros */}
       <style
         dangerouslySetInnerHTML={{
           __html: `
-            /* Evita que un Backdrop de MUI quede colgado bloqueando navegación */
             .MuiBackdrop-root[aria-hidden="true"] { pointer-events: none !important; }
-            /* Asegura z-index razonable de poppers/tooltips */
             .MuiPopover-root, .MuiPopper-root, .MuiTooltip-popper { z-index: 1200 !important; }
           `,
         }}
@@ -82,16 +63,8 @@ export default async function Page() {
             </div>
           </Stack>
 
-          {/* Suspense no bloquea navegación; el form se hidrata aparte en cliente */}
-          <React.Suspense
-            fallback={
-              <Box sx={{ py: 6, textAlign: "center", opacity: 0.7 }}>
-                Preparando formulario…
-              </Box>
-            }
-          >
-            <CustomerCreateForm user={userProp} />
-          </React.Suspense>
+          {/* CustomerCreateForm es un Client Component y ya tiene "use client" en su archivo */}
+          <CustomerCreateForm user={userProp} />
         </Stack>
       </Box>
     </>
