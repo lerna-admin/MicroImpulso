@@ -183,7 +183,7 @@ export function CustomerCreateForm({ user }) {
     .object({
       amount: zod
         .number({ invalid_type_error: "El monto debe ser un número" })
-        .min(50_000, { message: "El monto debe superar los $50.000" })
+        .min(50, { message: "El monto debe superar los $50.000" })
         .max(5_000_000, { message: "El monto no puede superar los 5.000.000" }),
       typePayment: zod.enum(["QUINCENAL", "MENSUAL"], {
         errorMap: () => ({ message: "Debes elegir un tipo de pago" }),
