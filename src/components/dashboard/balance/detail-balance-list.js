@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
-import { closeDay } from "@/app/dashboard/balance/hooks/use-balance";
+import { closeDay, getDailyTraceDetailed } from "@/app/dashboard/balance/hooks/use-balance";
 import { CardHeader, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from "@mui/material";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
@@ -116,6 +116,20 @@ export function DetailBalanceList({ dataBalance, user, filters }) {
 			Cookies.set("isAgentClosed", true);
 		}
 	};
+
+	const handleDownloadDetail = async () => {
+		let urlSeteada = "";
+		try {
+			const { url } = await getDailyTraceDetailed(user.id, selectedDate.format("YYYY-MM-DD"));
+			urlSeteada = url;
+		} catch (error) {
+			setAlertMsg(error.message);
+			setAlertSeverity("error");
+		} finally {
+			window.open(urlSeteada, "_blank", "noopener, noreferrer");
+		}
+	};
+
 	return (
 		<Card variant="outlined">
 			<CardHeader
@@ -163,9 +177,11 @@ export function DetailBalanceList({ dataBalance, user, filters }) {
 								<div>
 									<Typography variant="overline">{`Total $ (#)`}</Typography>
 									<Stack spacing={2} flex flexDirection={"row"} justifyContent={"space-between"}>
-										<Typography variant="h5" alignSelf={"center"}>{parseCurrency(totalAmount)}</Typography>
+										<Typography variant="h5" alignSelf={"center"}>
+											{parseCurrency(totalAmount)}
+										</Typography>
 
-										<Button size="xs" variant="contained" onClick={()=>console.log("Descargar")}>
+										<Button size="xs" variant="contained" onClick={handleDownloadDetail}>
 											Descargar Detalle
 										</Button>
 									</Stack>
