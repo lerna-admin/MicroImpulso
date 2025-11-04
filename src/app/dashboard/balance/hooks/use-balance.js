@@ -12,6 +12,12 @@ export async function getDailyTrace(agentId, date) {
 	return await res.json();
 }
 
+export async function getDailyTraceDetailed(agentId, date) {
+	const res = await fetch(`${BASE_URL}/cash/export-daily-trace/?userId=${agentId}&date=${date}`);
+	if (!res.ok) throw new Error("Error al obtener descarga detalle cierre de ruta");
+	return await res;
+}
+
 export async function closeDay(agentId) {
 	const res = await fetch(`${BASE_URL}/closing/agent/${agentId}/close-day`, {
 		method: "POST",
