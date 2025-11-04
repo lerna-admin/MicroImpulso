@@ -112,38 +112,55 @@ export function CashFlowHeader({ user }) {
 		name: "category",
 	});
 
-	React.useEffect(() => {
-		if (category === "TRANSFERENCIA") {
-			getBranchesById(user.branch.id)
-				.then((resp) => {
-					const { administrator, agents } = resp;
+React.useEffect(() => {
+  if (category === "TRANSFERENCIA") {
+    getBranchesById(user.branch.id)
+      .then((resp) => {
+        const { administrator, agents } = resp;
 
-					if (user.role === ROLES.AGENTE) {
-						setUsuariosOptions([administrator]);
-					} else if (user.role === ROLES.ADMIN) {
-						const agentsFiltered = agents.filter((agent) => agent.role === ROLES.AGENTE);
-						setUsuariosOptions(agentsFiltered);
-					}
-				})
-				.catch((error) => {
-					setAlertMsg(error);
-					setAlertSeverity("error");
-				})
-				.finally(popoverAlert.handleOpen());
-		} else if (category === "PRESTAMO ADMINISTRADOR") {
-			getAllUsers({ role: "ADMIN" })
-				.then((resp) => {
-					const { data } = resp;
-					const filteredAdmins = data.map((item) => ({ id: item.id, name: item.name }));
-					setUsuariosOptions(filteredAdmins);
-				})
-				.catch((error) => {
-					setAlertMsg(error);
-					setAlertSeverity("error");
-				})
-				.finally(popoverAlert.handleOpen());
-		}
-	}, [category]);
+        if (user.role === ROLES.AGENTE) {
+          setUsuariosOptions([administrator]);
+        } else if (user.role === ROLES.ADMIN) {
+          const agentsFiltered = agents.filter((agent) => agent.role === ROLES.AGENTE);
+          setUsuariosOptions(agentsFiltered);
+        }
+      })
+      .catch((error) => {
+        const message =
+          typeof error === "string"
+            ? error
+            : error?.message
+              ? error.message
+              : "Ocurrió un error al obtener la sede";
+        setAlertMsg(message);
+        setAlertSeverity("error");
+      })
+      .finally(() => {
+        popoverAlert.handleOpen();
+      });
+  } else if (category === "PRESTAMO ADMINISTRADOR") {
+    getAllUsers({ role: "ADMIN" })
+      .then((resp) => {
+        const { data } = resp;
+        const filteredAdmins = data.map((item) => ({ id: item.id, name: item.name }));
+        setUsuariosOptions(filteredAdmins);
+      })
+      .catch((error) => {
+        const message =
+          typeof error === "string"
+            ? error
+            : error?.message
+              ? error.message
+              : "Ocurrió un error al obtener los administradores";
+        setAlertMsg(message);
+        setAlertSeverity("error");
+      })
+      .finally(() => {
+        popoverAlert.handleOpen();
+      });
+  }
+}, [category, user]);
+
 
 	const onSubmit = async (dataForm) => {
 		setIsPending(true);
