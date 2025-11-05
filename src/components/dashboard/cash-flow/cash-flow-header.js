@@ -44,8 +44,7 @@ const schema = zod
 	.object({
 		amount: zod
 			.number({ invalid_type_error: "El monto debe ser un número" })
-			.min(1, { message: "El monto es obligatorio" })
-			.min(10_000, { message: "El monto debe superar los $10.000" }),
+			.min(1, { message: "El monto es obligatorio" }),
 		typeMovement: zod.string().min(1, { message: "El tipo de movimiento es obligatorio" }),
 		category: zod.string().min(1, { message: "La categoria es obligatoria" }),
 		transferUser: zod.string().optional(),
