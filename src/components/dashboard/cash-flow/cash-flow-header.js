@@ -117,12 +117,11 @@ React.useEffect(() => {
     getBranchesById(user.branch.id)
       .then((resp) => {
         const { administrator, agents } = resp;
-
         if (user.role === ROLES.AGENTE) {
           setUsuariosOptions([administrator]);
         } else if (user.role === ROLES.ADMIN) {
-          const agentsFiltered = agents.filter((agent) => agent.role === ROLES.AGENTE);
-          setUsuariosOptions(agentsFiltered);
+        //   const agentsFiltered = agents.filter((agent) => agent.role === ROLES.AGENTE);
+          setUsuariosOptions(agents);
         }
       })
       .catch((error) => {
