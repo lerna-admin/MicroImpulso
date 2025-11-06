@@ -57,10 +57,9 @@ const getColorByDaysLeft = (daysLeft) => {
   if (daysLeft <= -2) return "#FF0000"; // Rojo
   if (daysLeft <= 0) return "#FF7F50"; // Naranja
   if (daysLeft <= 3) return "#FFD700"; // Amarillo
-  return ;
 };
 
-export function CustomersTable({ rows, permissions, role, branch }) {
+export function CustomersTable({ rows, permissions, user, role, branch }) {
   const columns = [
     {
       formatter: (row) => (
@@ -142,7 +141,7 @@ export function CustomersTable({ rows, permissions, role, branch }) {
     {
       formatter(row) {
         // Si no hay préstamo, muestra 0
-        return fmtMoney(row?.amountBorrowed ?? 0);
+        return fmtMoney(row?.loanRequest?.requestedAmount ?? 0);
       },
       name: "Prestamo",
       align: "center",
@@ -180,7 +179,7 @@ export function CustomersTable({ rows, permissions, role, branch }) {
       width: "90px",
     },
     {
-      formatter: (row) => <ActionsCell row={row} permissions={permissions} role={role} branch={branch} />,
+      formatter: (row) => <ActionsCell row={row} permissions={permissions} user={user} role={role} branch={branch} />,
       name: "Acciones",
       hideName: true,
       width: "70px",
@@ -218,7 +217,7 @@ function ShowAlert({ endDateLoanRequest }) {
   return daysLeft < 13 ? <BellRingingIcon size={18} weight="fill" color={color} /> : null;
 }
 
-export function ActionsCell({ row, permissions, role, branch }) {
+export function ActionsCell({ row, permissions, user, role, branch }) {
   const router = useRouter();
   const popover = usePopover();
   const popoverAlert = usePopover();
@@ -341,10 +340,11 @@ export function ActionsCell({ row, permissions, role, branch }) {
     setIsPending(true);
     try {
       await createTransaction({
+        userId: user.id,
         loanRequestId: row.loanRequest.id,
         transactionType: "disbursement",
         amount: row?.loanRequest?.requestedAmount ?? 0,
-        reference: "Desembolso cliente",
+        reference: `Desembolso cliente realizado por ${user.name}`,
       });
       setAlertMsg("¡Desembolsado exitosamente!");
       setAlertSeverity("success");

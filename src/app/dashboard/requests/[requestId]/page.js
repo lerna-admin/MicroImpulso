@@ -22,6 +22,7 @@ import { ExportComponent } from "@/components/dashboard/export/export-component"
 import { HistoryPayments } from "@/components/dashboard/transactions/history-payment";
 
 import { getRequestById } from "../hooks/use-requests";
+import { getUser } from "@/lib/custom-auth/server";
 
 export const metadata = { title: `Detalle solicitud | Dashboard | ${appConfig.name}` };
 
@@ -45,6 +46,10 @@ function calculatePayments(transactions) {
 export default async function Page({ params }) {
 	const { requestId } = params;
 	const { client, transactions, requestedAmount, amount, notes, status } = await getRequestById(requestId);
+
+	const {
+		data: { user },
+	} = await getUser();
 
 	const detailRowsToExport = transactions.map((item) => ({
 		Fecha: item.date,
@@ -176,6 +181,7 @@ export default async function Page({ params }) {
 					>
 						<Stack spacing={4}>
 							<HistoryPayments
+								user={user}
 								requestedAmount={requestedAmount}
 								amountPaid={calculateAmountPaid(transactions)}
 								amountToPay={amount}

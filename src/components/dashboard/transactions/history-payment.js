@@ -101,6 +101,7 @@ function createSchema(amountToPay, amountPaid) {
 }
 
 export function HistoryPayments({
+	user,
 	amountPaid,
 	payments = [],
 	requestedAmount,
@@ -108,6 +109,7 @@ export function HistoryPayments({
 	amountToPay,
 	requestId,
 }) {
+
 	const [alertMsg, setAlertMsg] = React.useState("");
 	const [alertSeverity, setAlertSeverity] = React.useState("success");
 	const popover = usePopover();
@@ -165,10 +167,11 @@ export function HistoryPayments({
 	const onSubmit = React.useCallback(async ({ amount }) => {
 		try {
 			const data = {
+				userId: user.id,
 				loanRequestId: requestId,
 				transactionType: "repayment",
 				amount: Number.parseInt(amount),
-				reference: "Abono cliente",
+				reference: `Abono cliente recibido por ${user.name}`,
 			};
 
 			await createTransaction(data);
@@ -191,7 +194,7 @@ export function HistoryPayments({
 				loanRequestId: requestId,
 				transactionType: "repayment",
 				amount: Number.parseInt(montoARenovar),
-				reference: "Abono cliente",
+				reference: `Abono cliente recibido por ${user.name}`,
 			};
 
 			await createTransaction(data);

@@ -72,7 +72,6 @@ export async function getAllCustomersByQuery(query) {
  */
 export async function getCustomerById(id) {
 	const res = await fetch(`${BASE_URL}/clients/${id}`);
-	console.log(res)
 	if (!res.ok) throw new Error("Cliente no encontrado");
 	return res.json();
 }
