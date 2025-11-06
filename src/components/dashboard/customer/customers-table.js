@@ -141,7 +141,7 @@ export function CustomersTable({ rows, permissions, user, role, branch }) {
     {
       formatter(row) {
         // Si no hay préstamo, muestra 0
-        return fmtMoney(row?.amountBorrowed ?? 0);
+        return fmtMoney(row?.loanRequest.requestedAmount ?? 0);
       },
       name: "Prestamo",
       align: "center",
