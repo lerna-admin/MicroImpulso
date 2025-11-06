@@ -181,7 +181,7 @@ export default async function Page({ params }) {
 					>
 						<Stack spacing={4}>
 							<HistoryPayments
-								userId={user.id}
+								user={user}
 								requestedAmount={requestedAmount}
 								amountPaid={calculateAmountPaid(transactions)}
 								amountToPay={amount}
