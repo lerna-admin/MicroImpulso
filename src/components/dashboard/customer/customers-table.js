@@ -57,7 +57,6 @@ const getColorByDaysLeft = (daysLeft) => {
   if (daysLeft <= -2) return "#FF0000"; // Rojo
   if (daysLeft <= 0) return "#FF7F50"; // Naranja
   if (daysLeft <= 3) return "#FFD700"; // Amarillo
-  return ;
 };
 
 export function CustomersTable({ rows, permissions, role, branch }) {

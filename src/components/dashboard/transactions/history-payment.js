@@ -101,6 +101,7 @@ function createSchema(amountToPay, amountPaid) {
 }
 
 export function HistoryPayments({
+	userId,
 	amountPaid,
 	payments = [],
 	requestedAmount,
@@ -165,6 +166,7 @@ export function HistoryPayments({
 	const onSubmit = React.useCallback(async ({ amount }) => {
 		try {
 			const data = {
+				userId: userId,
 				loanRequestId: requestId,
 				transactionType: "repayment",
 				amount: Number.parseInt(amount),
