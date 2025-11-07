@@ -49,6 +49,18 @@ export default async function Page({ searchParams }) {
 		noPayment30,
 	} = await getCustomers(user.role);
 
+	if(role === ROLES.AGENTE){
+		let temp = [];
+			for(let i=0; i<customers.length;i++){
+				if (customers[i].loanRequest.id == user.id){
+					temp.push(customers[i]);
+				}
+			}
+
+		customers = temp;
+	}
+	
+
 	const { data } = await getAllUsers({ branchId: user.branchId, role: "AGENT" });
 
 	const statistics = {
