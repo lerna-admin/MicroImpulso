@@ -41,7 +41,7 @@ export default async function Page({ searchParams }) {
 		page: customersPage,
 		limit: customerLimit,
 		totalItems: customerTotalItems,
-		remainingTotal,
+		totalActiveAmountBorrowed,
 		totalActiveRepayment,
 		activeClientsCount,
 		mora15,
@@ -49,29 +49,16 @@ export default async function Page({ searchParams }) {
 		noPayment30,
 	} = await getCustomers(user.role);
 
-	if(user.role === ROLES.AGENTE){
-		let temp = [];
-			for(let i=0; i<customers.length;i++){
-				if (customers[i].loanRequest.id == user.id){
-					temp.push(customers[i]);
-				}
-			}
-
-		customers = temp;
-	}
-	
-
 	const { data } = await getAllUsers({ branchId: user.branchId, role: "AGENT" });
 
 	const statistics = {
-		remainingTotal,
+		totalActiveAmountBorrowed,
 		totalActiveRepayment,
 		activeClientsCount,
 		mora15,
 		critical20,
 		noPayment30,
 	};
-
 
 	const branches = await getAllBranches();
 
@@ -101,7 +88,7 @@ export default async function Page({ searchParams }) {
 						/>
 						<Divider />
 						<Box sx={{ overflowX: "auto" }}>
-							<CustomersTable rows={customers} permissions={permissions} user={user}  role={user.role} branch={user.branch.id} />
+							<CustomersTable rows={customers} permissions={permissions} role={user.role} branch={user.branch.id} />
 						</Box>
 						<Divider />
 						<CustomersPagination

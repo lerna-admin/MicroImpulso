@@ -54,6 +54,52 @@ export async function getAllCustomersByQuery(query) {
 	return await res.json();
 }
 
+
+
+/**
+ *
+ * @returns {Client[]}
+ */
+export async function getAllCustomersByAgent({
+	page = 1,
+	limit = 10,
+	status = "",
+	type = "",
+	paymentDay = "",
+	name = "",
+	branch = "",
+	agent = "",
+}) {
+	const params = new URLSearchParams();
+
+	params.append("page", page.toString());
+	params.append("limit", limit.toString());
+
+	if (status) params.append("status", status);
+	if (type) params.append("type", type);
+	if (paymentDay) params.append("paymentDay", paymentDay);
+	if (name) params.append("name", name);
+	if (branch) params.append("branch", branch);
+	if (agent) params.append("agent", agent);
+
+	const url = `${BASE_URL}/clients/${agent}?${params.toString()}`;
+	const res = await fetch(url);
+
+	if (!res.ok) throw new Error("Error al obtener clientes");
+	return await res.json();
+}
+
+export async function getAllCustomersByQuery(query) {
+	const params = new URLSearchParams();
+
+	params.append("q", query.toString());
+
+	const url = `${BASE_URL}/clients/query?${params.toString()}`;
+	const res = await fetch(url);
+
+	if (!res.ok) throw new Error("Error al obtener clientes");
+	return await res.json();
+}
 // /**
 //  *
 //  * @returns {Client[]}
