@@ -345,6 +345,7 @@ export function ActionsCell({ row, permissions, user, role, branch }) {
 		if (!hasLoan || !row?.loanRequest?.id) return;
 		setIsPending(true);
 		try {
+      console.log("USER:", user)
 			await createTransaction({
 				userId: user.id,
 				loanRequestId: row.loanRequest.id,
