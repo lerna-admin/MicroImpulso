@@ -62,6 +62,11 @@ export default async function Page({ searchParams }) {
 
 	const branches = await getAllBranches();
 
+	console.log(customers);
+	console.log(user);
+	
+	
+
 	return (
 		<Box
 			sx={{
@@ -88,7 +93,7 @@ export default async function Page({ searchParams }) {
 						/>
 						<Divider />
 						<Box sx={{ overflowX: "auto" }}>
-							<CustomersTable rows={customers} permissions={permissions} role={user.role} branch={user.branch.id} />
+							<CustomersTable rows={customers} permissions={permissions} user={user} role={user.role} branch={user.branch.id} />
 						</Box>
 						<Divider />
 						<CustomersPagination
