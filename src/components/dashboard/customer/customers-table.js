@@ -220,7 +220,6 @@ function ShowAlert({ endDateLoanRequest }) {
 
 export function ActionsCell({ row, permissions, user, role, branch }) {
 
-  console.log(row);
   
 	const router = useRouter();
 	const popover = usePopover();
@@ -306,6 +305,8 @@ export function ActionsCell({ row, permissions, user, role, branch }) {
 	};
 
 	const handleApproveLoanRequest = async () => {
+      console.log(row);
+
 		if (!hasLoan || !row?.loanRequest?.id) return;
 		setIsPending(true);
 		try {
@@ -340,6 +341,7 @@ export function ActionsCell({ row, permissions, user, role, branch }) {
 	};
 
 	const handleFundedLoanRequest = async () => {
+    console.log(row)
 		if (!hasLoan || !row?.loanRequest?.id) return;
 		setIsPending(true);
 		try {
