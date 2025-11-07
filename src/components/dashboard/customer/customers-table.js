@@ -220,6 +220,8 @@ function ShowAlert({ endDateLoanRequest }) {
 
 export function ActionsCell({ row, permissions, user, role, branch }) {
 
+  console.log(row);
+  
 	const router = useRouter();
 	const popover = usePopover();
 	const popoverAlert = usePopover();
