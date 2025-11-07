@@ -469,12 +469,7 @@ export function ActionsCell({ row, permissions, user, role, branch }) {
 				</MenuItem>
 
 				<MenuItem
-					disabled={
-						user.role === ROLES.AGENTE ||
-						(row.loanRequest && row.loanRequest.status === "funded") ||
-						(row.loanRequest && row.loanRequest.status === "completed") ||
-						(row.loanRequest && row.loanRequest.status === "rejected")
-					}
+					
 					onClick={handleEditRequest}
 				>
 					<Typography>Editar solicitud</Typography>
