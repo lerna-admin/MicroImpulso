@@ -52,7 +52,7 @@ export function CustomerStatistics({ statistics, filters = {} }) {
 					style: "currency",
 					currency: "COP",
 					minimumFractionDigits: 0,
-				}).format(statistics.totalActiveAmountBorrowed - statistics.totalActiveRepayment),
+				}).format(statistics.remainangTotal),
 			},
 			{ id: 4, value: statistics.activeClientsCount },
 			{ id: 3, value: statistics.critical20 },
