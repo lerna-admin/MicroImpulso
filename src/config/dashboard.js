@@ -1,4 +1,5 @@
 import { ROLES } from "@/constants/roles";
+
 import { paths } from "@/paths";
 
 export const dashboardConfig = {
@@ -286,9 +287,7 @@ export const dashboardConfig = {
 					title: "Configuración",
 					icon: "gear",
 					matcher: { type: "startsWith", href: "/dashboard/permissions" },
-					items: [
-						{ key: "permissions", title: "Permisos", href: paths.dashboard.configuration.permissions },
-					],
+					items: [{ key: "permissions", title: "Permisos", href: paths.dashboard.configuration.permissions }],
 				},
 			],
 		},

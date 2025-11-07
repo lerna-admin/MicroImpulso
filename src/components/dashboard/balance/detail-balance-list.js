@@ -15,6 +15,7 @@ import ListItem from "@mui/material/ListItem";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 import { DatePicker } from "@mui/x-date-pickers";
+import { FileArrowDown as FileArrowDownIcon } from "@phosphor-icons/react/dist/ssr";
 import Cookies from "js-cookie";
 
 import { paths } from "@/paths";
@@ -181,7 +182,12 @@ export function DetailBalanceList({ dataBalance, user, filters }) {
 											{parseCurrency(totalAmount)}
 										</Typography>
 
-										<Button size="xs" variant="contained" onClick={handleDownloadDetail}>
+										<Button
+											size="xs"
+											variant="contained"
+											onClick={handleDownloadDetail}
+											startIcon={<FileArrowDownIcon />}
+										>
 											Descargar Detalle
 										</Button>
 									</Stack>

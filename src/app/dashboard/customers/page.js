@@ -41,7 +41,7 @@ export default async function Page({ searchParams }) {
 		page: customersPage,
 		limit: customerLimit,
 		totalItems: customerTotalItems,
-		totalActiveAmountBorrowed,
+		remainingTotal,
 		totalActiveRepayment,
 		activeClientsCount,
 		mora15,
@@ -52,13 +52,14 @@ export default async function Page({ searchParams }) {
 	const { data } = await getAllUsers({ branchId: user.branchId, role: "AGENT" });
 
 	const statistics = {
-		totalActiveAmountBorrowed,
+		remainingTotal,
 		totalActiveRepayment,
 		activeClientsCount,
 		mora15,
 		critical20,
 		noPayment30,
 	};
+
 
 	const branches = await getAllBranches();
 

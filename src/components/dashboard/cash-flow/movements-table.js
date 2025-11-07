@@ -22,6 +22,8 @@ import OutlinedInput from "@mui/material/OutlinedInput";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 import { DatePicker } from "@mui/x-date-pickers";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { DotsThree as DotsThreeIcon } from "@phosphor-icons/react/dist/ssr";
 import { MagnifyingGlass as MagnifyingGlassIcon } from "@phosphor-icons/react/dist/ssr/MagnifyingGlass";
 
@@ -177,7 +179,10 @@ export function MovementsTable({ movementsData, filters }) {
 						});
 					}}
 				/>
-				<DatePicker name="movementDate" value={selectedDate} onChange={handleFilterChange} />
+
+				<LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="es">
+					<DatePicker name="movementDate" value={selectedDate} onChange={handleFilterChange} />
+				</LocalizationProvider>
 			</Stack>
 			<Divider />
 			<Box sx={{ overflowX: "auto" }}>

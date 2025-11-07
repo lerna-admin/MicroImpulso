@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
-import { createCashMovement } from "@/app/dashboard/cash_flow/hooks/use-cash-flow";
+import { createCashMovement, getDailyStatisticsDetailed } from "@/app/dashboard/cash_flow/hooks/use-cash-flow";
 import { getBranchesById } from "@/app/dashboard/configuration/branch-managment/hooks/use-branches";
 import { getAllUsers } from "@/app/dashboard/users/hooks/use-users";
 import { ROLES } from "@/constants/roles";
@@ -28,6 +28,7 @@ import {
 import Grid from "@mui/material/Grid2";
 import {
 	Building as BuildingIcon,
+	FileArrowDown as FileArrowDownIcon,
 	Plus as PlusIcon,
 	TrendDown as TrendDownIcon,
 	TrendUp as TrendUpIcon,
@@ -60,7 +61,10 @@ const schema = zod
 		}
 	});
 
-export function CashFlowHeader({ user }) {
+export function CashFlowHeader({ user, filters }) {
+	const today = dayjs().format("YYYY-MM-DD");
+	const [selectedDate, setSelectedDate] = React.useState(today);
+
 	const popover = usePopover();
 	const router = useRouter();
 
@@ -111,54 +115,54 @@ export function CashFlowHeader({ user }) {
 		name: "category",
 	});
 
-React.useEffect(() => {
-  if (category === "TRANSFERENCIA") {
-    getBranchesById(user.branch.id)
-      .then((resp) => {
-        const { administrator, agents } = resp;
-        if (user.role === ROLES.AGENTE) {
-          setUsuariosOptions([administrator]);
-        } else if (user.role === ROLES.ADMIN) {
-        //   const agentsFiltered = agents.filter((agent) => agent.role === ROLES.AGENTE);
-          setUsuariosOptions(agents);
-        }
-      })
-      .catch((error) => {
-        const message =
-          typeof error === "string"
-            ? error
-            : error?.message
-              ? error.message
-              : "Ocurrió un error al obtener la sede";
-        setAlertMsg(message);
-        setAlertSeverity("error");
-      })
-      .finally(() => {
-        popoverAlert.handleOpen();
-      });
-  } else if (category === "PRESTAMO ADMINISTRADOR") {
-    getAllUsers({ role: "ADMIN" })
-      .then((resp) => {
-        const { data } = resp;
-        const filteredAdmins = data.map((item) => ({ id: item.id, name: item.name }));
-        setUsuariosOptions(filteredAdmins);
-      })
-      .catch((error) => {
-        const message =
-          typeof error === "string"
-            ? error
-            : error?.message
-              ? error.message
-              : "Ocurrió un error al obtener los administradores";
-        setAlertMsg(message);
-        setAlertSeverity("error");
-      })
-      .finally(() => {
-        popoverAlert.handleOpen();
-      });
-  }
-}, [category, user]);
+	React.useEffect(() => {
+		if (!filters.date) return;
+		setSelectedDate(filters.date);
+	}, [filters]);
 
+	React.useEffect(() => {
+		if (category === "TRANSFERENCIA") {
+			getBranchesById(user.branch.id)
+				.then((resp) => {
+					const { administrator, agents } = resp;
+					if (user.role === ROLES.AGENTE) {
+						setUsuariosOptions([administrator]);
+					} else if (user.role === ROLES.ADMIN) {
+						//   const agentsFiltered = agents.filter((agent) => agent.role === ROLES.AGENTE);
+						setUsuariosOptions(agents);
+					}
+				})
+				.catch((error) => {
+					const message =
+						typeof error === "string" ? error : error?.message ? error.message : "Ocurrió un error al obtener la sede";
+					setAlertMsg(message);
+					setAlertSeverity("error");
+				})
+				.finally(() => {
+					popoverAlert.handleOpen();
+				});
+		} else if (category === "PRESTAMO ADMINISTRADOR") {
+			getAllUsers({ role: "ADMIN" })
+				.then((resp) => {
+					const { data } = resp;
+					const filteredAdmins = data.map((item) => ({ id: item.id, name: item.name }));
+					setUsuariosOptions(filteredAdmins);
+				})
+				.catch((error) => {
+					const message =
+						typeof error === "string"
+							? error
+							: error?.message
+								? error.message
+								: "Ocurrió un error al obtener los administradores";
+					setAlertMsg(message);
+					setAlertSeverity("error");
+				})
+				.finally(() => {
+					popoverAlert.handleOpen();
+				});
+		}
+	}, [category, user]);
 
 	const onSubmit = async (dataForm) => {
 		setIsPending(true);
@@ -187,6 +191,19 @@ React.useEffect(() => {
 		}
 	};
 
+	const handleDownloadDetail = async () => {
+		let urlSeteada = "";
+		try {
+			const { url } = await getDailyStatisticsDetailed(user.id, selectedDate);
+			urlSeteada = url;
+		} catch (error) {
+			setAlertMsg(error.message);
+			setAlertSeverity("error");
+		} finally {
+			window.open(urlSeteada, "_blank", "noopener, noreferrer");
+		}
+	};
+
 	return (
 		<React.Fragment>
 			<Stack spacing={3}>
@@ -201,6 +218,15 @@ React.useEffect(() => {
 							<BuildingIcon />
 							<Typography variant="body2">{`Sede ${user.branch.name}`}</Typography>
 						</Stack>
+
+						<Button
+							variant="contained"
+							color="primary"
+							startIcon={<FileArrowDownIcon />}
+							onClick={handleDownloadDetail}
+						>
+							Descargar Detalle
+						</Button>
 
 						{/* Botón de acción */}
 						<Button color="secondary" startIcon={<PlusIcon />} variant="contained" onClick={popover.handleOpen}>
@@ -381,7 +407,11 @@ React.useEffect(() => {
 											render={({ field }) => (
 												<FormControl fullWidth error={Boolean(errors.transferUser)} disabled={!typeMovement}>
 													<InputLabel id="transferUser">
-														{user.role === ROLES.AGENTE || user.role === ROLES.GERENTE || category === "PRESTAMO ADMINISTRADOR"? "Administrador" : "Agente"}
+														{user.role === ROLES.AGENTE ||
+														user.role === ROLES.GERENTE ||
+														category === "PRESTAMO ADMINISTRADOR"
+															? "Administrador"
+															: "Agente"}
 													</InputLabel>
 													<Select labelId="transferUser" {...field}>
 														{usuariosOptions.map((option) => (

@@ -8,11 +8,16 @@ import { ArrowLeft as ArrowLeftIcon } from "@phosphor-icons/react/dist/ssr/Arrow
 import { appConfig } from "@/config/app";
 import { paths } from "@/paths";
 import { getUser } from "@/lib/custom-auth/server";
-import { RequestCreateForm } from "@/components/dashboard/request/request-create-form";
+import { RequestEditForm } from "@/components/dashboard/request/request-edit-form";
 
-export const metadata = { title: `Crear | Solicitud | Dashboard | ${appConfig.name}` };
+import { getRequestById } from "../../hooks/use-requests";
 
-export default async function Page() {
+export const metadata = { title: `Editar | Solicitud | Dashboard | ${appConfig.name}` };
+
+export default async function Page({ params }) {
+	const { requestId } = params;
+	const { id, amount, paymentDay, type, endDateAt, client, agent } = await getRequestById(requestId);
+
 	const {
 		data: { user },
 	} = await getUser();
@@ -40,7 +45,7 @@ export default async function Page() {
 						</Link>
 					</div>
 				</Stack>
-				<RequestCreateForm user={user} />
+				<RequestEditForm user={user} dataRequest={{ id, amount, paymentDay, type, endDateAt, client, agent }} />
 			</Stack>
 		</Box>
 	);
