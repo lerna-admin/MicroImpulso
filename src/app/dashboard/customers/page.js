@@ -16,7 +16,7 @@ import { CustomersSelectionProvider } from "@/components/dashboard/customer/cust
 import { CustomersTable } from "@/components/dashboard/customer/customers-table";
 
 import { getAllBranches } from "../configuration/branch-managment/hooks/use-branches";
-import { getAllCustomers } from "./hooks/use-customers";
+import { getAllCustomers, getAllCustomersByAgent } from "./hooks/use-customers";
 
 export const metadata = { title: `Clientes | Dashboard | ${appConfig.name}` };
 
@@ -30,7 +30,7 @@ export default async function Page({ searchParams }) {
 	const { permissions } = user;
 
 	const getCustomers = (role) => {
-		if (role === ROLES.AGENTE) return getAllCustomers({ page, limit, status, type, paymentDay, agent: user.id });
+		if (role === ROLES.AGENTE) return getAllCustomersByAgent({ page, limit, status, type, paymentDay, agent: user.id });
 		if (role === ROLES.GERENTE) return getAllCustomers({ page, limit, status, type, paymentDay, branch, agent });
 		if (role === ROLES.ADMIN)
 			return getAllCustomers({ page, limit, status, type, paymentDay, branch: user.branchId, agent });
