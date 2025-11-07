@@ -2,17 +2,11 @@
 
 import * as React from "react";
 import RouterLink from "next/link";
-import {
-	Link,
-	Stack,
-} from "@mui/material";
+import { Link, Stack } from "@mui/material";
 import Box from "@mui/material/Box";
 import Chip from "@mui/material/Chip";
 import Typography from "@mui/material/Typography";
-import {
-	ExclamationMark as ExclamationMarkIcon,
-	XCircle as XCircleIcon,
-} from "@phosphor-icons/react/dist/ssr";
+import { ExclamationMark as ExclamationMarkIcon, XCircle as XCircleIcon } from "@phosphor-icons/react/dist/ssr";
 import { CheckCircle as CheckCircleIcon } from "@phosphor-icons/react/dist/ssr/CheckCircle";
 import { Clock as ClockIcon } from "@phosphor-icons/react/dist/ssr/Clock";
 
@@ -127,5 +121,3 @@ export function RequestsTable({ rows }) {
 		</React.Fragment>
 	);
 }
-
-

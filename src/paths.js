@@ -63,6 +63,7 @@ export const paths = {
 		},
 		requests: {
 			create: "/dashboard/requests/create",
+			edit: (orderId) => `/dashboard/requests/edit/${orderId}`,
 			details: (orderId) => `/dashboard/requests/${orderId}`,
 			list: "/dashboard/requests",
 			preview: (orderId) => `/dashboard/requests?previewId=${orderId}`,

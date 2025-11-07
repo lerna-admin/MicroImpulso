@@ -67,7 +67,7 @@ export function CashFlowSummary({ assets }) {
 										currency: "COP",
 										minimumFractionDigits: 0,
 									}).format(asset.value)}
-									{asset.label === "Renovados" || asset.label === "Nuevos" ? ` (${asset.amount})` : null}
+									{asset.label === "Renovados" || asset.label === "Préstamos" || asset.label === "Nuevos" ? ` (${asset.amount})` : null}
 								</Typography>
 							</Stack>
 						</React.Fragment>

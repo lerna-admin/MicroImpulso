@@ -22,6 +22,12 @@ export async function getCashMovements(
 	return await res.json();
 }
 
+export async function getDailyStatisticsDetailed(id, date) {
+	const res = await fetch(`${BASE_URL}/cash/export-statistics?userId=${id}&date=${date}`);
+	if (!res.ok) throw new Error("Error al obtener descarga detalle");
+	return await res;
+}
+
 export async function deleteCashMovement(id) {
 	const res = await fetch(`${BASE_URL}/cash/${id}`, {
 		method: "DELETE",

@@ -41,7 +41,7 @@ export default async function Page({ searchParams }) {
 		page: customersPage,
 		limit: customerLimit,
 		totalItems: customerTotalItems,
-		remainangTotal,
+		remainingTotal,
 		totalActiveRepayment,
 		activeClientsCount,
 		mora15,
@@ -52,7 +52,7 @@ export default async function Page({ searchParams }) {
 	const { data } = await getAllUsers({ branchId: user.branchId, role: "AGENT" });
 
 	const statistics = {
-		remainangTotal,
+		remainingTotal,
 		totalActiveRepayment,
 		activeClientsCount,
 		mora15,

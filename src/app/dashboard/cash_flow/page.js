@@ -1,6 +1,6 @@
 import * as React from "react";
 import { getCashFlowSummary, getCashMovements } from "@/app/dashboard/cash_flow/hooks/use-cash-flow";
-import { Card, Chip, Divider } from "@mui/material";
+import { Button, Card, Chip, Divider } from "@mui/material";
 import Box from "@mui/material/Box";
 import Grid from "@mui/material/Grid2";
 import Stack from "@mui/material/Stack";
@@ -26,7 +26,6 @@ export default async function Page({ searchParams }) {
 
 	const assets = await getCashFlowSummary(user.id, date);
 
-	// esta deberia mandarsele el id del user para que asi mismo me traiga los datos del mismo
 	const {
 		data: movementsData,
 		total: movementsTotalItems,
@@ -44,9 +43,9 @@ export default async function Page({ searchParams }) {
 			}}
 		>
 			<Stack spacing={10}>
-				<CashFlowHeader user={user} />
+				<CashFlowHeader user={user} filters={{date}} />
 				<Grid container spacing={4}>
-					<Grid size={12} justifyContent={"flex-end"}>
+					<Grid size={12} display={"flex"} justifyContent={"space-between"}>
 						<Chip
 							label={
 								date === undefined

@@ -52,7 +52,7 @@ export function CustomerStatistics({ statistics, filters = {} }) {
 					style: "currency",
 					currency: "COP",
 					minimumFractionDigits: 0,
-				}).format(statistics.remainangTotal),
+				}).format(statistics.remainingTotal),
 			},
 			{ id: 4, value: statistics.activeClientsCount },
 			{ id: 3, value: statistics.critical20 },
