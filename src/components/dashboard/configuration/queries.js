@@ -95,7 +95,9 @@ export function Queries({ role }) {
 		if (!customerSelected) return;
 		const customer = await getCustomerById(customerSelected.id);
 		const allRequests = await getAllRequestsByCustomerId(customerSelected.id);
-
+		console.log(customer);
+		console.log(allRequests);
+		
 		setCustomer(customer);
 		setAllRequestByCustomer(allRequests);
 	};
@@ -224,7 +226,7 @@ export function Queries({ role }) {
 							</Card>
 						)}
 
-						{role !== ROLES.AGENTE && customer !== null ? (
+						{customer === null ? null : (
 							<Card>
 								<CardHeader
 									avatar={
@@ -257,7 +259,7 @@ export function Queries({ role }) {
 									</Card>
 								</CardContent>
 							</Card>
-						) : null}
+						)}
 					</Stack>
 				</Grid>
 			</Grid>
