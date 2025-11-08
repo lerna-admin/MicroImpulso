@@ -124,7 +124,7 @@ export function RequestCreateForm({ user }) {
 	const fetchOptions = async (query) => {
 		setLoading(true);
 		try {
-			const { data } = await getAllCustomers({ name: query, u_id: user.id });
+			const { data } = await getAllCustomers({ name: query, u_id: user.id, distinct: true });
 			const dataFormatted = data.map(({ client }) => ({ label: client.name, id: client.id }));
 			setOptions(dataFormatted);
 		} catch (error) {
