@@ -122,6 +122,7 @@ export function CustomerCreateForm({ user }) {
     // Cliente
     countryIso2: DEFAULT_COUNTRY,
     name: "",
+    city: "",
     email: "",
     localPhone: "",
     localPhone2: "",
@@ -275,6 +276,7 @@ export function CustomerCreateForm({ user }) {
     const requiredFields = [
       { key: "countryIso2", label: "País" },
       { key: "name", label: "Nombre completo" },
+      { key: "city", label: "Ciudad" },
       { key: "email", label: "Correo" },
       { key: "localPhone", label: "Número de celular" },
       { key: "documentType", label: "Tipo de documento" },
@@ -333,6 +335,7 @@ export function CustomerCreateForm({ user }) {
 
     const bodyCustomer = {
       name: values.name,
+      city: values.city,
       email: values.email,
       phone,
       phone2,
@@ -473,6 +476,21 @@ export function CustomerCreateForm({ user }) {
                         ))}
                       </Select>
                       {errors.countryIso2 ? <FormHelperText>{errors.countryIso2.message}</FormHelperText> : null}
+                    </FormControl>
+                  )}
+                />
+              </Grid>
+
+              {/* Ciudad */}
+              <Grid size={{ md: 6, xs: 12 }}>
+                <Controller
+                  control={control}
+                  name="city"
+                  render={({ field }) => (
+                    <FormControl error={Boolean(errors.name)} fullWidth>
+                      <InputLabel required>Ciudad</InputLabel>
+                      <OutlinedInput {...field} />
+                      {errors.name ? <FormHelperText>{errors.name.message}</FormHelperText> : null}
                     </FormControl>
                   )}
                 />

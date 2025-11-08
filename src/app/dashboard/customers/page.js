@@ -29,13 +29,6 @@ export default async function Page({ searchParams }) {
 
 	const { permissions } = user;
 
-	const getCustomers = (role) => {
-		if (role === ROLES.AGENTE) return getAllCustomers({ page, limit, status, type, paymentDay, agent: user.id });
-		if (role === ROLES.GERENTE) return getAllCustomers({ page, limit, status, type, paymentDay, branch, agent });
-		if (role === ROLES.ADMIN)
-			return getAllCustomers({ page, limit, status, type, paymentDay, branch: user.branchId, agent });
-	};
-
 	const {
 		data: customers,
 		page: customersPage,
@@ -47,7 +40,7 @@ export default async function Page({ searchParams }) {
 		mora15,
 		critical20,
 		noPayment30,
-	} = await getCustomers(user.role);
+	} = await getAllCustomers({ page, limit, status, type, paymentDay, branch, agent, u_id: user.id });
 
 	const { data } = await getAllUsers({ branchId: user.branchId, role: "AGENT" });
 
@@ -61,9 +54,6 @@ export default async function Page({ searchParams }) {
 	};
 
 	const branches = await getAllBranches();
-
-	console.log(customers);
-	
 
 	return (
 		<Box
@@ -91,7 +81,13 @@ export default async function Page({ searchParams }) {
 						/>
 						<Divider />
 						<Box sx={{ overflowX: "auto" }}>
-							<CustomersTable rows={customers} permissions={permissions} user={user} role={user.role} branch={user.branch.id} />
+							<CustomersTable
+								rows={customers}
+								permissions={permissions}
+								user={user}
+								role={user.role}
+								branch={user.branch.id}
+							/>
 						</Box>
 						<Divider />
 						<CustomersPagination

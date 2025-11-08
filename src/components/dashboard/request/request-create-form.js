@@ -31,13 +31,6 @@ import { dayjs } from "@/lib/dayjs";
 import { usePopover } from "@/hooks/use-popover";
 import { NotificationAlert } from "@/components/widgets/notifications/notification-alert";
 
-const determinarAgent = (user) => {
-	if (user.role === "AGENT") {
-		return user.id;
-	}
-	return null;
-};
-
 export function RequestCreateForm({ user }) {
 	const popoverAlert = usePopover();
 	const [alertMsg, setAlertMsg] = React.useState("");
@@ -339,30 +332,35 @@ export function RequestCreateForm({ user }) {
 										)}
 									/>
 								</Grid>
-								<Grid
-									size={{
-										md: 6,
-										xs: 12,
-									}}
-								>
-									<Controller
-										control={control}
-										name="selectedAgent"
-										render={({ field }) => (
-											<FormControl error={Boolean(errors.selectedAgent)} fullWidth>
-												<InputLabel>Agente</InputLabel>
-												<Select {...field}>
-													{usuariosOptions.map((option) => (
-														<MenuItem key={option.id} value={option.id.toString()}>
-															{option.name}
-														</MenuItem>
-													))}
-												</Select>
-												{errors.selectedAgent ? <FormHelperText>{errors.selectedAgent.message}</FormHelperText> : null}
-											</FormControl>
-										)}
-									/>
-								</Grid>
+
+								{user.role === ROLES.ADMIN ? (
+									<Grid
+										size={{
+											md: 6,
+											xs: 12,
+										}}
+									>
+										<Controller
+											control={control}
+											name="selectedAgent"
+											render={({ field }) => (
+												<FormControl error={Boolean(errors.selectedAgent)} fullWidth>
+													<InputLabel>Agente</InputLabel>
+													<Select {...field}>
+														{usuariosOptions.map((option) => (
+															<MenuItem key={option.id} value={option.id.toString()}>
+																{option.name}
+															</MenuItem>
+														))}
+													</Select>
+													{errors.selectedAgent ? (
+														<FormHelperText>{errors.selectedAgent.message}</FormHelperText>
+													) : null}
+												</FormControl>
+											)}
+										/>
+									</Grid>
+								) : null}
 							</Grid>
 						)}
 					</Stack>

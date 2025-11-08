@@ -85,6 +85,15 @@ export async function updateRequest(data, id) {
 	return await res.json();
 }
 
+export async function sendContractRequest(id) {
+	const res = await fetch(`${BASE_URL}/send-contract/${id}`, {
+		method: "POST",
+		headers: { "Content-Type": "application/json" },
+	});
+	if (!res.ok) throw new Error("Error al enviar contrato de solicitud");
+	return await res.json();
+}
+
 export async function renewRequest(data, id) {
 	const res = await fetch(`${BASE_URL}/loan-request/${id}/renew`, {
 		method: "POST",

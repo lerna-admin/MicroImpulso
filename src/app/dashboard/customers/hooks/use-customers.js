@@ -22,6 +22,7 @@ export async function getAllCustomers({
 	name = "",
 	branch = "",
 	agent = "",
+	u_id = ""
 }) {
 	const params = new URLSearchParams();
 
@@ -34,6 +35,7 @@ export async function getAllCustomers({
 	if (name) params.append("name", name);
 	if (branch) params.append("branch", branch);
 	if (agent) params.append("agent", agent);
+	if (u_id) params.append("u_id", u_id);
 
 	const url = `${BASE_URL}/clients?${params.toString()}`;
 	const res = await fetch(url);

@@ -3,7 +3,7 @@
 import * as React from "react";
 import RouterLink from "next/link";
 import { useRouter } from "next/navigation";
-import { renewRequest, updateRequest } from "@/app/dashboard/requests/hooks/use-requests";
+import { renewRequest, sendContractRequest, updateRequest } from "@/app/dashboard/requests/hooks/use-requests";
 import { createTransaction } from "@/app/dashboard/transactions/hooks/use-transactions";
 import { getAllUsers } from "@/app/dashboard/users/hooks/use-users";
 import { deleteAlphabeticals } from "@/helpers/format-currency";
@@ -342,6 +342,14 @@ export function ActionsCell({ row, permissions, user, role, branch }) {
 			await updateRequest({ status: "approved" }, row.loanRequest.id);
 			setAlertMsg("¡Aprobado exitosamente!");
 			setAlertSeverity("success");
+
+			sendContractRequest(row.loanRequest.id)
+				.then((resp) => {
+					console.log(resp);
+				})
+				.catch((error) => {
+					console.error(error);
+				});
 		} catch (error) {
 			setAlertMsg(error?.message || "Error al aprobar");
 			setAlertSeverity("error");
