@@ -38,6 +38,8 @@ export async function getAllCustomers({
 	if (u_id) params.append("u_id", u_id);
 
 	const url = `${BASE_URL}/clients?${params.toString()}`;
+	console.log(url);
+	
 	const res = await fetch(url);
 
 	if (!res.ok) throw new Error("Error al obtener clientes");
