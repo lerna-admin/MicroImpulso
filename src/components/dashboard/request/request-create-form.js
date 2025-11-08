@@ -2,8 +2,10 @@
 
 import * as React from "react";
 import RouterLink from "next/link";
+import { getBranchesById } from "@/app/dashboard/configuration/branch-managment/hooks/use-branches";
 import { getAllCustomers } from "@/app/dashboard/customers/hooks/use-customers";
 import { createRequest } from "@/app/dashboard/requests/hooks/use-requests";
+import { ROLES } from "@/constants/roles";
 import { deleteAlphabeticals, formatCurrency } from "@/helpers/format-currency";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Autocomplete, CircularProgress, Divider, MenuItem, TextField } from "@mui/material";
@@ -40,6 +42,8 @@ export function RequestCreateForm({ user }) {
 	const popoverAlert = usePopover();
 	const [alertMsg, setAlertMsg] = React.useState("");
 	const [alertSeverity, setAlertSeverity] = React.useState("success");
+
+	const [usuariosOptions, setUsuariosOptions] = React.useState([]);
 
 	const [inputValue, setInputValue] = React.useState("");
 	const [options, setOptions] = React.useState([]);
@@ -80,6 +84,7 @@ export function RequestCreateForm({ user }) {
 			.refine((val) => dayjs(val).isAfter(dayjs(), "day"), {
 				message: "La fecha debe ser posterior a hoy",
 			}),
+		selectedAgent: zod.string().optional(),
 	});
 
 	const defaultValues = {
@@ -88,6 +93,7 @@ export function RequestCreateForm({ user }) {
 		typePayment: "",
 		datePayment: "",
 		selectedDate: dayjs(),
+		selectedAgent: "",
 	};
 
 	const {
@@ -98,10 +104,11 @@ export function RequestCreateForm({ user }) {
 	} = useForm({ defaultValues, resolver: zodResolver(schema) });
 
 	const onSubmit = React.useCallback(async (dataForm) => {
+		const agentId = user.role === ROLES.AGENTE ? String(user.id) : dataForm.selectedAgent;
 		try {
 			const bodyRequest = {
 				client: dataForm.customer.id,
-				agent: determinarAgent(user),
+				agent: agentId,
 				status: "new",
 				requestedAmount: dataForm.amount,
 				endDateAt: dataForm.selectedDate,
@@ -192,6 +199,21 @@ export function RequestCreateForm({ user }) {
 														if (newValue === null) {
 															setDisableFormRequest(true);
 														} else {
+															getBranchesById(user.branchId)
+																.then((resp) => {
+																	const { agents } = resp;
+																	setUsuariosOptions(agents);
+																})
+																.catch((error) => {
+																	const message =
+																		typeof error === "string"
+																			? error
+																			: error?.message
+																				? error.message
+																				: "Ocurrió un error al obtener la sede";
+																	setAlertMsg(message);
+																	setAlertSeverity("error");
+																});
 															setDisableFormRequest(false);
 														}
 														field.onChange(newValue);
@@ -313,6 +335,30 @@ export function RequestCreateForm({ user }) {
 												<InputLabel required>Dia a pagar</InputLabel>
 												<DatePicker {...field} minDate={dayjs()} sx={{ marginTop: "0.5rem" }} />
 												{errors.selectedDate ? <FormHelperText>{errors.selectedDate.message}</FormHelperText> : null}
+											</FormControl>
+										)}
+									/>
+								</Grid>
+								<Grid
+									size={{
+										md: 6,
+										xs: 12,
+									}}
+								>
+									<Controller
+										control={control}
+										name="selectedAgent"
+										render={({ field }) => (
+											<FormControl error={Boolean(errors.selectedAgent)} fullWidth>
+												<InputLabel>Agente</InputLabel>
+												<Select {...field}>
+													{usuariosOptions.map((option) => (
+														<MenuItem key={option.id} value={option.id.toString()}>
+															{option.name}
+														</MenuItem>
+													))}
+												</Select>
+												{errors.selectedAgent ? <FormHelperText>{errors.selectedAgent.message}</FormHelperText> : null}
 											</FormControl>
 										)}
 									/>

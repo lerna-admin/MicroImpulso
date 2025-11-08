@@ -48,7 +48,7 @@ export function RequestsTable({ rows }) {
 		},
 		{
 			formatter(row) {
-				return dayjs(row.updatedAt).format("MMM D, YYYY");
+				return row.latestPayment?.date ? dayjs(row.latestPayment?.date.split("T")[0]).format("MMM D, YYYY") : "-";
 			},
 			name: "Fecha Ult. Pago",
 			width: "150px",

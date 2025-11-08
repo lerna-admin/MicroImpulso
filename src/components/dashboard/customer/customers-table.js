@@ -6,13 +6,13 @@ import { useRouter } from "next/navigation";
 import { renewRequest, updateRequest } from "@/app/dashboard/requests/hooks/use-requests";
 import { createTransaction } from "@/app/dashboard/transactions/hooks/use-transactions";
 import { getAllUsers } from "@/app/dashboard/users/hooks/use-users";
-import { ROLES } from "@/constants/roles";
 import { deleteAlphabeticals } from "@/helpers/format-currency";
 import { formatPhoneNumber } from "@/helpers/phone-mask";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
 	Autocomplete,
 	Button,
+	Chip,
 	CircularProgress,
 	Dialog,
 	DialogContent,
@@ -34,7 +34,14 @@ import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 import { debounce } from "@mui/material/utils";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
-import { BellRinging as BellRingingIcon, DotsThree as DotsThreeIcon } from "@phosphor-icons/react/dist/ssr";
+import {
+	BellRinging as BellRingingIcon,
+	DotsThree as DotsThreeIcon,
+	ExclamationMark as ExclamationMarkIcon,
+	XCircle as XCircleIcon,
+} from "@phosphor-icons/react/dist/ssr";
+import { CheckCircle as CheckCircleIcon } from "@phosphor-icons/react/dist/ssr/CheckCircle";
+import { Clock as ClockIcon } from "@phosphor-icons/react/dist/ssr/Clock";
 import Cookies from "js-cookie";
 import { Controller, useForm } from "react-hook-form";
 import { z as zod } from "zod";
@@ -48,7 +55,7 @@ import { NotificationAlert } from "@/components/widgets/notifications/notificati
 dayjs.locale("es");
 
 /* Utils seguros para mostrar */
-const fmtDate = (v) => (v ? dayjs(v).format("MMM D, YYYY").toUpperCase() : "-");
+const fmtDate = (v) => (v ? dayjs(v.split("T")[0]).format("MMM D, YYYY").toUpperCase() : "-");
 const fmtMoney = (n) =>
 	new Intl.NumberFormat("es-CO", { style: "currency", currency: "COP", minimumFractionDigits: 0 }).format(
 		Number.isFinite(Number(n)) ? Number(n) : 0
@@ -117,15 +124,52 @@ export function CustomersTable({ rows, permissions, user, role, branch }) {
 		},
 		{
 			formatter(row) {
-				return fmtDate(row?.loanRequest?.updatedAt);
+				return fmtDate(row?.loanRequest?.latestPayment?.date);
 			},
 			name: "Fecha Ult. Pago",
 			align: "center",
-			width: "135px",
+			width: "120px",
 		},
 		{
-			formatter(row) {
-				return row?.agent?.name || "-";
+			formatter: (row) => {
+				const mapping = {
+					new: {
+						label: "Nueva",
+						icon: <ExclamationMarkIcon color="var(--mui-palette-info-main)" weight="fill" />,
+					},
+					under_review: {
+						label: "En estudio",
+						icon: <ClockIcon color="var(--mui-palette-warning-main)" weight="fill" />,
+					},
+					approved: {
+						label: "Aprobada",
+						icon: <CheckCircleIcon color="var(--mui-palette-info-main)" weight="fill" />,
+					},
+					funded: {
+						label: "Desembolsado",
+						icon: <CheckCircleIcon color="var(--mui-palette-warning-main)" weight="fill" />,
+					},
+					renewed: {
+						label: "Renovado",
+						icon: <CheckCircleIcon color="var(--mui-palette-info-main)" weight="fill" />,
+					},
+					completed: {
+						label: "Completada",
+						icon: <CheckCircleIcon color="var(--mui-palette-success-main)" weight="fill" />,
+					},
+					rejected: { label: "Rechazada", icon: <XCircleIcon color="var(--mui-palette-error-main)" weight="fill" /> },
+					canceled: { label: "Cancelada", icon: <XCircleIcon color="var(--mui-palette-error-main)" weight="fill" /> },
+				};
+				const { label, icon } = mapping[row?.loanRequest?.status] ?? { label: "Unknown", icon: null };
+
+				return (
+					<Stack direction="column" spacing={1} sx={{ alignItems: "center" }}>
+						<Typography color="inherit" variant="body2">
+							{row?.agent?.name || "-"}
+						</Typography>
+						{row?.loanRequest?.status ? <Chip icon={icon} label={label} size="medium" variant="outlined" /> : null}
+					</Stack>
+				);
 			},
 			name: "Agente",
 			align: "center",
@@ -215,12 +259,10 @@ function ShowAlert({ endDateLoanRequest }) {
 		setColor(c || "");
 	}, [daysLeft]);
 
-	return daysLeft < 13 ? <BellRingingIcon size={18} weight="fill" color={color} /> : null;
+	return daysLeft < 5 ? <BellRingingIcon size={18} weight="fill" color={color} /> : null;
 }
 
 export function ActionsCell({ row, permissions, user, role, branch }) {
-
-  
 	const router = useRouter();
 	const popover = usePopover();
 	const popoverAlert = usePopover();
@@ -257,41 +299,30 @@ export function ActionsCell({ row, permissions, user, role, branch }) {
 		}
 	};
 
-	const schema = zod.object({
-		user: zod
-			.object({
-				id: zod.number().nullable(),
-				label: zod.string().nullable(),
+	const reasignForm = useForm({
+		defaultValues: { user: { id: row?.agent?.id ?? null, label: row?.agent?.name ?? "" } },
+		resolver: zodResolver(
+			zod.object({
+				user: zod
+					.object({
+						id: zod.number().nullable(),
+						label: zod.string().nullable(),
+					})
+					.refine((val) => typeof val === "object" && val !== null && val.id && val.label && val.label.trim() !== "", {
+						message: "Debes seleccionar un usuario",
+					}),
 			})
-			.refine(
-				(val) =>
-					typeof val === "object" &&
-					val !== null &&
-					"id" in val &&
-					typeof val.id === "number" &&
-					val.id > 0 &&
-					"label" in val &&
-					typeof val.label === "string" &&
-					val.label.trim() !== "",
-				{
-					message: "Debes seleccionar un usuario",
-				}
-			),
-		motivoRejected: zod.string().min(1, { message: "La descripción es obligatoria" }),
+		),
 	});
 
-	const defaultValues = {
-		user: { id: row?.agent?.id ?? null, label: row?.agent?.name ?? "" },
-		motivoRejected: "",
-	};
-
-	const {
-		control,
-		handleSubmit,
-		formState: { errors },
-		reset,
-		getValues,
-	} = useForm({ defaultValues, resolver: zodResolver(schema) });
+	const rejectForm = useForm({
+		defaultValues: { motivoRejected: "" },
+		resolver: zodResolver(
+			zod.object({
+				motivoRejected: zod.string().min(1, { message: "La descripción es obligatoria" }),
+			})
+		),
+	});
 
 	const handleOptions = (event) => {
 		if (isAgentClosed === "true") {
@@ -305,8 +336,6 @@ export function ActionsCell({ row, permissions, user, role, branch }) {
 	};
 
 	const handleApproveLoanRequest = async () => {
-      console.log(row);
-
 		if (!hasLoan || !row?.loanRequest?.id) return;
 		setIsPending(true);
 		try {
@@ -341,11 +370,9 @@ export function ActionsCell({ row, permissions, user, role, branch }) {
 	};
 
 	const handleFundedLoanRequest = async () => {
-    console.log(row)
 		if (!hasLoan || !row?.loanRequest?.id) return;
 		setIsPending(true);
 		try {
-      console.log("USER:", user)
 			await createTransaction({
 				userId: user.id,
 				loanRequestId: row.loanRequest.id,
@@ -401,7 +428,6 @@ export function ActionsCell({ row, permissions, user, role, branch }) {
 		}
 	};
 
-	// eslint-disable-next-line react-hooks/exhaustive-deps
 	const onSubmit = React.useCallback(async (dataForm) => {
 		if (!hasLoan || !row?.loanRequest?.id) return;
 		const { user } = dataForm;
@@ -416,14 +442,14 @@ export function ActionsCell({ row, permissions, user, role, branch }) {
 			popoverAlert.handleOpen();
 			popover.handleClose();
 			modalReasigment.handleClose();
-			reset();
+			reasignForm.reset();
 		}
 		router.refresh();
 	});
 
 	const handleRequestRejected = async () => {
 		if (!hasLoan || !row?.loanRequest?.id) return;
-		const motivoRejectedValue = getValues("motivoRejected");
+		const motivoRejectedValue = rejectForm.getValues("motivoRejected");
 		try {
 			await updateRequest({ status: "rejected", notes: motivoRejectedValue }, row.loanRequest.id);
 			setAlertMsg("¡Se ha guardado exitosamente!");
@@ -435,7 +461,7 @@ export function ActionsCell({ row, permissions, user, role, branch }) {
 			popoverAlert.handleOpen();
 			popover.handleClose();
 			modalRejected.handleClose();
-			reset();
+			rejectForm.reset();
 		}
 	};
 
@@ -473,10 +499,7 @@ export function ActionsCell({ row, permissions, user, role, branch }) {
 					<Typography>Aprobar solicitud</Typography>
 				</MenuItem>
 
-				<MenuItem
-					
-					onClick={handleEditRequest}
-				>
+				<MenuItem onClick={handleEditRequest}>
 					<Typography>Editar solicitud</Typography>
 				</MenuItem>
 
@@ -537,14 +560,14 @@ export function ActionsCell({ row, permissions, user, role, branch }) {
 				</DialogTitle>
 
 				<DialogContent>
-					<form onSubmit={handleSubmit(handleRequestRejected)}>
+					<form onSubmit={rejectForm.handleSubmit(handleRequestRejected)}>
 						<Grid container spacing={3}>
 							<Grid size={{ md: 12, xs: 12 }} direction={"row"}>
 								<Controller
-									control={control}
+									control={rejectForm.control}
 									name="motivoRejected"
 									render={({ field }) => (
-										<FormControl fullWidth error={Boolean(errors.motivoRejected)}>
+										<FormControl fullWidth error={Boolean(rejectForm.formState.errors.motivoRejected)}>
 											<TextField
 												label="Motivo"
 												placeholder="Escribe un motivo..."
@@ -553,7 +576,9 @@ export function ActionsCell({ row, permissions, user, role, branch }) {
 												{...field}
 												slotProps={{ htmlInput: { maxLength: 150 } }}
 											/>
-											{errors.motivoRejected ? <FormHelperText>{errors.motivoRejected.message}</FormHelperText> : null}
+											{rejectForm.formState.errors.motivoRejected ? (
+												<FormHelperText>{rejectForm.formState.errors.motivoRejected.message}</FormHelperText>
+											) : null}
 										</FormControl>
 									)}
 								/>
@@ -567,7 +592,7 @@ export function ActionsCell({ row, permissions, user, role, branch }) {
 									onClick={() => {
 										popover.handleClose();
 										modalRejected.handleClose();
-										reset();
+										rejectForm.reset();
 									}}
 								>
 									Cancelar
@@ -592,15 +617,15 @@ export function ActionsCell({ row, permissions, user, role, branch }) {
 				</DialogTitle>
 
 				<DialogContent>
-					<form onSubmit={handleSubmit(onSubmit)}>
+					<form onSubmit={reasignForm.handleSubmit(onSubmit)}>
 						<Grid container spacing={3}>
 							<Grid size={{ md: 12, xs: 12 }} direction={"row"}>
 								<Controller
-									control={control}
+									control={reasignForm.control}
 									name="user"
 									render={({ field }) => {
 										return (
-											<FormControl error={Boolean(errors.user)} fullWidth>
+											<FormControl error={Boolean(reasignForm.formState.errors.user)} fullWidth>
 												<InputLabel required sx={{ marginBottom: "0.5rem" }}>
 													Agente
 												</InputLabel>
@@ -637,7 +662,9 @@ export function ActionsCell({ row, permissions, user, role, branch }) {
 														/>
 													)}
 												/>
-												{errors.user ? <FormHelperText>{errors.user.message}</FormHelperText> : null}
+												{reasignForm.formState.errors.user ? (
+													<FormHelperText>{reasignForm.formState.errors.user.message}</FormHelperText>
+												) : null}
 											</FormControl>
 										);
 									}}
@@ -652,7 +679,7 @@ export function ActionsCell({ row, permissions, user, role, branch }) {
 									onClick={() => {
 										popover.handleClose();
 										modalReasigment.handleClose();
-										reset();
+										reasignForm.reset();
 									}}
 								>
 									Cancelar

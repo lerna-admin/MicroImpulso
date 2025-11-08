@@ -16,7 +16,7 @@ import { CustomersSelectionProvider } from "@/components/dashboard/customer/cust
 import { CustomersTable } from "@/components/dashboard/customer/customers-table";
 
 import { getAllBranches } from "../configuration/branch-managment/hooks/use-branches";
-import { getAllCustomers, getAllCustomersByAgent } from "./hooks/use-customers";
+import { getAllCustomers } from "./hooks/use-customers";
 
 export const metadata = { title: `Clientes | Dashboard | ${appConfig.name}` };
 
@@ -41,7 +41,7 @@ export default async function Page({ searchParams }) {
 		page: customersPage,
 		limit: customerLimit,
 		totalItems: customerTotalItems,
-		totalActiveAmountBorrowed,
+		remainingTotal,
 		totalActiveRepayment,
 		activeClientsCount,
 		mora15,
@@ -52,7 +52,7 @@ export default async function Page({ searchParams }) {
 	const { data } = await getAllUsers({ branchId: user.branchId, role: "AGENT" });
 
 	const statistics = {
-		totalActiveAmountBorrowed,
+		remainingTotal,
 		totalActiveRepayment,
 		activeClientsCount,
 		mora15,
@@ -63,8 +63,6 @@ export default async function Page({ searchParams }) {
 	const branches = await getAllBranches();
 
 	console.log(customers);
-	console.log(user);
-	
 	
 
 	return (

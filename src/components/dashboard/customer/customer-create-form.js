@@ -27,6 +27,7 @@ import { dayjs } from "@/lib/dayjs";
 import { deleteAlphabeticals, formatCurrency } from "@/helpers/format-currency";
 import { NotificationAlert } from "@/components/widgets/notifications/notification-alert";
 import { ROLES } from "@/constants/roles";
+import { getBranchesById } from "@/app/dashboard/configuration/branch-managment/hooks/use-branches";
 
 /* ====== Países soportados ====== */
 const COUNTRIES = [
@@ -113,6 +114,8 @@ export function CustomerCreateForm({ user }) {
   const [customFields, setCustomFields] = React.useState([]);
   const [cfErrors, setCfErrors] = React.useState({}); // {index: {key?: string, value?: string}}
 
+  const [usuariosOptions, setUsuariosOptions] = React.useState([]);
+
   const DEFAULT_COUNTRY = "CO";
 
   const defaultValues = {
@@ -125,7 +128,7 @@ export function CustomerCreateForm({ user }) {
     documentType: "",
     document: "",
     address: "",
-    address2: "",
+    address2: "", 
     referenceName: "",
     referencePhone: "",
     referenceRelationship: "",
@@ -265,50 +268,113 @@ export function CustomerCreateForm({ user }) {
 
   // ====== Guardar SOLO cliente ======
   const handleSaveClientOnly = async () => {
-    try {
-      const values = getValues();
+  try {
+    const values = getValues();
 
-      // 🔴 YA NO VALIDAMOS CON clientOnlySchema
+    // 🧩 Campos requeridos (los mismos que marcaste con "required" en el formulario)
+    const requiredFields = [
+      { key: "countryIso2", label: "País" },
+      { key: "name", label: "Nombre completo" },
+      { key: "email", label: "Correo" },
+      { key: "localPhone", label: "Número de celular" },
+      { key: "documentType", label: "Tipo de documento" },
+      { key: "document", label: "Número de documento" },
+      { key: "address", label: "Dirección" },
+      { key: "referenceName", label: "Nombre de referencia" },
+      { key: "referencePhone", label: "Teléfono de referencia" },
+      { key: "referenceRelationship", label: "Parentesco / relación" },
+    ];
 
-      // valida custom fields
-      if (!validateCustomFields()) {
-        openToast("Corrige los campos personalizados", "error");
-        return;
-      }
+    // 🔎 Validar campos vacíos
+    const missing = requiredFields.filter((f) => {
+      const val = values[f.key];
+      return val === null || val === undefined || String(val).trim() === "";
+    });
 
-      // sanitiza custom fields
-      const sanitizedCFs = customFields.map(sanitizeCustomField).filter(Boolean);
-
-      const phone = composePhone(values.countryIso2, values.localPhone);
-      const phone2 = values.localPhone2 ? composePhone(values.countryIso2, values.localPhone2) : null;
-      const referencePhone = composePhone(values.countryIso2, values.referencePhone);
-
-      const bodyCustomer = {
-        name: values.name,
-        email: values.email,
-        phone,
-        phone2,
-        documentType: values.documentType,
-        document: values.document,
-        address: values.address,
-        address2: values.address2 || null,
-        referenceName: values.referenceName,
-        referencePhone,
-        referenceRelationship: values.referenceRelationship,
-        status: "PROSPECT",
-        customFields: sanitizedCFs,
-      };
-
-      const created = await createCustomer(bodyCustomer);
-      const newId = created?.id ?? null;
-      setCreatedClientId(newId);
-
-      if (newId) openToast("¡Cliente creado exitosamente!", "success");
-      else openToast("No se pudo obtener el ID del cliente", "warning");
-    } catch (err) {
-      openToast(err?.message || "Error al crear el cliente", "error");
+    if (missing.length > 0) {
+      const names = missing.map((f) => f.label).join(", ");
+      openToast(`Completa los siguientes campos obligatorios: ${names}`, "error");
+      return;
     }
-  };
+
+    // 🔢 Validaciones adicionales
+    if (!/^\d+$/.test(values.localPhone)) {
+      openToast("El número de celular debe ser solo dígitos", "error");
+      return;
+    }
+
+    if (values.localPhone2 && !/^\d+$/.test(values.localPhone2)) {
+      openToast("El celular 2 debe contener solo números", "error");
+      return;
+    }
+
+    if (!/^\d+$/.test(values.referencePhone)) {
+      openToast("El teléfono de la referencia debe ser solo dígitos", "error");
+      return;
+    }
+
+    if (!/\S+@\S+\.\S+/.test(values.email)) {
+      openToast("Debes ingresar un correo válido", "error");
+      return;
+    }
+
+    // ⚙️ Validar custom fields
+    if (!validateCustomFields()) {
+      openToast("Corrige los campos personalizados", "error");
+      return;
+    }
+
+    // ✅ Sanitizar custom fields
+    const sanitizedCFs = customFields.map(sanitizeCustomField).filter(Boolean);
+
+    const phone = composePhone(values.countryIso2, values.localPhone);
+    const phone2 = values.localPhone2 ? composePhone(values.countryIso2, values.localPhone2) : null;
+    const referencePhone = composePhone(values.countryIso2, values.referencePhone);
+
+    const bodyCustomer = {
+      name: values.name,
+      email: values.email,
+      phone,
+      phone2,
+      documentType: values.documentType,
+      document: values.document,
+      address: values.address,
+      address2: values.address2 || null,
+      referenceName: values.referenceName,
+      referencePhone,
+      referenceRelationship: values.referenceRelationship,
+      status: "PROSPECT",
+      customFields: sanitizedCFs,
+    };
+
+    // 🧭 Crear cliente
+    const created = await createCustomer(bodyCustomer);
+    const newId = created?.id ?? null;
+    setCreatedClientId(newId);
+
+    // 🔄 Cargar agentes del branch
+    getBranchesById(user.branchId)
+      .then((resp) => {
+        const { agents } = resp;
+        setUsuariosOptions(agents);
+      })
+      .catch((error) => {
+        const message =
+          typeof error === "string"
+            ? error
+            : error?.message
+            ? error.message
+            : "Ocurrió un error al obtener la sede";
+        setAlertMsg(message);
+        setAlertSeverity("error");
+      });
+
+    if (newId) openToast("¡Cliente creado exitosamente!", "success");
+    else openToast("No se pudo obtener el ID del cliente", "warning");
+  } catch (err) {
+    openToast(err?.message || "Error al crear el cliente", "error");
+  }
+};
 
   // ====== Guardar SOLO solicitud (submit del form) ======
   const onSubmit = async (dataForm) => {
@@ -820,8 +886,11 @@ export function CustomerCreateForm({ user }) {
                       <FormControl error={Boolean(errors.selectedAgent)} fullWidth disabled={!createdClientId}>
                         <InputLabel required>Agente</InputLabel>
                         <Select {...field}>
-                          <MenuItem value="">Selecciona un agente</MenuItem>
-                          {/* TODO: popular desde tu API */}
+                          {usuariosOptions.map((option) => (
+															<MenuItem key={option.id} value={option.id.toString()}>
+																{option.name}
+															</MenuItem>
+														))}
                         </Select>
                         {errors.selectedAgent ? <FormHelperText>{errors.selectedAgent.message}</FormHelperText> : null}
                       </FormControl>
