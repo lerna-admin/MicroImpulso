@@ -22,7 +22,8 @@ export async function getAllCustomers({
 	name = "",
 	branch = "",
 	agent = "",
-	u_id = ""
+	u_id = "",
+	distinct = false,
 }) {
 	const params = new URLSearchParams();
 
@@ -36,10 +37,9 @@ export async function getAllCustomers({
 	if (branch) params.append("branch", branch);
 	if (agent) params.append("agent", agent);
 	if (u_id) params.append("u_id", u_id);
+	if (distinct) params.append("distinct", distinct);
 
 	const url = `${BASE_URL}/clients?${params.toString()}`;
-	console.log(url);
-	
 	const res = await fetch(url);
 
 	if (!res.ok) throw new Error("Error al obtener clientes");
@@ -57,8 +57,6 @@ export async function getAllCustomersByQuery(query) {
 	if (!res.ok) throw new Error("Error al obtener clientes");
 	return await res.json();
 }
-
-
 
 /**
  *
@@ -92,7 +90,6 @@ export async function getAllCustomersByAgent({
 	if (!res.ok) throw new Error("Error al obtener clientes");
 	return await res.json();
 }
-
 
 // /**
 //  *
