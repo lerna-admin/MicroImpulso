@@ -188,7 +188,7 @@ export function LoanHistoryByClient({ user }) {
 	const fetchOptions = async (query) => {
 		setLoading(true);
 		try {
-			const { data } = await getAllCustomers({ name: query });
+			const { data } = await getAllCustomers({ name: query, u_id: user.id });
 			const dataFormatted = data.map(({ client }) => ({ label: client.name, id: client.id }));
 			setOptions(dataFormatted);
 		} catch (error) {
