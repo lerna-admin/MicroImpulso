@@ -462,6 +462,7 @@ export function ActionsCell({ row, permissions, user, role, branch }) {
 			popover.handleClose();
 			modalRejected.handleClose();
 			rejectForm.reset();
+			router.refresh();
 		}
 	};
 
