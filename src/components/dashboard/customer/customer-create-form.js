@@ -103,6 +103,7 @@ function sanitizeCustomField(cf) {
 }
 
 export function CustomerCreateForm({ user }) {
+
   const [alertMsg, setAlertMsg] = React.useState("");
   const [alertSeverity, setAlertSeverity] = React.useState("success");
   const [openAlert, setOpenAlert] = React.useState(false);
@@ -335,6 +336,7 @@ export function CustomerCreateForm({ user }) {
 
     const bodyCustomer = {
       name: values.name,
+      countryId: user.countryId,
       city: values.city,
       email: values.email,
       phone,
@@ -346,7 +348,7 @@ export function CustomerCreateForm({ user }) {
       referenceName: values.referenceName,
       referencePhone,
       referenceRelationship: values.referenceRelationship,
-      status: "PROSPECT",
+      status: "INACTIVE",
       customFields: sanitizedCFs,
     };
 
