@@ -3,7 +3,6 @@
 import * as React from "react";
 import { getAllCustomersByQuery, getCustomerById } from "@/app/dashboard/customers/hooks/use-customers";
 import { getAllRequestsByCustomerId } from "@/app/dashboard/requests/hooks/use-requests";
-import { ROLES } from "@/constants/roles";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
 	Autocomplete,
@@ -95,8 +94,6 @@ export function Queries({ role }) {
 		if (!customerSelected) return;
 		const customer = await getCustomerById(customerSelected.id);
 		const allRequests = await getAllRequestsByCustomerId(customerSelected.id);
-		console.log(customer);
-		console.log(allRequests);
 		
 		setCustomer(customer);
 		setAllRequestByCustomer(allRequests);

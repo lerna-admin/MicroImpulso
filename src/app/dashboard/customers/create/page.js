@@ -24,6 +24,7 @@ export default async function Page() {
     id: user?.id ?? null,
     role: user?.role ?? null,
     branchId: user?.branch?.id ?? null,
+    countryId: user?.branch?.countryId ?? null
   };
 
   return (
