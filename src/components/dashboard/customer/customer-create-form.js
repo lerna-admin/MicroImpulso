@@ -4,7 +4,7 @@
 import * as React from "react";
 import RouterLink from "next/link";
 import { getBranchesById } from "@/app/dashboard/configuration/branch-managment/hooks/use-branches";
-import { createCustomer, getAllCountries } from "@/app/dashboard/customers/hooks/use-customers";
+import { createCustomer, getAllCountries, updateCustomer } from "@/app/dashboard/customers/hooks/use-customers";
 import { createRequest } from "@/app/dashboard/requests/hooks/use-requests";
 import { ROLES } from "@/constants/roles";
 import { deleteAlphabeticals, formatCurrency } from "@/helpers/format-currency";
@@ -145,6 +145,38 @@ export function CustomerCreateForm({ user }) {
 		return (c ? c.phoneCode : "") + localDigits; // sin '+'
 	}
 
+// Guarda los custom fields del cliente ya creado
+async function saveCustomFields(clientId) {
+  if (!clientId) {
+    openToast("Primero crea/selecciona un cliente para poder guardar los campos personalizados.", "error");
+    return;
+  }
+
+  // Validación visual (reusa la que ya tienes)
+  const ok = validateCustomFields();
+  if (!ok) {
+    openToast("Corrige los campos personalizados antes de guardar.", "error");
+    return;
+  }
+
+  // Normaliza cada campo con tu helper existente
+  const sanitizedCFs = customFields.map(sanitizeCustomField).filter(Boolean);
+
+  try {
+    // PATCH /clients/:id con solo customFields en el body
+    const { data, status } = await updateCustomer({ customFields: sanitizedCFs }, clientId);
+
+    // OJO: updateCustomer retorna la promesa de res.json() en data
+    // si quieres usar el payload, resuélvela:
+    await data; // const updated = await data;
+
+    openToast("Campos personalizados guardados correctamente.", "success");
+  } catch (err) {
+    openToast(err?.message || "Error al guardar los campos personalizados.", "error");
+  }
+}
+
+
 	/*
   // ====== Validación cliente ======
   // 👉 LO DEJAMOS COMENTADO PARA QUE NO VALIDE
@@ -247,6 +279,7 @@ export function CustomerCreateForm({ user }) {
 			return copy;
 		});
 	};
+	
 
 	const updateCustomField = (index, patch) => {
 		setCustomFields((prev) => prev.map((item, i) => (i === index ? { ...item, ...patch } : item)));
@@ -808,6 +841,13 @@ export function CustomerCreateForm({ user }) {
 						</Stack>
 					)}
 				</CardContent>
+				<CardActions sx={{ justifyContent: "flex-end" }}>
+					
+					{/* ÚNICO submit real */}
+					<Button variant="contained"  onClick={() => saveCustomFields(createdClientId)}  type="button" disabled={!createdClientId} aria-disabled={!createdClientId}>
+						Guardar
+					</Button>
+				</CardActions>
 			</Card>
 
 			{/* ==================== SOLICITUD ==================== */}
