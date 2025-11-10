@@ -132,3 +132,10 @@ export async function updateCustomer(data, id) {
 	if (!res.ok) throw new Error("Error al actualizar cliente");
 	return { data: res.json(), status: res.status };
 }
+
+export async function getAllCountries() {
+	const res = await fetch(`${BASE_URL}/countries`);
+	if (!res.ok) throw new Error("Paises no encontrados");
+	return await res.json();
+}
+

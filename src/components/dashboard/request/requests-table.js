@@ -25,13 +25,13 @@ export function RequestsTable({ rows }) {
 					sx={{ whiteSpace: "nowrap" }}
 					variant="subtitle2"
 				>
-					{row.client.name}
+					{row.client?.name}
 				</Link>
 			),
 			name: "Nombre completo",
 			width: "180px",
 		},
-		{ formatter: (row) => <p>{row.client.document}</p>, name: "Identificación", width: "130px" },
+		{ formatter: (row) => <p>{row.client?.document}</p>, name: "Identificación", width: "130px" },
 		{
 			formatter: (row) => (
 				<Stack direction="column" spacing={1} sx={{ alignItems: "center" }}>

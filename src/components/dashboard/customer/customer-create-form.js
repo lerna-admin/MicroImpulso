@@ -3,7 +3,12 @@
 
 import * as React from "react";
 import RouterLink from "next/link";
-import { MenuItem, Chip, Box, Divider, Tooltip } from "@mui/material";
+import { getBranchesById } from "@/app/dashboard/configuration/branch-managment/hooks/use-branches";
+import { createCustomer, getAllCountries } from "@/app/dashboard/customers/hooks/use-customers";
+import { createRequest } from "@/app/dashboard/requests/hooks/use-requests";
+import { ROLES } from "@/constants/roles";
+import { deleteAlphabeticals, formatCurrency } from "@/helpers/format-currency";
+import { Box, Chip, Divider, MenuItem, Tooltip } from "@mui/material";
 import Button from "@mui/material/Button";
 import Card from "@mui/material/Card";
 import CardActions from "@mui/material/CardActions";
@@ -20,136 +25,134 @@ import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { Controller, useForm } from "react-hook-form";
 import { z as zod } from "zod";
 
-import { createCustomer } from "@/app/dashboard/customers/hooks/use-customers";
-import { createRequest } from "@/app/dashboard/requests/hooks/use-requests";
 import { paths } from "@/paths";
 import { dayjs } from "@/lib/dayjs";
-import { deleteAlphabeticals, formatCurrency } from "@/helpers/format-currency";
 import { NotificationAlert } from "@/components/widgets/notifications/notification-alert";
-import { ROLES } from "@/constants/roles";
-import { getBranchesById } from "@/app/dashboard/configuration/branch-managment/hooks/use-branches";
-
-/* ====== Países soportados ====== */
-const COUNTRIES = [
-  { iso2: "CO", name: "Colombia", phoneCode: "57" },
-  { iso2: "CR", name: "Costa Rica", phoneCode: "506" },
-];
 
 function flagFromCountryCode(code) {
-  if (!code || typeof code !== "string") return "🌐";
-  try {
-    const cc = code.trim().toUpperCase();
-    if (cc.length !== 2) return "🌐";
-    const A = 0x1f1e6;
-    return String.fromCodePoint(
-      A + (cc.charCodeAt(0) - 65),
-      A + (cc.charCodeAt(1) - 65)
-    );
-  } catch {
-    return "🌐";
-  }
-}
-
-function composePhone(iso2, local) {
-  const c = COUNTRIES.find((x) => x.iso2 === iso2);
-  const localDigits = String(local || "").replace(/\D/g, "");
-  return (c ? c.phoneCode : "") + localDigits; // sin '+'
+	if (!code || typeof code !== "string") return "🌐";
+	try {
+		const cc = code.trim().toUpperCase();
+		if (cc.length !== 2) return "🌐";
+		const A = 0x1f1e6;
+		return String.fromCodePoint(A + (cc.charCodeAt(0) - 65), A + (cc.charCodeAt(1) - 65));
+	} catch {
+		return "🌐";
+	}
 }
 
 /** Normaliza enlaces: si no trae protocolo, antepone https:// */
 function normalizeLink(val) {
-  const s = String(val || "").trim();
-  if (!s) return "";
-  if (/^https?:\/\//i.test(s)) return s;
-  return `https://${s}`;
+	const s = String(val || "").trim();
+	if (!s) return "";
+	if (/^https?:\/\//i.test(s)) return s;
+	return `https://${s}`;
 }
 
 /** Valida url (después de normalizar) */
 function isValidUrl(val) {
-  const url = normalizeLink(val);
-  try {
-    new URL(url);
-    return true;
-  } catch {
-    return false;
-  }
+	const url = normalizeLink(val);
+	try {
+		new URL(url);
+		return true;
+	} catch {
+		return false;
+	}
 }
 
 /** Valida y normaliza un custom field según su tipo */
 function sanitizeCustomField(cf) {
-  const key = String(cf.key || "").trim();
-  if (!key) return null;
+	const key = String(cf.key || "").trim();
+	if (!key) return null;
 
-  const type = cf.type === "number" || cf.type === "link" ? cf.type : "text";
-  let value = cf.value;
+	const type = cf.type === "number" || cf.type === "link" ? cf.type : "text";
+	let value = cf.value;
 
-  if (type === "number") {
-    const num = Number(value);
-    if (Number.isFinite(num)) value = num;
-    else return null;
-  } else if (type === "link") {
-    const url = normalizeLink(value);
-    try {
-      new URL(url);
-      value = url;
-    } catch {
-      return null;
-    }
-  } else {
-    value = String(value ?? "").trim();
-  }
+	if (type === "number") {
+		const num = Number(value);
+		if (Number.isFinite(num)) value = num;
+		else return null;
+	} else if (type === "link") {
+		const url = normalizeLink(value);
+		try {
+			new URL(url);
+			value = url;
+		} catch {
+			return null;
+		}
+	} else {
+		value = String(value ?? "").trim();
+	}
 
-  return { key, type, value };
+	return { key, type, value };
 }
 
 export function CustomerCreateForm({ user }) {
+	const [countries, setCountries] = React.useState([]);
+	const [alertMsg, setAlertMsg] = React.useState("");
+	const [alertSeverity, setAlertSeverity] = React.useState("success");
+	const [openAlert, setOpenAlert] = React.useState(false);
 
-  const [alertMsg, setAlertMsg] = React.useState("");
-  const [alertSeverity, setAlertSeverity] = React.useState("success");
-  const [openAlert, setOpenAlert] = React.useState(false);
+	// ID del cliente creado (habilita sección de solicitud)
+	const [createdClientId, setCreatedClientId] = React.useState(null);
 
-  // ID del cliente creado (habilita sección de solicitud)
-  const [createdClientId, setCreatedClientId] = React.useState(null);
+	// Campos personalizados
+	const [customFields, setCustomFields] = React.useState([]);
+	const [cfErrors, setCfErrors] = React.useState({}); // {index: {key?: string, value?: string}}
 
-  // Campos personalizados
-  const [customFields, setCustomFields] = React.useState([]);
-  const [cfErrors, setCfErrors] = React.useState({}); // {index: {key?: string, value?: string}}
+	const [usuariosOptions, setUsuariosOptions] = React.useState([]);
 
-  const [usuariosOptions, setUsuariosOptions] = React.useState([]);
+	const DEFAULT_COUNTRY = "CO";
 
-  const DEFAULT_COUNTRY = "CO";
+	const defaultValues = {
+		// Cliente
+		countryIso2: DEFAULT_COUNTRY,
+		name: "",
+		city: "",
+		email: "",
+		localPhone: "",
+		localPhone2: "",
+		documentType: "",
+		document: "",
+		address: "",
+		address2: "",
+		referenceName: "",
+		referencePhone: "",
+		referenceRelationship: "",
+		// Solicitud
+		amount: 0,
+		typePayment: "",
+		datePayment: "",
+		selectedDate: dayjs(),
+		selectedAgent: "",
+	};
 
-  const defaultValues = {
-    // Cliente
-    countryIso2: DEFAULT_COUNTRY,
-    name: "",
-    city: "",
-    email: "",
-    localPhone: "",
-    localPhone2: "",
-    documentType: "",
-    document: "",
-    address: "",
-    address2: "", 
-    referenceName: "",
-    referencePhone: "",
-    referenceRelationship: "",
-    // Solicitud
-    amount: 0,
-    typePayment: "",
-    datePayment: "",
-    selectedDate: dayjs(),
-    selectedAgent: "",
-  };
+	React.useEffect(() => {
+		getCountries();
+		if (countries) {
+			setValue("countryIso2", user.countryId);
+		}
+	}, []);
 
-  /*
+	const getCountries = async () => {
+		const { data } = await getAllCountries();
+		setCountries(data);
+	};
+
+	function composePhone(id, local) {
+		const c = countries.find((x) => x.id === id);
+		const localDigits = String(local || "").replace(/\D/g, "");
+		return (c ? c.phoneCode : "") + localDigits; // sin '+'
+	}
+
+	/*
   // ====== Validación cliente ======
   // 👉 LO DEJAMOS COMENTADO PARA QUE NO VALIDE
   const clientOnlySchema = zod.object({
     countryIso2: zod
       .string()
       .length(2, "Selecciona un país válido")
-      .refine((v) => COUNTRIES.some((c) => c.iso2 === v), "País no soportado"),
+      .refine((v) => countries.some((c) => c.iso2 === v), "País no soportado"),
     name: zod
       .string()
       .min(3, { message: "Debe tener al menos 3 caracteres" })
@@ -183,762 +186,754 @@ export function CustomerCreateForm({ user }) {
   });
   */
 
-  // ====== Validación solicitud ======
-  const requestSchemaOnly = zod
-    .object({
-      amount: zod
-        .number({ invalid_type_error: "El monto debe ser un número" })
-        .min(50, { message: "El monto debe superar los $50.000" })
-        .max(5_000_000, { message: "El monto no puede superar los 5.000.000" }),
-      typePayment: zod.enum(["QUINCENAL", "MENSUAL"], {
-        errorMap: () => ({ message: "Debes elegir un tipo de pago" }),
-      }),
-      datePayment: zod.enum(["15-30", "5-20", "10-25"], {
-        errorMap: () => ({ message: "Debes elegir una fecha de pago" }),
-      }),
-      selectedDate: zod
-        .custom((val) => dayjs.isDayjs(val) && val.isValid(), { message: "La fecha es obligatoria" })
-        .refine((val) => dayjs(val).isAfter(dayjs(), "day"), { message: "La fecha debe ser posterior a hoy" }),
-      selectedAgent: zod.string().optional(),
-    })
-    .superRefine((data, ctx) => {
-      if (user.role === ROLES.ADMIN && !data.selectedAgent?.trim()) {
-        ctx.addIssue({
-          path: ["selectedAgent"],
-          code: zod.ZodIssueCode.custom,
-          message: "El campo agente es obligatorio para administradores",
-        });
-      }
-    });
+	// ====== Validación solicitud ======
+	const requestSchemaOnly = zod
+		.object({
+			amount: zod
+				.number({ invalid_type_error: "El monto debe ser un número" })
+				.min(50, { message: "El monto debe superar los $50.000" })
+				.max(5_000_000, { message: "El monto no puede superar los 5.000.000" }),
+			typePayment: zod.enum(["QUINCENAL", "MENSUAL"], {
+				errorMap: () => ({ message: "Debes elegir un tipo de pago" }),
+			}),
+			datePayment: zod.enum(["15-30", "5-20", "10-25"], {
+				errorMap: () => ({ message: "Debes elegir una fecha de pago" }),
+			}),
+			selectedDate: zod
+				.custom((val) => dayjs.isDayjs(val) && val.isValid(), { message: "La fecha es obligatoria" })
+				.refine((val) => dayjs(val).isAfter(dayjs(), "day"), { message: "La fecha debe ser posterior a hoy" }),
+			selectedAgent: zod.string().optional(),
+		})
+		.superRefine((data, ctx) => {
+			if (user.role === ROLES.ADMIN && !data.selectedAgent?.trim()) {
+				ctx.addIssue({
+					path: ["selectedAgent"],
+					code: zod.ZodIssueCode.custom,
+					message: "El campo agente es obligatorio para administradores",
+				});
+			}
+		});
 
-  const {
-    control,
-    handleSubmit,
-    formState: { errors },
-    reset,
-    watch,
-    getValues,
-  } = useForm({
-    defaultValues,
-  });
+	const {
+		control,
+		handleSubmit,
+		formState: { errors },
+		reset,
+		watch,
+		getValues,
+		setValue,
+	} = useForm({
+		defaultValues,
+	});
 
-  const countryIso2 = watch("countryIso2");
+	const countryIso2 = watch("countryIso2");
 
-  const openToast = (msg, severity = "success") => {
-    setAlertMsg(msg);
-    setAlertSeverity(severity);
-    setOpenAlert(true);
-  };
+	const openToast = (msg, severity = "success") => {
+		setAlertMsg(msg);
+		setAlertSeverity(severity);
+		setOpenAlert(true);
+	};
 
-  // === Custom Fields handlers ===
-  const addCustomField = () => {
-    setCustomFields((prev) => [...prev, { key: "", type: "text", value: "" }]);
-  };
+	// === Custom Fields handlers ===
+	const addCustomField = () => {
+		setCustomFields((prev) => [...prev, { key: "", type: "text", value: "" }]);
+	};
 
-  const removeCustomField = (index) => {
-    setCustomFields((prev) => prev.filter((_, i) => i !== index));
-    setCfErrors((prev) => {
-      const copy = { ...prev };
-      delete copy[index];
-      return copy;
-    });
-  };
+	const removeCustomField = (index) => {
+		setCustomFields((prev) => prev.filter((_, i) => i !== index));
+		setCfErrors((prev) => {
+			const copy = { ...prev };
+			delete copy[index];
+			return copy;
+		});
+	};
 
-  const updateCustomField = (index, patch) => {
-    setCustomFields((prev) => prev.map((item, i) => (i === index ? { ...item, ...patch } : item)));
-    setCfErrors((prev) => ({ ...prev, [index]: {} }));
-  };
+	const updateCustomField = (index, patch) => {
+		setCustomFields((prev) => prev.map((item, i) => (i === index ? { ...item, ...patch } : item)));
+		setCfErrors((prev) => ({ ...prev, [index]: {} }));
+	};
 
-  const validateCustomFields = () => {
-    const errs = {};
-    customFields.forEach((cf, i) => {
-      const e = {};
-      const key = String(cf.key || "").trim();
-      if (!key) e.key = "La clave es obligatoria";
+	const validateCustomFields = () => {
+		const errs = {};
+		customFields.forEach((cf, i) => {
+			const e = {};
+			const key = String(cf.key || "").trim();
+			if (!key) e.key = "La clave es obligatoria";
 
-      if (cf.type === "number") {
-        const num = Number(cf.value);
-        if (!Number.isFinite(num)) e.value = "Debe ser un número válido";
-      } else if (cf.type === "link") {
-        if (!isValidUrl(cf.value)) e.value = "Enlace inválido";
-      }
-      if (Object.keys(e).length) errs[i] = e;
-    });
-    setCfErrors(errs);
-    return Object.keys(errs).length === 0;
-  };
+			if (cf.type === "number") {
+				const num = Number(cf.value);
+				if (!Number.isFinite(num)) e.value = "Debe ser un número válido";
+			} else if (cf.type === "link") {
+				if (!isValidUrl(cf.value)) e.value = "Enlace inválido";
+			}
+			if (Object.keys(e).length) errs[i] = e;
+		});
+		setCfErrors(errs);
+		return Object.keys(errs).length === 0;
+	};
 
-  // ====== Guardar SOLO cliente ======
-  const handleSaveClientOnly = async () => {
-  try {
-    const values = getValues();
+	// ====== Guardar SOLO cliente ======
+	const handleSaveClientOnly = async () => {
+		try {
+			const values = getValues();
 
-    // 🧩 Campos requeridos (los mismos que marcaste con "required" en el formulario)
-    const requiredFields = [
-      { key: "countryIso2", label: "País" },
-      { key: "name", label: "Nombre completo" },
-      { key: "city", label: "Ciudad" },
-      { key: "email", label: "Correo" },
-      { key: "localPhone", label: "Número de celular" },
-      { key: "documentType", label: "Tipo de documento" },
-      { key: "document", label: "Número de documento" },
-      { key: "address", label: "Dirección" },
-      { key: "referenceName", label: "Nombre de referencia" },
-      { key: "referencePhone", label: "Teléfono de referencia" },
-      { key: "referenceRelationship", label: "Parentesco / relación" },
-    ];
+			// 🧩 Campos requeridos (los mismos que marcaste con "required" en el formulario)
+			const requiredFields = [
+				{ key: "countryIso2", label: "País" },
+				{ key: "name", label: "Nombre completo" },
+				{ key: "city", label: "Ciudad" },
+				{ key: "email", label: "Correo" },
+				{ key: "localPhone", label: "Número de celular" },
+				{ key: "documentType", label: "Tipo de documento" },
+				{ key: "document", label: "Número de documento" },
+				{ key: "address", label: "Dirección" },
+				{ key: "referenceName", label: "Nombre de referencia" },
+				{ key: "referencePhone", label: "Teléfono de referencia" },
+				{ key: "referenceRelationship", label: "Parentesco / relación" },
+			];
 
-    // 🔎 Validar campos vacíos
-    const missing = requiredFields.filter((f) => {
-      const val = values[f.key];
-      return val === null || val === undefined || String(val).trim() === "";
-    });
+			// 🔎 Validar campos vacíos
+			const missing = requiredFields.filter((f) => {
+				const val = values[f.key];
+				return val === null || val === undefined || String(val).trim() === "";
+			});
 
-    if (missing.length > 0) {
-      const names = missing.map((f) => f.label).join(", ");
-      openToast(`Completa los siguientes campos obligatorios: ${names}`, "error");
-      return;
-    }
+			if (missing.length > 0) {
+				const names = missing.map((f) => f.label).join(", ");
+				openToast(`Completa los siguientes campos obligatorios: ${names}`, "error");
+				return;
+			}
 
-    // 🔢 Validaciones adicionales
-    if (!/^\d+$/.test(values.localPhone)) {
-      openToast("El número de celular debe ser solo dígitos", "error");
-      return;
-    }
+			// 🔢 Validaciones adicionales
+			if (!/^\d+$/.test(values.localPhone)) {
+				openToast("El número de celular debe ser solo dígitos", "error");
+				return;
+			}
 
-    if (values.localPhone2 && !/^\d+$/.test(values.localPhone2)) {
-      openToast("El celular 2 debe contener solo números", "error");
-      return;
-    }
+			if (values.localPhone2 && !/^\d+$/.test(values.localPhone2)) {
+				openToast("El celular 2 debe contener solo números", "error");
+				return;
+			}
 
-    if (!/^\d+$/.test(values.referencePhone)) {
-      openToast("El teléfono de la referencia debe ser solo dígitos", "error");
-      return;
-    }
+			if (!/^\d+$/.test(values.referencePhone)) {
+				openToast("El teléfono de la referencia debe ser solo dígitos", "error");
+				return;
+			}
 
-    if (!/\S+@\S+\.\S+/.test(values.email)) {
-      openToast("Debes ingresar un correo válido", "error");
-      return;
-    }
+			if (!/\S+@\S+\.\S+/.test(values.email)) {
+				openToast("Debes ingresar un correo válido", "error");
+				return;
+			}
 
-    // ⚙️ Validar custom fields
-    if (!validateCustomFields()) {
-      openToast("Corrige los campos personalizados", "error");
-      return;
-    }
+			// ⚙️ Validar custom fields
+			if (!validateCustomFields()) {
+				openToast("Corrige los campos personalizados", "error");
+				return;
+			}
 
-    // ✅ Sanitizar custom fields
-    const sanitizedCFs = customFields.map(sanitizeCustomField).filter(Boolean);
+			// ✅ Sanitizar custom fields
+			const sanitizedCFs = customFields.map(sanitizeCustomField).filter(Boolean);
 
-    const phone = composePhone(values.countryIso2, values.localPhone);
-    const phone2 = values.localPhone2 ? composePhone(values.countryIso2, values.localPhone2) : null;
-    const referencePhone = composePhone(values.countryIso2, values.referencePhone);
+			const phone = composePhone(values.countryIso2, values.localPhone);
+			const phone2 = values.localPhone2 ? composePhone(values.countryIso2, values.localPhone2) : null;
+			const referencePhone = composePhone(values.countryIso2, values.referencePhone);
 
-    const bodyCustomer = {
-      name: values.name,
-      countryId: user.countryId,
-      city: values.city,
-      email: values.email,
-      phone,
-      phone2,
-      documentType: values.documentType,
-      document: values.document,
-      address: values.address,
-      address2: values.address2 || null,
-      referenceName: values.referenceName,
-      referencePhone,
-      referenceRelationship: values.referenceRelationship,
-      status: "INACTIVE",
-      customFields: sanitizedCFs,
-    };
+			const bodyCustomer = {
+				name: values.name,
+				countryId: user.countryId,
+				city: values.city,
+				email: values.email,
+				phone,
+				phone2,
+				documentType: values.documentType,
+				document: values.document,
+				address: values.address,
+				address2: values.address2 || null,
+				referenceName: values.referenceName,
+				referencePhone,
+				referenceRelationship: values.referenceRelationship,
+				status: "INACTIVE",
+				customFields: sanitizedCFs,
+			};
 
-    // 🧭 Crear cliente
-    const created = await createCustomer(bodyCustomer);
-    const newId = created?.id ?? null;
-    setCreatedClientId(newId);
+			// 🧭 Crear cliente
+			const created = await createCustomer(bodyCustomer);
+			const newId = created?.id ?? null;
+			setCreatedClientId(newId);
 
-    // 🔄 Cargar agentes del branch
-    getBranchesById(user.branchId)
-      .then((resp) => {
-        const { agents } = resp;
-        setUsuariosOptions(agents);
-      })
-      .catch((error) => {
-        const message =
-          typeof error === "string"
-            ? error
-            : error?.message
-            ? error.message
-            : "Ocurrió un error al obtener la sede";
-        setAlertMsg(message);
-        setAlertSeverity("error");
-      });
+			// 🔄 Cargar agentes del branch
+			getBranchesById(user.branchId)
+				.then((resp) => {
+					const { agents } = resp;
+					setUsuariosOptions(agents);
+				})
+				.catch((error) => {
+					const message =
+						typeof error === "string" ? error : error?.message ? error.message : "Ocurrió un error al obtener la sede";
+					setAlertMsg(message);
+					setAlertSeverity("error");
+				});
 
-    if (newId) openToast("¡Cliente creado exitosamente!", "success");
-    else openToast("No se pudo obtener el ID del cliente", "warning");
-  } catch (err) {
-    openToast(err?.message || "Error al crear el cliente", "error");
-  }
-};
+			if (newId) openToast("¡Cliente creado exitosamente!", "success");
+			else openToast("No se pudo obtener el ID del cliente", "warning");
+		} catch (err) {
+			openToast(err?.message || "Error al crear el cliente", "error");
+		}
+	};
 
-  // ====== Guardar SOLO solicitud (submit del form) ======
-  const onSubmit = async (dataForm) => {
-    try {
-      if (!createdClientId) {
-        openToast("Primero debes guardar el cliente antes de crear la solicitud.", "error");
-        return;
-      }
+	// ====== Guardar SOLO solicitud (submit del form) ======
+	const onSubmit = async (dataForm) => {
+		try {
+			if (!createdClientId) {
+				openToast("Primero debes guardar el cliente antes de crear la solicitud.", "error");
+				return;
+			}
 
-      // validación local de solicitud
-      const parsedReq = requestSchemaOnly.safeParse({
-        amount: dataForm.amount,
-        typePayment: dataForm.typePayment,
-        datePayment: dataForm.datePayment,
-        selectedDate: dataForm.selectedDate,
-        selectedAgent: dataForm.selectedAgent,
-      });
-      if (!parsedReq.success) {
-        const firstIssue = parsedReq.error.issues?.[0];
-        openToast(firstIssue?.message || "Revisa los campos de la solicitud", "error");
-        return;
-      }
+			// validación local de solicitud
+			const parsedReq = requestSchemaOnly.safeParse({
+				amount: dataForm.amount,
+				typePayment: dataForm.typePayment,
+				datePayment: dataForm.datePayment,
+				selectedDate: dataForm.selectedDate,
+				selectedAgent: dataForm.selectedAgent,
+			});
+			if (!parsedReq.success) {
+				const firstIssue = parsedReq.error.issues?.[0];
+				openToast(firstIssue?.message || "Revisa los campos de la solicitud", "error");
+				return;
+			}
 
-      const agentId = user.role === ROLES.AGENTE ? String(user.id) : dataForm.selectedAgent;
+			const agentId = user.role === ROLES.AGENTE ? String(user.id) : dataForm.selectedAgent;
 
-      const bodyRequest = {
-        client: createdClientId,
-        agent: agentId,
-        status: "new",
-        requestedAmount: dataForm.amount,
-        endDateAt: dataForm.selectedDate,
-        amount: dataForm.amount * 1.2,
-        paymentDay: dataForm.datePayment,
-        type: dataForm.typePayment,
-      };
+			const bodyRequest = {
+				client: createdClientId,
+				agent: agentId,
+				status: "new",
+				requestedAmount: dataForm.amount,
+				endDateAt: dataForm.selectedDate,
+				amount: dataForm.amount * 1.2,
+				paymentDay: dataForm.datePayment,
+				type: dataForm.typePayment,
+			};
 
-      await createRequest(bodyRequest);
-      openToast("¡Solicitud creada exitosamente!", "success");
+			await createRequest(bodyRequest);
+			openToast("¡Solicitud creada exitosamente!", "success");
 
-      // reiniciar para un nuevo flujo
-      setCreatedClientId(null);
-      setCustomFields([]);
-      setCfErrors({});
-      reset({ ...defaultValues, countryIso2: DEFAULT_COUNTRY });
-    } catch (err) {
-      openToast(err?.message || "Error al crear la solicitud", "error");
-    }
-  };
+			// reiniciar para un nuevo flujo
+			setCreatedClientId(null);
+			setCustomFields([]);
+			setCfErrors({});
+			reset({ ...defaultValues, countryIso2: DEFAULT_COUNTRY });
+		} catch (err) {
+			openToast(err?.message || "Error al crear la solicitud", "error");
+		}
+	};
 
-  // Evitar submit por Enter “fantasma”
-  const onKeyDown = (e) => {
-    if (e.key === "Enter" && e.target?.tagName?.toLowerCase() !== "textarea") {
-      e.preventDefault();
-    }
-  };
+	// Evitar submit por Enter “fantasma”
+	const onKeyDown = (e) => {
+		if (e.key === "Enter" && e.target?.tagName?.toLowerCase() !== "textarea") {
+			e.preventDefault();
+		}
+	};
 
-  return (
-    <form onSubmit={handleSubmit(onSubmit)} onKeyDown={onKeyDown}>
-      {/* ==================== CLIENTE ==================== */}
-      <Card>
-        <CardContent>
-          <Typography variant="h5" paddingTop={3}>
-            Crear cliente
-          </Typography>
+	return (
+		<form onSubmit={handleSubmit(onSubmit)} onKeyDown={onKeyDown}>
+			{/* ==================== CLIENTE ==================== */}
+			<Card>
+				<CardContent>
+					<Typography variant="h5" paddingTop={3}>
+						Crear cliente
+					</Typography>
 
-          <Stack spacing={3} paddingTop={3} divider={<Divider />}>
-            <Grid container spacing={3}>
-              {/* País */}
-              <Grid size={{ md: 6, xs: 12 }}>
-                <Controller
-                  control={control}
-                  name="countryIso2"
-                  render={({ field }) => (
-                    <FormControl error={Boolean(errors.countryIso2)} fullWidth>
-                      <InputLabel required>País</InputLabel>
-                      <Select
-                        {...field}
-                        renderValue={(v) => {
-                          const c = COUNTRIES.find((x) => x.iso2 === v);
-                          return (
-                            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                              <span style={{ fontSize: 18 }}>{flagFromCountryCode(v)}</span>
-                              <span>{c ? `${c.name} (+${c.phoneCode})` : v}</span>
-                            </Box>
-                          );
-                        }}
-                      >
-                        {COUNTRIES.map((c) => (
-                          <MenuItem key={c.iso2} value={c.iso2}>
-                            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                              <span style={{ fontSize: 18 }}>{flagFromCountryCode(c.iso2)}</span>
-                              <span>{c.name}</span>
-                              <Chip size="small" label={`+${c.phoneCode}`} sx={{ ml: 1 }} />
-                            </Box>
-                          </MenuItem>
-                        ))}
-                      </Select>
-                      {errors.countryIso2 ? <FormHelperText>{errors.countryIso2.message}</FormHelperText> : null}
-                    </FormControl>
-                  )}
-                />
-              </Grid>
+					<Stack spacing={3} paddingTop={3} divider={<Divider />}>
+						<Grid container spacing={3}>
+							{/* País */}
+							<Grid size={{ md: 6, xs: 12 }}>
+								<Controller
+									control={control}
+									name="countryIso2"
+									render={({ field }) => (
+										<FormControl error={Boolean(errors.countryIso2)} fullWidth disabled>
+											<InputLabel required>País</InputLabel>
+											<Select {...field}>
+												{countries.map((c) => (
+													<MenuItem key={c.id} value={c.id}>
+														<Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+															<span style={{ fontSize: 18 }}>{flagFromCountryCode(c.code)}</span>
+															<span>{c.name}</span>
+															<Chip size="small" label={`+${c.phoneCode}`} sx={{ ml: 1 }} />
+														</Box>
+													</MenuItem>
+												))}
+											</Select>
+											{errors.countryIso2 ? <FormHelperText>{errors.countryIso2.message}</FormHelperText> : null}
+										</FormControl>
+									)}
+								/>
+							</Grid>
 
-              {/* Ciudad */}
-              <Grid size={{ md: 6, xs: 12 }}>
-                <Controller
-                  control={control}
-                  name="city"
-                  render={({ field }) => (
-                    <FormControl error={Boolean(errors.name)} fullWidth>
-                      <InputLabel required>Ciudad</InputLabel>
-                      <OutlinedInput {...field} />
-                      {errors.name ? <FormHelperText>{errors.name.message}</FormHelperText> : null}
-                    </FormControl>
-                  )}
-                />
-              </Grid>
+							{/* Ciudad */}
+							<Grid size={{ md: 6, xs: 12 }}>
+								<Controller
+									control={control}
+									name="city"
+									render={({ field }) => (
+										<FormControl error={Boolean(errors.name)} fullWidth>
+											<InputLabel required>Ciudad</InputLabel>
+											<OutlinedInput {...field} />
+											{errors.name ? <FormHelperText>{errors.name.message}</FormHelperText> : null}
+										</FormControl>
+									)}
+								/>
+							</Grid>
 
-              {/* Nombre */}
-              <Grid size={{ md: 6, xs: 12 }}>
-                <Controller
-                  control={control}
-                  name="name"
-                  render={({ field }) => (
-                    <FormControl error={Boolean(errors.name)} fullWidth>
-                      <InputLabel required>Nombre completo</InputLabel>
-                      <OutlinedInput {...field} />
-                      {errors.name ? <FormHelperText>{errors.name.message}</FormHelperText> : null}
-                    </FormControl>
-                  )}
-                />
-              </Grid>
+							{/* Nombre */}
+							<Grid size={{ md: 6, xs: 12 }}>
+								<Controller
+									control={control}
+									name="name"
+									render={({ field }) => (
+										<FormControl error={Boolean(errors.name)} fullWidth>
+											<InputLabel required>Nombre completo</InputLabel>
+											<OutlinedInput {...field} />
+											{errors.name ? <FormHelperText>{errors.name.message}</FormHelperText> : null}
+										</FormControl>
+									)}
+								/>
+							</Grid>
 
-              {/* Correo */}
-              <Grid size={{ md: 6, xs: 12 }}>
-                <Controller
-                  control={control}
-                  name="email"
-                  render={({ field }) => (
-                    <FormControl error={Boolean(errors.email)} fullWidth>
-                      <InputLabel required>Correo</InputLabel>
-                      <OutlinedInput {...field} type="email" />
-                      {errors.email ? <FormHelperText>{errors.email.message}</FormHelperText> : null}
-                    </FormControl>
-                  )}
-                />
-              </Grid>
+							{/* Correo */}
+							<Grid size={{ md: 6, xs: 12 }}>
+								<Controller
+									control={control}
+									name="email"
+									render={({ field }) => (
+										<FormControl error={Boolean(errors.email)} fullWidth>
+											<InputLabel required>Correo</InputLabel>
+											<OutlinedInput {...field} type="email" />
+											{errors.email ? <FormHelperText>{errors.email.message}</FormHelperText> : null}
+										</FormControl>
+									)}
+								/>
+							</Grid>
 
-              {/* Celular */}
-              <Grid size={{ md: 6, xs: 12 }}>
-                <Controller
-                  control={control}
-                  name="localPhone"
-                  render={({ field }) => {
-                    const c = COUNTRIES.find((x) => x.iso2 === countryIso2);
-                    return (
-                      <FormControl error={Boolean(errors.localPhone)} fullWidth>
-                        <InputLabel required>N. de celular (local)</InputLabel>
-                        <OutlinedInput
-                          {...field}
-                          startAdornment={<Chip label={c ? `+${c.phoneCode}` : "+??"} size="small" sx={{ mr: 1 }} />}
-                          inputProps={{ inputMode: "numeric" }}
-                          onChange={(e) => field.onChange(e.target.value.replace(/\D/g, ""))}
-                        />
-                        {errors.localPhone ? <FormHelperText>{errors.localPhone.message}</FormHelperText> : null}
-                      </FormControl>
-                    );
-                  }}
-                />
-              </Grid>
+							{/* Celular */}
+							<Grid size={{ md: 6, xs: 12 }}>
+								<Controller
+									control={control}
+									name="localPhone"
+									render={({ field }) => {
+										const c = countries.find((x) => x.id === countryIso2);
+										return (
+											<FormControl error={Boolean(errors.localPhone)} fullWidth>
+												<InputLabel required>N. de celular (local)</InputLabel>
+												<OutlinedInput
+													{...field}
+													startAdornment={<Chip label={c ? `+${c.phoneCode}` : "+??"} size="small" sx={{ mr: 1 }} />}
+													inputProps={{ inputMode: "numeric" }}
+													onChange={(e) => field.onChange(e.target.value.replace(/\D/g, ""))}
+												/>
+												{errors.localPhone ? <FormHelperText>{errors.localPhone.message}</FormHelperText> : null}
+											</FormControl>
+										);
+									}}
+								/>
+							</Grid>
 
-              {/* Celular 2 */}
-              <Grid size={{ md: 6, xs: 12 }}>
-                <Controller
-                  control={control}
-                  name="localPhone2"
-                  render={({ field }) => {
-                    const c = COUNTRIES.find((x) => x.iso2 === countryIso2);
-                    return (
-                      <FormControl error={Boolean(errors.localPhone2)} fullWidth>
-                        <InputLabel>Celular 2 (local, opcional)</InputLabel>
-                        <OutlinedInput
-                          {...field}
-                          startAdornment={<Chip label={c ? `+${c.phoneCode}` : "+??"} size="small" sx={{ mr: 1 }} />}
-                          inputProps={{ inputMode: "numeric" }}
-                          onChange={(e) => field.onChange(e.target.value.replace(/\D/g, ""))}
-                        />
-                        {errors.localPhone2 ? <FormHelperText>{errors.localPhone2.message}</FormHelperText> : null}
-                      </FormControl>
-                    );
-                  }}
-                />
-              </Grid>
+							{/* Celular 2 */}
+							<Grid size={{ md: 6, xs: 12 }}>
+								<Controller
+									control={control}
+									name="localPhone2"
+									render={({ field }) => {
+										const c = countries.find((x) => x.id === countryIso2);
+										return (
+											<FormControl error={Boolean(errors.localPhone2)} fullWidth>
+												<InputLabel>Celular 2 (local, opcional)</InputLabel>
+												<OutlinedInput
+													{...field}
+													startAdornment={<Chip label={c ? `+${c.phoneCode}` : "+??"} size="small" sx={{ mr: 1 }} />}
+													inputProps={{ inputMode: "numeric" }}
+													onChange={(e) => field.onChange(e.target.value.replace(/\D/g, ""))}
+												/>
+												{errors.localPhone2 ? <FormHelperText>{errors.localPhone2.message}</FormHelperText> : null}
+											</FormControl>
+										);
+									}}
+								/>
+							</Grid>
 
-              {/* Documento */}
-              <Grid size={{ md: 6, xs: 12 }}>
-                <Controller
-                  control={control}
-                  name="documentType"
-                  render={({ field }) => (
-                    <FormControl error={Boolean(errors.documentType)} fullWidth>
-                      <InputLabel required>Tipo de documento</InputLabel>
-                      <Select {...field}>
-                        <MenuItem value="CC">Cedula de Ciudadania</MenuItem>
-                        <MenuItem value="CE">Cedula de Extranjeria</MenuItem>
-                        <MenuItem value="TE">Tarjeta de extranjería</MenuItem>
-                      </Select>
-                      {errors.documentType ? <FormHelperText>{errors.documentType.message}</FormHelperText> : null}
-                    </FormControl>
-                  )}
-                />
-              </Grid>
+							{/* Documento */}
+							<Grid size={{ md: 6, xs: 12 }}>
+								<Controller
+									control={control}
+									name="documentType"
+									render={({ field }) => (
+										<FormControl error={Boolean(errors.documentType)} fullWidth>
+											<InputLabel required>Tipo de documento</InputLabel>
+											<Select {...field}>
+												<MenuItem value="CC">Cedula de Ciudadania</MenuItem>
+												<MenuItem value="CE">Cedula de Extranjeria</MenuItem>
+												<MenuItem value="TE">Tarjeta de extranjería</MenuItem>
+											</Select>
+											{errors.documentType ? <FormHelperText>{errors.documentType.message}</FormHelperText> : null}
+										</FormControl>
+									)}
+								/>
+							</Grid>
 
-              <Grid size={{ md: 6, xs: 12 }}>
-                <Controller
-                  control={control}
-                  name="document"
-                  render={({ field }) => (
-                    <FormControl error={Boolean(errors.document)} fullWidth>
-                      <InputLabel required>N. de documento</InputLabel>
-                      <OutlinedInput {...field} />
-                      {errors.document ? <FormHelperText>{errors.document.message}</FormHelperText> : null}
-                    </FormControl>
-                  )}
-                />
-              </Grid>
+							<Grid size={{ md: 6, xs: 12 }}>
+								<Controller
+									control={control}
+									name="document"
+									render={({ field }) => (
+										<FormControl error={Boolean(errors.document)} fullWidth>
+											<InputLabel required>N. de documento</InputLabel>
+											<OutlinedInput {...field} />
+											{errors.document ? <FormHelperText>{errors.document.message}</FormHelperText> : null}
+										</FormControl>
+									)}
+								/>
+							</Grid>
 
-              {/* Dirección */}
-              <Grid size={{ md: 6, xs: 12 }}>
-                <Controller
-                  control={control}
-                  name="address"
-                  render={({ field }) => (
-                    <FormControl error={Boolean(errors.address)} fullWidth>
-                      <InputLabel required>Dirección</InputLabel>
-                      <OutlinedInput {...field} />
-                      {errors.address ? <FormHelperText>{errors.address.message}</FormHelperText> : null}
-                    </FormControl>
-                  )}
-                />
-              </Grid>
+							{/* Dirección */}
+							<Grid size={{ md: 6, xs: 12 }}>
+								<Controller
+									control={control}
+									name="address"
+									render={({ field }) => (
+										<FormControl error={Boolean(errors.address)} fullWidth>
+											<InputLabel required>Dirección</InputLabel>
+											<OutlinedInput {...field} />
+											{errors.address ? <FormHelperText>{errors.address.message}</FormHelperText> : null}
+										</FormControl>
+									)}
+								/>
+							</Grid>
 
-              {/* Dirección 2 */}
-              <Grid size={{ md: 6, xs: 12 }}>
-                <Controller
-                  control={control}
-                  name="address2"
-                  render={({ field }) => (
-                    <FormControl error={Boolean(errors.address2)} fullWidth>
-                      <InputLabel>Dirección 2 (opcional)</InputLabel>
-                      <OutlinedInput {...field} />
-                      {errors.address2 ? <FormHelperText>{errors.address2.message}</FormHelperText> : null}
-                    </FormControl>
-                  )}
-                />
-              </Grid>
+							{/* Dirección 2 */}
+							<Grid size={{ md: 6, xs: 12 }}>
+								<Controller
+									control={control}
+									name="address2"
+									render={({ field }) => (
+										<FormControl error={Boolean(errors.address2)} fullWidth>
+											<InputLabel>Dirección 2 (opcional)</InputLabel>
+											<OutlinedInput {...field} />
+											{errors.address2 ? <FormHelperText>{errors.address2.message}</FormHelperText> : null}
+										</FormControl>
+									)}
+								/>
+							</Grid>
 
-              {/* Referencia */}
-              <Grid size={{ md: 6, xs: 12 }}>
-                <Controller
-                  control={control}
-                  name="referenceName"
-                  render={({ field }) => (
-                    <FormControl error={Boolean(errors.referenceName)} fullWidth>
-                      <InputLabel required>Nombre completo de la referencia</InputLabel>
-                      <OutlinedInput {...field} />
-                      {errors.referenceName ? <FormHelperText>{errors.referenceName.message}</FormHelperText> : null}
-                    </FormControl>
-                  )}
-                />
-              </Grid>
+							{/* Referencia */}
+							<Grid size={{ md: 6, xs: 12 }}>
+								<Controller
+									control={control}
+									name="referenceName"
+									render={({ field }) => (
+										<FormControl error={Boolean(errors.referenceName)} fullWidth>
+											<InputLabel required>Nombre completo de la referencia</InputLabel>
+											<OutlinedInput {...field} />
+											{errors.referenceName ? <FormHelperText>{errors.referenceName.message}</FormHelperText> : null}
+										</FormControl>
+									)}
+								/>
+							</Grid>
 
-              <Grid size={{ md: 6, xs: 12 }}>
-                <Controller
-                  control={control}
-                  name="referenceRelationship"
-                  render={({ field }) => (
-                    <FormControl error={Boolean(errors.referenceRelationship)} fullWidth>
-                      <InputLabel required>Parentesco / Relación</InputLabel>
-                      <OutlinedInput {...field} />
-                      {errors.referenceRelationship ? (
-                        <FormHelperText>{errors.referenceRelationship.message}</FormHelperText>
-                      ) : null}
-                    </FormControl>
-                  )}
-                />
-              </Grid>
+							<Grid size={{ md: 6, xs: 12 }}>
+								<Controller
+									control={control}
+									name="referenceRelationship"
+									render={({ field }) => (
+										<FormControl error={Boolean(errors.referenceRelationship)} fullWidth>
+											<InputLabel required>Parentesco / Relación</InputLabel>
+											<OutlinedInput {...field} />
+											{errors.referenceRelationship ? (
+												<FormHelperText>{errors.referenceRelationship.message}</FormHelperText>
+											) : null}
+										</FormControl>
+									)}
+								/>
+							</Grid>
 
-              <Grid size={{ md: 6, xs: 12 }}>
-                <Controller
-                  control={control}
-                  name="referencePhone"
-                  render={({ field }) => {
-                    const c = COUNTRIES.find((x) => x.iso2 === countryIso2);
-                    return (
-                      <FormControl error={Boolean(errors.referencePhone)} fullWidth>
-                        <InputLabel required>Teléfono de la referencia</InputLabel>
-                        <OutlinedInput
-                          {...field}
-                          startAdornment={<Chip label={c ? `+${c.phoneCode}` : "+??"} size="small" sx={{ mr: 1 }} />}
-                          inputProps={{ inputMode: "numeric" }}
-                          onChange={(e) => field.onChange(e.target.value.replace(/\D/g, ""))}
-                        />
-                        {errors.referencePhone ? <FormHelperText>{errors.referencePhone.message}</FormHelperText> : null}
-                      </FormControl>
-                    );
-                  }}
-                />
-              </Grid>
-            </Grid>
-          </Stack>
-        </CardContent>
+							<Grid size={{ md: 6, xs: 12 }}>
+								<Controller
+									control={control}
+									name="referencePhone"
+									render={({ field }) => {
+										const c = countries.find((x) => x.id === countryIso2);
+										return (
+											<FormControl error={Boolean(errors.referencePhone)} fullWidth>
+												<InputLabel required>Teléfono de la referencia</InputLabel>
+												<OutlinedInput
+													{...field}
+													startAdornment={<Chip label={c ? `+${c.phoneCode}` : "+??"} size="small" sx={{ mr: 1 }} />}
+													inputProps={{ inputMode: "numeric" }}
+													onChange={(e) => field.onChange(e.target.value.replace(/\D/g, ""))}
+												/>
+												{errors.referencePhone ? (
+													<FormHelperText>{errors.referencePhone.message}</FormHelperText>
+												) : null}
+											</FormControl>
+										);
+									}}
+								/>
+							</Grid>
+						</Grid>
+					</Stack>
+				</CardContent>
 
-        <CardActions sx={{ justifyContent: "flex-end" }}>
-          {/* IMPORTANTE: no es submit */}
-          <Button variant="contained" type="button" onClick={handleSaveClientOnly}>
-            Guardar cliente
-          </Button>
-        </CardActions>
-      </Card>
+				<CardActions sx={{ justifyContent: "flex-end" }}>
+					{/* IMPORTANTE: no es submit */}
+					<Button variant="contained" type="button" onClick={handleSaveClientOnly}>
+						Guardar cliente
+					</Button>
+				</CardActions>
+			</Card>
 
-      {/* ==================== CAMPOS PERSONALIZADOS ==================== */}
-      <Card sx={{ mt: 3 }} variant="outlined">
-        <CardContent>
-          <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 1 }}>
-            <Typography variant="h6">Campos personalizados</Typography>
-            <Tooltip title="Agregar campo">
-              <Button onClick={addCustomField} size="small" variant="outlined">
-                + Agregar campo
-              </Button>
-            </Tooltip>
-          </Box>
-          <Divider sx={{ mb: 2 }} />
+			{/* ==================== CAMPOS PERSONALIZADOS ==================== */}
+			<Card sx={{ mt: 3 }} variant="outlined">
+				<CardContent>
+					<Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 1 }}>
+						<Typography variant="h6">Campos personalizados</Typography>
+						<Tooltip title="Agregar campo">
+							<Button onClick={addCustomField} size="small" variant="outlined">
+								+ Agregar campo
+							</Button>
+						</Tooltip>
+					</Box>
+					<Divider sx={{ mb: 2 }} />
 
-          {customFields.length === 0 ? (
-            <Typography variant="body2" sx={{ opacity: 0.7 }}>
-              No hay campos personalizados.
-            </Typography>
-          ) : (
-            <Stack spacing={2}>
-              {customFields.map((cf, idx) => {
-                const err = cfErrors[idx] || {};
-                const canOpen = cf.type === "link" && isValidUrl(cf.value);
-                const openHref = canOpen ? normalizeLink(cf.value) : undefined;
+					{customFields.length === 0 ? (
+						<Typography variant="body2" sx={{ opacity: 0.7 }}>
+							No hay campos personalizados.
+						</Typography>
+					) : (
+						<Stack spacing={2}>
+							{customFields.map((cf, idx) => {
+								const err = cfErrors[idx] || {};
+								const canOpen = cf.type === "link" && isValidUrl(cf.value);
+								const openHref = canOpen ? normalizeLink(cf.value) : undefined;
 
-                return (
-                  <Grid container spacing={2} key={`cf-${idx}`} alignItems="center">
-                    {/* Clave */}
-                    <Grid size={{ md: 4, xs: 12 }}>
-                      <FormControl fullWidth error={Boolean(err.key)}>
-                        <InputLabel>Nombre del campo</InputLabel>
-                        <OutlinedInput
-                          value={cf.key}
-                          onChange={(e) => updateCustomField(idx, { key: e.target.value })}
-                          label="Nombre del campo"
-                          placeholder="p.ej. Facebook, Ingresos, Observaciones"
-                        />
-                        {err.key ? <FormHelperText>{err.key}</FormHelperText> : null}
-                      </FormControl>
-                    </Grid>
+								return (
+									<Grid container spacing={2} key={`cf-${idx}`} alignItems="center">
+										{/* Clave */}
+										<Grid size={{ md: 4, xs: 12 }}>
+											<FormControl fullWidth error={Boolean(err.key)}>
+												<InputLabel>Nombre del campo</InputLabel>
+												<OutlinedInput
+													value={cf.key}
+													onChange={(e) => updateCustomField(idx, { key: e.target.value })}
+													label="Nombre del campo"
+													placeholder="p.ej. Facebook, Ingresos, Observaciones"
+												/>
+												{err.key ? <FormHelperText>{err.key}</FormHelperText> : null}
+											</FormControl>
+										</Grid>
 
-                    {/* Tipo */}
-                    <Grid size={{ md: 3, xs: 12 }}>
-                      <FormControl fullWidth>
-                        <InputLabel>Tipo</InputLabel>
-                        <Select label="Tipo" value={cf.type} onChange={(e) => updateCustomField(idx, { type: e.target.value })}>
-                          <MenuItem value="text">Texto</MenuItem>
-                          <MenuItem value="number">Número</MenuItem>
-                          <MenuItem value="link">Enlace</MenuItem>
-                        </Select>
-                      </FormControl>
-                    </Grid>
+										{/* Tipo */}
+										<Grid size={{ md: 3, xs: 12 }}>
+											<FormControl fullWidth>
+												<InputLabel>Tipo</InputLabel>
+												<Select
+													label="Tipo"
+													value={cf.type}
+													onChange={(e) => updateCustomField(idx, { type: e.target.value })}
+												>
+													<MenuItem value="text">Texto</MenuItem>
+													<MenuItem value="number">Número</MenuItem>
+													<MenuItem value="link">Enlace</MenuItem>
+												</Select>
+											</FormControl>
+										</Grid>
 
-                    {/* Valor */}
-                    <Grid size={{ md: 3, xs: 12 }}>
-                      <FormControl fullWidth error={Boolean(err.value)}>
-                        <InputLabel>
-                          {cf.type === "number" ? "Valor numérico" : cf.type === "link" ? "URL" : "Valor"}
-                        </InputLabel>
-                        <OutlinedInput
-                          value={cf.value}
-                          onChange={(e) => {
-                            let v = e.target.value;
-                            if (cf.type === "number") v = v.replace(/[^0-9.\-]/g, "");
-                            updateCustomField(idx, { value: v });
-                          }}
-                          label={cf.type === "number" ? "Valor numérico" : cf.type === "link" ? "URL" : "Valor"}
-                          placeholder={cf.type === "link" ? "https://ejemplo.com" : ""}
-                        />
-                        {err.value ? <FormHelperText>{err.value}</FormHelperText> : null}
-                      </FormControl>
-                    </Grid>
+										{/* Valor */}
+										<Grid size={{ md: 3, xs: 12 }}>
+											<FormControl fullWidth error={Boolean(err.value)}>
+												<InputLabel>
+													{cf.type === "number" ? "Valor numérico" : cf.type === "link" ? "URL" : "Valor"}
+												</InputLabel>
+												<OutlinedInput
+													value={cf.value}
+													onChange={(e) => {
+														let v = e.target.value;
+														if (cf.type === "number") v = v.replace(/[^0-9.\-]/g, "");
+														updateCustomField(idx, { value: v });
+													}}
+													label={cf.type === "number" ? "Valor numérico" : cf.type === "link" ? "URL" : "Valor"}
+													placeholder={cf.type === "link" ? "https://ejemplo.com" : ""}
+												/>
+												{err.value ? <FormHelperText>{err.value}</FormHelperText> : null}
+											</FormControl>
+										</Grid>
 
-                    {/* Acciones */}
-                    <Grid
-                      size={{ md: 2, xs: 12 }}
-                      sx={{
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: { xs: "flex-start", md: "flex-end" },
-                        gap: 1,
-                      }}
-                    >
-                      {cf.type === "link" && (
-                        <Tooltip title={canOpen ? "Abrir en nueva pestaña" : "URL inválida"}>
-                          <span>
-                            <Button
-                              size="small"
-                              variant="outlined"
-                              component="a"
-                              href={openHref}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              disabled={!canOpen}
-                            >
-                              Abrir
-                            </Button>
-                          </span>
-                        </Tooltip>
-                      )}
+										{/* Acciones */}
+										<Grid
+											size={{ md: 2, xs: 12 }}
+											sx={{
+												display: "flex",
+												alignItems: "center",
+												justifyContent: { xs: "flex-start", md: "flex-end" },
+												gap: 1,
+											}}
+										>
+											{cf.type === "link" && (
+												<Tooltip title={canOpen ? "Abrir en nueva pestaña" : "URL inválida"}>
+													<span>
+														<Button
+															size="small"
+															variant="outlined"
+															component="a"
+															href={openHref}
+															target="_blank"
+															rel="noopener noreferrer"
+															disabled={!canOpen}
+														>
+															Abrir
+														</Button>
+													</span>
+												</Tooltip>
+											)}
 
-                      <Tooltip title="Eliminar">
-                        <Button onClick={() => removeCustomField(idx)} size="small" color="error" variant="outlined">
-                          Eliminar
-                        </Button>
-                      </Tooltip>
-                    </Grid>
-                  </Grid>
-                );
-              })}
-            </Stack>
-          )}
-        </CardContent>
-      </Card>
+											<Tooltip title="Eliminar">
+												<Button onClick={() => removeCustomField(idx)} size="small" color="error" variant="outlined">
+													Eliminar
+												</Button>
+											</Tooltip>
+										</Grid>
+									</Grid>
+								);
+							})}
+						</Stack>
+					)}
+				</CardContent>
+			</Card>
 
-      {/* ==================== SOLICITUD ==================== */}
-      <Card sx={{ mt: 3 }}>
-        <CardContent>
-          <Typography variant="h5" paddingTop={3}>
-            Crear solicitud
-          </Typography>
+			{/* ==================== SOLICITUD ==================== */}
+			<Card sx={{ mt: 3 }}>
+				<CardContent>
+					<Typography variant="h5" paddingTop={3}>
+						Crear solicitud
+					</Typography>
 
-          <Stack spacing={3} paddingTop={3} divider={<Divider />}>
-            <Grid container spacing={3}>
-              <Grid size={{ md: 6, xs: 12 }}>
-                <Controller
-                  control={control}
-                  name="amount"
-                  render={({ field }) => (
-                    <FormControl error={Boolean(errors.amount)} fullWidth disabled={!createdClientId}>
-                      <InputLabel required>Monto solicitado</InputLabel>
-                      <OutlinedInput
-                        {...field}
-                        value={field.value !== undefined && field.value !== null ? formatCurrency(field.value) : ""}
-                        onChange={(e) => {
-                          const raw = deleteAlphabeticals(e.target.value);
-                          const numericValue = raw ? Number.parseInt(raw, 10) : 0;
-                          field.onChange(numericValue);
-                        }}
-                        inputProps={{ inputMode: "numeric" }}
-                      />
-                      {errors.amount ? <FormHelperText>{errors.amount.message}</FormHelperText> : null}
-                    </FormControl>
-                  )}
-                />
-              </Grid>
+					<Stack spacing={3} paddingTop={3} divider={<Divider />}>
+						<Grid container spacing={3}>
+							<Grid size={{ md: 6, xs: 12 }}>
+								<Controller
+									control={control}
+									name="amount"
+									render={({ field }) => (
+										<FormControl error={Boolean(errors.amount)} fullWidth disabled={!createdClientId}>
+											<InputLabel required>Monto solicitado</InputLabel>
+											<OutlinedInput
+												{...field}
+												value={field.value !== undefined && field.value !== null ? formatCurrency(field.value) : ""}
+												onChange={(e) => {
+													const raw = deleteAlphabeticals(e.target.value);
+													const numericValue = raw ? Number.parseInt(raw, 10) : 0;
+													field.onChange(numericValue);
+												}}
+												inputProps={{ inputMode: "numeric" }}
+											/>
+											{errors.amount ? <FormHelperText>{errors.amount.message}</FormHelperText> : null}
+										</FormControl>
+									)}
+								/>
+							</Grid>
 
-              <Grid size={{ md: 6, xs: 12 }}>
-                <Controller
-                  control={control}
-                  name="typePayment"
-                  render={({ field }) => (
-                    <FormControl error={Boolean(errors.typePayment)} fullWidth disabled={!createdClientId}>
-                      <InputLabel required>Tipo de pago</InputLabel>
-                      <Select {...field}>
-                        <MenuItem value="QUINCENAL">Quincenal</MenuItem>
-                        <MenuItem value="MENSUAL">Mensual</MenuItem>
-                      </Select>
-                      {errors.typePayment ? <FormHelperText>{errors.typePayment.message}</FormHelperText> : null}
-                    </FormControl>
-                  )}
-                />
-              </Grid>
+							<Grid size={{ md: 6, xs: 12 }}>
+								<Controller
+									control={control}
+									name="typePayment"
+									render={({ field }) => (
+										<FormControl error={Boolean(errors.typePayment)} fullWidth disabled={!createdClientId}>
+											<InputLabel required>Tipo de pago</InputLabel>
+											<Select {...field}>
+												<MenuItem value="QUINCENAL">Quincenal</MenuItem>
+												<MenuItem value="MENSUAL">Mensual</MenuItem>
+											</Select>
+											{errors.typePayment ? <FormHelperText>{errors.typePayment.message}</FormHelperText> : null}
+										</FormControl>
+									)}
+								/>
+							</Grid>
 
-              <Grid size={{ md: 6, xs: 12 }}>
-                <Controller
-                  control={control}
-                  name="datePayment"
-                  render={({ field }) => (
-                    <FormControl error={Boolean(errors.datePayment)} fullWidth disabled={!createdClientId}>
-                      <InputLabel required>Fecha de pago</InputLabel>
-                      <Select {...field}>
-                        <MenuItem value="15-30">15 - 30</MenuItem>
-                        <MenuItem value="5-20">5 - 20</MenuItem>
-                        <MenuItem value="10-25">10 - 25</MenuItem>
-                      </Select>
-                      {errors.datePayment ? <FormHelperText>{errors.datePayment.message}</FormHelperText> : null}
-                    </FormControl>
-                  )}
-                />
-              </Grid>
+							<Grid size={{ md: 6, xs: 12 }}>
+								<Controller
+									control={control}
+									name="datePayment"
+									render={({ field }) => (
+										<FormControl error={Boolean(errors.datePayment)} fullWidth disabled={!createdClientId}>
+											<InputLabel required>Fecha de pago</InputLabel>
+											<Select {...field}>
+												<MenuItem value="15-30">15 - 30</MenuItem>
+												<MenuItem value="5-20">5 - 20</MenuItem>
+												<MenuItem value="10-25">10 - 25</MenuItem>
+											</Select>
+											{errors.datePayment ? <FormHelperText>{errors.datePayment.message}</FormHelperText> : null}
+										</FormControl>
+									)}
+								/>
+							</Grid>
 
-              <Grid size={{ md: 6, xs: 12 }}>
-                <Controller
-                  control={control}
-                  name="selectedDate"
-                  render={({ field }) => (
-                    <FormControl error={Boolean(errors.selectedDate)} fullWidth disabled={!createdClientId}>
-                      <InputLabel required>Día a pagar</InputLabel>
-                      <DatePicker {...field} minDate={dayjs()} sx={{ marginTop: "0.5rem" }} />
-                      {errors.selectedDate ? <FormHelperText>{errors.selectedDate.message}</FormHelperText> : null}
-                    </FormControl>
-                  )}
-                />
-              </Grid>
+							<Grid size={{ md: 6, xs: 12 }}>
+								<Controller
+									control={control}
+									name="selectedDate"
+									render={({ field }) => (
+										<FormControl error={Boolean(errors.selectedDate)} fullWidth disabled={!createdClientId}>
+											<InputLabel required>Día a pagar</InputLabel>
+											<DatePicker {...field} minDate={dayjs()} sx={{ marginTop: "0.5rem" }} />
+											{errors.selectedDate ? <FormHelperText>{errors.selectedDate.message}</FormHelperText> : null}
+										</FormControl>
+									)}
+								/>
+							</Grid>
 
-              {/* Agente (si ADMIN, elige; si AGENTE, se fija en backend) */}
-              {user.role === ROLES.ADMIN ? (
-                <Grid size={{ md: 6, xs: 12 }}>
-                  <Controller
-                    control={control}
-                    name="selectedAgent"
-                    render={({ field }) => (
-                      <FormControl error={Boolean(errors.selectedAgent)} fullWidth disabled={!createdClientId}>
-                        <InputLabel required>Agente</InputLabel>
-                        <Select {...field}>
-                          {usuariosOptions.map((option) => (
-															<MenuItem key={option.id} value={option.id.toString()}>
-																{option.name}
-															</MenuItem>
-														))}
-                        </Select>
-                        {errors.selectedAgent ? <FormHelperText>{errors.selectedAgent.message}</FormHelperText> : null}
-                      </FormControl>
-                    )}
-                  />
-                </Grid>
-              ) : null}
-            </Grid>
-          </Stack>
-        </CardContent>
+							{/* Agente (si ADMIN, elige; si AGENTE, se fija en backend) */}
+							{user.role === ROLES.ADMIN ? (
+								<Grid size={{ md: 6, xs: 12 }}>
+									<Controller
+										control={control}
+										name="selectedAgent"
+										render={({ field }) => (
+											<FormControl error={Boolean(errors.selectedAgent)} fullWidth disabled={!createdClientId}>
+												<InputLabel required>Agente</InputLabel>
+												<Select {...field}>
+													{usuariosOptions.map((option) => (
+														<MenuItem key={option.id} value={option.id.toString()}>
+															{option.name}
+														</MenuItem>
+													))}
+												</Select>
+												{errors.selectedAgent ? <FormHelperText>{errors.selectedAgent.message}</FormHelperText> : null}
+											</FormControl>
+										)}
+									/>
+								</Grid>
+							) : null}
+						</Grid>
+					</Stack>
+				</CardContent>
 
-        <CardActions sx={{ justifyContent: "flex-end" }}>
-          <Button variant="outlined" component={RouterLink} href={paths.dashboard.customers.list} type="button">
-            Cancelar
-          </Button>
-          {/* ÚNICO submit real */}
-          <Button variant="contained" type="submit" disabled={!createdClientId} aria-disabled={!createdClientId}>
-            Guardar
-          </Button>
-        </CardActions>
-      </Card>
+				<CardActions sx={{ justifyContent: "flex-end" }}>
+					<Button variant="outlined" component={RouterLink} href={paths.dashboard.customers.list} type="button">
+						Cancelar
+					</Button>
+					{/* ÚNICO submit real */}
+					<Button variant="contained" type="submit" disabled={!createdClientId} aria-disabled={!createdClientId}>
+						Guardar
+					</Button>
+				</CardActions>
+			</Card>
 
-      <NotificationAlert
-        openAlert={openAlert}
-        onClose={() => setOpenAlert(false)}
-        msg={alertMsg}
-        severity={alertSeverity}
-      />
-    </form>
-  );
+			<NotificationAlert
+				openAlert={openAlert}
+				onClose={() => setOpenAlert(false)}
+				msg={alertMsg}
+				severity={alertSeverity}
+			/>
+		</form>
+	);
 }
