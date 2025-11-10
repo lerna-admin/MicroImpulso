@@ -27,6 +27,7 @@ import {
 	ExclamationMark as ExclamationMarkIcon,
 	LockOpen as LockOpenIcon,
 	UserCheck as UserCheckIcon,
+	UserMinus as UserMinusIcon,
 	XCircle as XCircleIcon,
 } from "@phosphor-icons/react/dist/ssr";
 import { CheckCircle as CheckCircleIcon } from "@phosphor-icons/react/dist/ssr/CheckCircle";
@@ -128,6 +129,7 @@ export function ActionsCell({ row }) {
 	const router = useRouter();
 	const popover = usePopover();
 	const modalRevertirCierre = usePopover();
+	const modalInactivarUsuario = usePopover();
 	const notificationAlert = usePopover();
 	const [alertMsg, setAlertMsg] = React.useState("");
 	const [alertSeverity, setAlertSeverity] = React.useState("");
@@ -179,6 +181,10 @@ export function ActionsCell({ row }) {
 		router.refresh();
 	};
 
+	const handleInactiveUser = async () => {
+		console.log("handleInactiveUser");
+	};
+
 	return (
 		<React.Fragment>
 			<Tooltip title="Más opciones">
@@ -202,13 +208,19 @@ export function ActionsCell({ row }) {
 					<ListItemIcon>
 						<LockOpenIcon />
 					</ListItemIcon>
-					<Typography>Desbloquear</Typography>
+					<Typography>Desbloquear usuario</Typography>
 				</MenuItem>
 				<MenuItem onClick={handleActiveUser}>
 					<ListItemIcon>
 						<UserCheckIcon />
 					</ListItemIcon>
-					<Typography>Activar</Typography>
+					<Typography>Activar usuario</Typography>
+				</MenuItem>
+				<MenuItem onClick={() => modalInactivarUsuario.handleOpen()}>
+					<ListItemIcon>
+						<UserMinusIcon />
+					</ListItemIcon>
+					<Typography>Inactivar usuario</Typography>
 				</MenuItem>
 			</Menu>
 
@@ -238,6 +250,40 @@ export function ActionsCell({ row }) {
 							onClick={() => {
 								popover.handleClose();
 								modalRevertirCierre.handleClose();
+							}}
+						>
+							Cancelar
+						</Button>
+					</Box>
+				</DialogContent>
+			</Dialog>
+
+			{/* Modal para inactivar usuario */}
+			<Dialog
+				fullWidth
+				maxWidth={"xs"}
+				open={modalInactivarUsuario.open}
+				onClose={modalInactivarUsuario.handleClose}
+				aria-labelledby="alert-dialog-title"
+				aria-describedby="alert-dialog-description"
+			>
+				<DialogTitle id="alert-dialog-title" textAlign={"center"} sx={{ pt: 4, pb: 4 }}>
+					{"Inactivar usuario"}
+				</DialogTitle>
+
+				<DialogContent>
+					<DialogContentText id="alert-dialog-description" textAlign={"justify"} sx={{ pb: 3 }}>
+						{`¿Desea inactivar el usuario ${row.name}? Debes seleccionar un agente al cual asignarle los clientes y solicitudes de este usuario.`}
+					</DialogContentText>
+					<Box component={"div"} display={"flex"} justifyContent={"flex-end"} gap={2}>
+						<Button variant="contained" onClick={handleInactiveUser} autoFocus>
+							Aceptar
+						</Button>
+						<Button
+							variant="outlined"
+							onClick={() => {
+								popover.handleClose();
+								modalInactivarUsuario.handleClose();
 							}}
 						>
 							Cancelar
