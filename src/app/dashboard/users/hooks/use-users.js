@@ -34,6 +34,16 @@ export async function createUser(data) {
 	return await res.json();
 }
 
+export async function inactiveUser(agentId, data) {
+	const res = await fetch(`${BASE_URL}/users/${agentId}/inactivate`, {
+		method: "PATCH",
+		headers: { "Content-Type": "application/json" },
+		body: JSON.stringify(data),
+	});
+	if (!res.ok) throw new Error("Error al inactivar usuario");
+	return await res.json();
+}
+
 export async function updateUser(data) {
 	const res = await fetch(`${BASE_URL}/users/${data.id}`, {
 		method: "PATCH",
