@@ -53,7 +53,7 @@ export default async function Page({ searchParams }) {
 		noPayment30,
 	};
 
-	const branches = await getAllBranches(u_id = user.country.id);
+	const branches = await getAllBranches(user.country.id);
 
 	return (
 		<Box

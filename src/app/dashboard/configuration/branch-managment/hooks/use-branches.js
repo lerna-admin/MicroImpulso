@@ -10,7 +10,7 @@ export async function createBranch(data) {
 	return await res.json();
 }
 
-export async function getAllBranches(c_id =null) {
+export async function getAllBranches(c_id=null) {
 	let url = `${BASE_URL}/branches`;
 	if(c_id){
 		url+=`?countryId=${c_id}` 
