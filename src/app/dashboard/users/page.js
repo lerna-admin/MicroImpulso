@@ -52,7 +52,7 @@ export default async function Page({ searchParams }) {
 						<UsersFilters filters={{ name, document, page, limit }} />
 						<Divider />
 						<Box sx={{ overflowX: "auto" }}>
-							<UsersTable rows={users} />
+							<UsersTable rows={users} user={user} />
 						</Box>
 						<Divider />
 						<UsersPagination

@@ -4,6 +4,9 @@ import * as React from "react";
 import RouterLink from "next/link";
 import { useRouter } from "next/navigation";
 import { activeUser, deleteCloseDay, unlockUser } from "@/app/dashboard/balance/hooks/use-balance";
+import { getBranchesById } from "@/app/dashboard/configuration/branch-managment/hooks/use-branches";
+import { inactiveUser } from "@/app/dashboard/users/hooks/use-users";
+import { zodResolver } from "@hookform/resolvers/zod";
 import {
 	Button,
 	Chip,
@@ -11,13 +14,18 @@ import {
 	DialogContent,
 	DialogContentText,
 	DialogTitle,
+	FormControl,
+	FormHelperText,
+	InputLabel,
 	Link,
 	ListItemIcon,
 	Menu,
 	MenuItem,
+	Select,
 	Tooltip,
 } from "@mui/material";
 import Box from "@mui/material/Box";
+import Grid from "@mui/material/Grid2";
 import IconButton from "@mui/material/IconButton";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
@@ -31,6 +39,8 @@ import {
 	XCircle as XCircleIcon,
 } from "@phosphor-icons/react/dist/ssr";
 import { CheckCircle as CheckCircleIcon } from "@phosphor-icons/react/dist/ssr/CheckCircle";
+import { Controller, useForm } from "react-hook-form";
+import { z as zod } from "zod";
 
 import { paths } from "@/paths";
 import { dayjs } from "@/lib/dayjs";
@@ -38,7 +48,7 @@ import { usePopover } from "@/hooks/use-popover";
 import { DataTable } from "@/components/core/data-table";
 import { NotificationAlert } from "@/components/widgets/notifications/notification-alert";
 
-export function UsersTable({ rows }) {
+export function UsersTable({ rows, user }) {
 	const columns = [
 		{
 			formatter: (row) => (
@@ -103,7 +113,7 @@ export function UsersTable({ rows }) {
 			width: "100px",
 		},
 		{
-			formatter: (row) => <ActionsCell row={row} />,
+			formatter: (row) => <ActionsCell row={row} user={user} />,
 			name: "Acciones",
 			hideName: true,
 			width: "70px",
@@ -125,7 +135,7 @@ export function UsersTable({ rows }) {
 	);
 }
 
-export function ActionsCell({ row }) {
+export function ActionsCell({ row, user }) {
 	const router = useRouter();
 	const popover = usePopover();
 	const modalRevertirCierre = usePopover();
@@ -134,6 +144,24 @@ export function ActionsCell({ row }) {
 	const [alertMsg, setAlertMsg] = React.useState("");
 	const [alertSeverity, setAlertSeverity] = React.useState("");
 	const [anchorEl, setAnchorEl] = React.useState(null);
+
+	const [agentsOptions, setAgentsOptions] = React.useState([]);
+
+	const schema = zod.object({
+		selectedAgent: zod.string().min(1, { message: "El agente es obligatorio" }),
+	});
+
+	const {
+		control,
+		handleSubmit,
+		reset,
+		formState: { errors },
+	} = useForm({
+		resolver: zodResolver(schema),
+		defaultValues: {
+			selectedAgent: "",
+		},
+	});
 
 	const handleOptions = (event) => {
 		setAnchorEl(event.currentTarget);
@@ -167,9 +195,26 @@ export function ActionsCell({ row }) {
 		router.refresh();
 	};
 
+	const handleGetAgentsOptions = () => {
+		getBranchesById(user.branch.id)
+			.then((resp) => {
+				const { agents } = resp;
+				setAgentsOptions(agents);
+			})
+			.catch((error) => {
+				setAlertMsg(error.message);
+				setAlertSeverity("error");
+			})
+			.finally(() => {
+				popover.handleClose();
+				notificationAlert.handleOpen();
+				modalInactivarUsuario.handleOpen();
+			});
+	};
+
 	const handleActiveUser = async () => {
 		try {
-			await activeUser(row.id, { status: "active" });
+			await activeUser(row.id, { status: "ACTIVE" });
 			setAlertMsg("¡Se ha activado exitosamente!");
 			setAlertSeverity("success");
 		} catch (error) {
@@ -181,8 +226,19 @@ export function ActionsCell({ row }) {
 		router.refresh();
 	};
 
-	const handleInactiveUser = async () => {
-		console.log("handleInactiveUser");
+	const handleInactiveUser = async (dataForm) => {
+		inactiveUser(row.id, { replacementUserId: Number(dataForm.selectedAgent), currentUser: user.id })
+			.then()
+			.catch((error) => {
+				setAlertMsg(error.message);
+				setAlertSeverity("error");
+			})
+			.finally(() => {
+				notificationAlert.handleOpen();
+				modalInactivarUsuario.handleClose();
+				router.refresh();
+				reset();
+			});
 	};
 
 	return (
@@ -216,7 +272,7 @@ export function ActionsCell({ row }) {
 					</ListItemIcon>
 					<Typography>Activar usuario</Typography>
 				</MenuItem>
-				<MenuItem onClick={() => modalInactivarUsuario.handleOpen()}>
+				<MenuItem onClick={handleGetAgentsOptions}>
 					<ListItemIcon>
 						<UserMinusIcon />
 					</ListItemIcon>
@@ -261,7 +317,7 @@ export function ActionsCell({ row }) {
 			{/* Modal para inactivar usuario */}
 			<Dialog
 				fullWidth
-				maxWidth={"xs"}
+				maxWidth={"sm"}
 				open={modalInactivarUsuario.open}
 				onClose={modalInactivarUsuario.handleClose}
 				aria-labelledby="alert-dialog-title"
@@ -273,22 +329,53 @@ export function ActionsCell({ row }) {
 
 				<DialogContent>
 					<DialogContentText id="alert-dialog-description" textAlign={"justify"} sx={{ pb: 3 }}>
-						{`¿Desea inactivar el usuario ${row.name}? Debes seleccionar un agente al cual asignarle los clientes y solicitudes de este usuario.`}
+						{`¿Desea inactivar el usuario ${row.name}?. Debes seleccionar un agente para asignarle los clientes.`}
 					</DialogContentText>
-					<Box component={"div"} display={"flex"} justifyContent={"flex-end"} gap={2}>
-						<Button variant="contained" onClick={handleInactiveUser} autoFocus>
-							Aceptar
-						</Button>
-						<Button
-							variant="outlined"
-							onClick={() => {
-								popover.handleClose();
-								modalInactivarUsuario.handleClose();
-							}}
-						>
-							Cancelar
-						</Button>
-					</Box>
+					<form onSubmit={handleSubmit(handleInactiveUser)}>
+						<Stack spacing={3}>
+							<Grid container spacing={3}>
+								<Grid
+									size={{
+										md: 12,
+										xs: 12,
+									}}
+								>
+									<Controller
+										control={control}
+										name="selectedAgent"
+										render={({ field }) => (
+											<FormControl fullWidth error={Boolean(errors.selectedAgent)}>
+												<InputLabel>{"Agentes"}</InputLabel>
+												<Select {...field}>
+													{agentsOptions.map((option) => (
+														<MenuItem key={option.id} value={option.id.toString()}>
+															{option.name}
+														</MenuItem>
+													))}
+												</Select>
+												{errors.selectedAgent ? <FormHelperText>{errors.selectedAgent.message}</FormHelperText> : null}
+											</FormControl>
+										)}
+									/>
+								</Grid>
+							</Grid>
+							<Box component={"div"} display={"flex"} justifyContent={"flex-end"} gap={2}>
+								<Button variant="contained" type="submit" autoFocus>
+									Aceptar
+								</Button>
+								<Button
+									variant="outlined"
+									onClick={() => {
+										popover.handleClose();
+										modalInactivarUsuario.handleClose();
+										reset();
+									}}
+								>
+									Cancelar
+								</Button>
+							</Box>
+						</Stack>
+					</form>
 				</DialogContent>
 			</Dialog>
 
