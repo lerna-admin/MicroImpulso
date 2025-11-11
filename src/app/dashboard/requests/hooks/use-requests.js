@@ -86,7 +86,7 @@ export async function updateRequest(data, id) {
 }
 
 export async function sendContractRequest(id) {
-	const res = await fetch(`${BASE_URL}/send-contract/${id}`, {
+	const res = await fetch(`${BASE_URL}/chat/send-contract/${id}`, {
 		method: "POST",
 		headers: { "Content-Type": "application/json" },
 	});
@@ -105,7 +105,7 @@ export async function renewRequest(data, id) {
 }
 
 export async function sendContract(loanRequestId) {
-	const res = await fetch(`${BASE_URL}/loan-request/${loanRequestId}/send-contract`, {
+	const res = await fetch(`${BASE_URL}/loan-request/${loanRequestId}/`, {
 		method: "POST",
 		headers: { "Content-Type": "application/json" },
 	});
