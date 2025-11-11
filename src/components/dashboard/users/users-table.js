@@ -199,7 +199,8 @@ export function ActionsCell({ row, user }) {
 		getBranchesById(user.branch.id)
 			.then((resp) => {
 				const { agents } = resp;
-				setAgentsOptions(agents);
+				const agentsFiltered = agents.filter((agent) => agent.id !== row.id);
+				setAgentsOptions(agentsFiltered);
 			})
 			.catch((error) => {
 				setAlertMsg(error.message);
