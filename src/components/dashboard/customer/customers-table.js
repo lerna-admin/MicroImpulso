@@ -526,7 +526,7 @@ export function ActionsCell({ row, permissions, user, role, branch }) {
 				>
 					<Typography>Desembolsar solicitud</Typography>
 				</MenuItem>
-				<MenuItem
+				{/* <MenuItem
 					disabled={!hasLoan || row.loanRequest.status !== "funded"}
 					onClick={() => {
 						popover.handleClose();
@@ -534,7 +534,7 @@ export function ActionsCell({ row, permissions, user, role, branch }) {
 					}}
 				>
 					<Typography>Renovar solicitud</Typography>
-				</MenuItem>
+				</MenuItem> */}
 				<MenuItem
 					disabled={!hasLoan || role === "AGENT"}
 					onClick={() => {
