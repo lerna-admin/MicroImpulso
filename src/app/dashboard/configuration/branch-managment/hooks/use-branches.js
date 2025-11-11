@@ -10,8 +10,13 @@ export async function createBranch(data) {
 	return await res.json();
 }
 
-export async function getAllBranches() {
-	const res = await fetch(`${BASE_URL}/branches`);
+export async function getAllBranches(c_id =null) {
+	let url = `${BASE_URL}/branches`;
+	if(c_id){
+		url+=`?countryId=${c_id}` 
+	}
+
+	const res = await fetch(url);
 	if (!res.ok) throw new Error("Error al obtener sedes");
 	return await res.json();
 }
