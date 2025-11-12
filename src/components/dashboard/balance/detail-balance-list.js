@@ -29,7 +29,7 @@ dayjs.locale("es");
 
 export function DetailBalanceList({ dataBalance, user, filters }) {
 	const { date } = filters;
-
+	console.log(dataBalance)
 	const [assets, setAssets] = React.useState([
 		{ id: 2, name: "Cartera ($)", value: "" },
 		{ id: 1, name: "Base anterior ($)", value: "" },
@@ -37,6 +37,9 @@ export function DetailBalanceList({ dataBalance, user, filters }) {
 		{ id: 4, name: "Clientes (#)", value: "" },
 		{ id: 5, name: "Renovados $ (#)", value: "" },
 		{ id: 6, name: "Nuevos $ (#)", value: "" },
+		{ id: 7, name: "Transferencias Entrantes $", value: "" },
+		{ id: 8, name: "Transferencias Salientes $", value: "" },
+		
 	]);
 
 	const [selectedDate, setSelectedDate] = React.useState(dayjs(date));
@@ -49,7 +52,9 @@ export function DetailBalanceList({ dataBalance, user, filters }) {
 		dataBalance.baseAnterior +
 		dataBalance.valorCobradoDia -
 		dataBalance.clientesNuevos?.montoPrestado -
-		dataBalance.clientesRenovados?.montoPrestado;
+		dataBalance.clientesRenovados?.montoPrestado +
+		dataBalance.transferEntrante - 
+		dataBalance.transferSaliente;
 
 	const today = dayjs(date);
 	const formattedDate = `${today.format("DD")} ${today.format("MMMM").toUpperCase()} ${today.format("YYYY")}`;
@@ -94,6 +99,8 @@ export function DetailBalanceList({ dataBalance, user, filters }) {
 				id: 6,
 				value: `${parseCurrency(dataBalance.clientesNuevos?.montoPrestado)} (${dataBalance.clientesNuevos?.cantidad})`,
 			},
+			{ id: 7, value: parseCurrency(dataBalance.transferEntrante || 0) },
+      		{ id: 8, value: parseCurrency(dataBalance.transferSaliente || 0) },
 		];
 		setAssets((prev) =>
 			prev.map((item) => {
@@ -102,7 +109,7 @@ export function DetailBalanceList({ dataBalance, user, filters }) {
 			})
 		);
 	}, [dataBalance]);
-
+	
 	const handleRoadClousure = async () => {
 		popover.handleClose();
 		try {

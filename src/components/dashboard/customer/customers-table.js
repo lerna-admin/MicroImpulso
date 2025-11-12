@@ -299,6 +299,54 @@ export function ActionsCell({ row, permissions, user, role, branch }) {
 		}
 	};
 
+	// 🔽 REEMPLAZA la función previa por esta (puede ir en cualquier lugar dentro de ActionsCell)
+const handleDownloadContract = React.useCallback(async () => {
+  const hasLoanLocal = Boolean(row?.loanRequest);
+  const loanId = row?.loanRequest?.id;
+  if (!hasLoanLocal || !loanId) return;
+
+  try {
+    setIsPending(true);
+
+    const res = await fetch(`/api/chat/${loanId}/contract/download`, {
+      method: "GET",
+      headers: { Accept: "application/pdf" },
+    });
+
+    if (!res.ok) {
+      throw new Error(`Error HTTP ${res.status}`);
+    }
+
+    const blob = await res.blob();
+
+    // Intentar obtener el nombre de archivo del header
+    const cd = res.headers.get("Content-Disposition") || res.headers.get("content-disposition") || "";
+    const match = cd.match(/filename\*?=(?:UTF-8'')?"?([^\";]+)"?/i);
+    const filename = match?.[1] || `Contrato-${loanId}.pdf`;
+
+    // Forzar descarga en el navegador
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+
+    setAlertMsg("Contrato generado y descargado.");
+    setAlertSeverity("success");
+  } catch (error) {
+    setAlertMsg(error?.message || "No se pudo descargar el contrato.");
+    setAlertSeverity("error");
+  } finally {
+    setIsPending(false);
+    popoverAlert.handleOpen(); // toast
+    popover.handleClose();     // cierra menú
+  }
+  // ✅ sin 'hasLoan' en dependencias
+}, [row?.loanRequest?.id, popover, popoverAlert]);
+
 	const reasignForm = useForm({
 		defaultValues: { user: { id: row?.agent?.id ?? null, label: row?.agent?.name ?? "" } },
 		resolver: zodResolver(
@@ -507,6 +555,16 @@ export function ActionsCell({ row, permissions, user, role, branch }) {
 				>
 					<Typography>Aprobar solicitud</Typography>
 				</MenuItem>
+				<MenuItem
+					disabled={!hasLoan || (row.loanRequest.status !== "approved"  )}
+					onClick={() => {
+						    handleDownloadContract(); // ✅ AGREGADO
+
+					}}
+				>
+					<Typography>Descargar Contrato</Typography>
+				</MenuItem>
+				
 
 				<MenuItem disabled={!hasLoan || (row.loanRequest.status !== "approved" && row.loanRequest.status !== "new" && row.loanRequest.status !== "under_review")}  onClick={handleEditRequest}>
 					<Typography>Editar solicitud</Typography>

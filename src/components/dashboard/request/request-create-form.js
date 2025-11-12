@@ -67,7 +67,7 @@ export function RequestCreateForm({ user }) {
 			.min(50, { message: "El monto debe superar los $50.000" })
 			.max(5_000_000, { message: "El monto no puede superar los 5.000.000" }),
 		typePayment: zod.enum(["QUINCENAL", "MENSUAL"], { errorMap: () => ({ message: "Debes elegir un tipo de pago" }) }),
-		datePayment: zod.enum(["15-30", "5-20", "10-25"], {
+		datePayment: zod.enum(["15-30", "5-20", "10-25", "3-18"], {
 			errorMap: () => ({ message: "Debes elegir una fecha de pago" }),
 		}),
 		selectedDate: zod
@@ -308,6 +308,8 @@ export function RequestCreateForm({ user }) {
 													<MenuItem value="15-30">15 - 30</MenuItem>
 													<MenuItem value="5-20">5 - 20</MenuItem>
 													<MenuItem value="10-25">10 - 25</MenuItem>
+													<MenuItem value="3-18">3 - 18</MenuItem>
+													
 												</Select>
 												{errors.datePayment ? <FormHelperText>{errors.datePayment.message}</FormHelperText> : null}
 											</FormControl>
