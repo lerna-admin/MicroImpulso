@@ -507,6 +507,16 @@ export function ActionsCell({ row, permissions, user, role, branch }) {
 				>
 					<Typography>Aprobar solicitud</Typography>
 				</MenuItem>
+				<MenuItem
+					disabled={!hasLoan || (row.loanRequest.status !== "approved"  )}
+					onClick={() => {
+						popover.handleClose();
+						modalApproved.handleOpen();
+					}}
+				>
+					<Typography>Descargar Contrato</Typography>
+				</MenuItem>
+				
 
 				<MenuItem disabled={!hasLoan || (row.loanRequest.status !== "approved" && row.loanRequest.status !== "new" && row.loanRequest.status !== "under_review")}  onClick={handleEditRequest}>
 					<Typography>Editar solicitud</Typography>
