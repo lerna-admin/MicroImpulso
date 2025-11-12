@@ -127,7 +127,7 @@ export function CustomerStatistics({ statistics, filters = {} }) {
 		<Box
 			sx={{
 				display: "grid",
-				gridTemplateColumns: isSmallScreen ? "repeat(2, 1fr)" : "repeat(6, 1fr)",
+				gridTemplateColumns: isSmallScreen ? "repeat(2, 1fr)" : "repeat(5, 1fr)",
 				gridTemplateRows: isSmallScreen ? "repeat(6, auto)" : "repeat(2, auto)",
 				gap: 1.3,
 			}}
