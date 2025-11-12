@@ -283,7 +283,7 @@ const handleDownloadContract = React.useCallback(async () => {
 
     setAlertMsg("Contrato generado y descargado.");
     setAlertSeverity("success");
-  } catch (error: any) {
+  } catch (error) {
     setAlertMsg(error?.message || "No se pudo descargar el contrato.");
     setAlertSeverity("error");
   } finally {
