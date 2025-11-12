@@ -27,6 +27,8 @@ export const metadata = { title: `Detalle | Clientes | Dashboard | ${appConfig.n
 export default async function Page({ params }) {
 	const { customerId } = await params;
 	const customer = await getCustomerById(customerId);
+	console.log(customer);
+	
 	const allRequestByClient = await getAllRequestsByCustomerId(customerId);
 	return (
 		<Box

@@ -584,7 +584,7 @@ const handleDownloadContract = React.useCallback(async () => {
 				>
 					<Typography>Desembolsar solicitud</Typography>
 				</MenuItem>
-				<MenuItem
+				{/* <MenuItem
 					disabled={!hasLoan || row.loanRequest.status !== "funded"}
 					onClick={() => {
 						popover.handleClose();
@@ -592,7 +592,7 @@ const handleDownloadContract = React.useCallback(async () => {
 					}}
 				>
 					<Typography>Renovar solicitud</Typography>
-				</MenuItem>
+				</MenuItem> */}
 				<MenuItem
 					disabled={!hasLoan || role === "AGENT"}
 					onClick={() => {
