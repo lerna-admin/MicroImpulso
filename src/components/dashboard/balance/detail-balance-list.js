@@ -29,7 +29,7 @@ dayjs.locale("es");
 
 export function DetailBalanceList({ dataBalance, user, filters }) {
 	const { date } = filters;
-
+	console.log(dataBalance)
 	const [assets, setAssets] = React.useState([
 		{ id: 2, name: "Cartera ($)", value: "" },
 		{ id: 1, name: "Base anterior ($)", value: "" },
@@ -37,6 +37,9 @@ export function DetailBalanceList({ dataBalance, user, filters }) {
 		{ id: 4, name: "Clientes (#)", value: "" },
 		{ id: 5, name: "Renovados $ (#)", value: "" },
 		{ id: 6, name: "Nuevos $ (#)", value: "" },
+		{ id: 7, name: "Ingresos $", value: "" },
+		{ id: 8, name: "Egresos $", value: "" },
+		
 	]);
 
 	const [selectedDate, setSelectedDate] = React.useState(dayjs(date));
@@ -94,6 +97,8 @@ export function DetailBalanceList({ dataBalance, user, filters }) {
 				id: 6,
 				value: `${parseCurrency(dataBalance.clientesNuevos?.montoPrestado)} (${dataBalance.clientesNuevos?.cantidad})`,
 			},
+			{ id: 7, value: parseCurrency(dataBalance.totalIngresosDia) },
+      		{ id: 8, value: parseCurrency(dataBalance.totalEgresosDia) },
 		];
 		setAssets((prev) =>
 			prev.map((item) => {
