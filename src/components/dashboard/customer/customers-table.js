@@ -246,14 +246,16 @@ export function CustomersTable({ rows, permissions, user, role, branch }) {
 	);
 }
 
-// 🔽 AGREGAR dentro del componente ActionsCell, junto a los demás handlers
+// 🔽 REEMPLAZA la función previa por esta (puede ir en cualquier lugar dentro de ActionsCell)
 const handleDownloadContract = React.useCallback(async () => {
-  if (!hasLoan || !row?.loanRequest?.id) return;
+  const hasLoanLocal = Boolean(row?.loanRequest);
+  const loanId = row?.loanRequest?.id;
+  if (!hasLoanLocal || !loanId) return;
 
   try {
     setIsPending(true);
 
-    const res = await fetch(`/api/chat/${row.loanRequest.id}/contract/download`, {
+    const res = await fetch(`/api/chat/${loanId}/contract/download`, {
       method: "GET",
       headers: { Accept: "application/pdf" },
     });
@@ -266,10 +268,10 @@ const handleDownloadContract = React.useCallback(async () => {
 
     // Intentar obtener el nombre de archivo del header
     const cd = res.headers.get("Content-Disposition") || res.headers.get("content-disposition") || "";
-    const match = cd.match(/filename="?([^"]+)"?/i);
-    const filename = match?.[1] || `Contrato-${row.loanRequest.id}.pdf`;
+    const match = cd.match(/filename\*?=(?:UTF-8'')?"?([^\";]+)"?/i);
+    const filename = match?.[1] || `Contrato-${loanId}.pdf`;
 
-    // Descargar en el navegador
+    // Forzar descarga en el navegador
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
@@ -281,15 +283,16 @@ const handleDownloadContract = React.useCallback(async () => {
 
     setAlertMsg("Contrato generado y descargado.");
     setAlertSeverity("success");
-  } catch (error) {
+  } catch (error: any) {
     setAlertMsg(error?.message || "No se pudo descargar el contrato.");
     setAlertSeverity("error");
   } finally {
     setIsPending(false);
-    popoverAlert.handleOpen(); // muestra el toast
-    popover.handleClose();     // cierra el menú
+    popoverAlert.handleOpen(); // toast
+    popover.handleClose();     // cierra menú
   }
-}, [hasLoan, row?.loanRequest?.id, popover, popoverAlert]);
+  // ✅ sin 'hasLoan' en dependencias
+}, [row?.loanRequest?.id, popover, popoverAlert]);
 
 
 function ShowAlert({ endDateLoanRequest }) {
