@@ -37,8 +37,8 @@ export function DetailBalanceList({ dataBalance, user, filters }) {
 		{ id: 4, name: "Clientes (#)", value: "" },
 		{ id: 5, name: "Renovados $ (#)", value: "" },
 		{ id: 6, name: "Nuevos $ (#)", value: "" },
-		{ id: 7, name: "Ingresos $", value: "" },
-		{ id: 8, name: "Egresos $", value: "" },
+		{ id: 7, name: "Transferencias Entrantes $", value: "" },
+		{ id: 8, name: "Transferencias Salientes $", value: "" },
 		
 	]);
 
@@ -97,8 +97,8 @@ export function DetailBalanceList({ dataBalance, user, filters }) {
 				id: 6,
 				value: `${parseCurrency(dataBalance.clientesNuevos?.montoPrestado)} (${dataBalance.clientesNuevos?.cantidad})`,
 			},
-			{ id: 7, value: parseCurrency(dataBalance.totalIngresosDia) },
-      		{ id: 8, value: parseCurrency(dataBalance.totalEgresosDia) },
+			{ id: 7, value: parseCurrency(dataBalance.transferEntrante || 0) },
+      		{ id: 8, value: parseCurrency(dataBalance.transferSaliente || 0) },
 		];
 		setAssets((prev) =>
 			prev.map((item) => {
@@ -107,7 +107,7 @@ export function DetailBalanceList({ dataBalance, user, filters }) {
 			})
 		);
 	}, [dataBalance]);
-
+	
 	const handleRoadClousure = async () => {
 		popover.handleClose();
 		try {
