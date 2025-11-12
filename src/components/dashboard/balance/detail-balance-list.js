@@ -52,7 +52,9 @@ export function DetailBalanceList({ dataBalance, user, filters }) {
 		dataBalance.baseAnterior +
 		dataBalance.valorCobradoDia -
 		dataBalance.clientesNuevos?.montoPrestado -
-		dataBalance.clientesRenovados?.montoPrestado;
+		dataBalance.clientesRenovados?.montoPrestado +
+		dataBalance.transferEntrante - 
+		dataBalance.transferSaliente;
 
 	const today = dayjs(date);
 	const formattedDate = `${today.format("DD")} ${today.format("MMMM").toUpperCase()} ${today.format("YYYY")}`;
