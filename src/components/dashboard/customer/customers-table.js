@@ -246,6 +246,52 @@ export function CustomersTable({ rows, permissions, user, role, branch }) {
 	);
 }
 
+// 🔽 AGREGAR dentro del componente ActionsCell, junto a los demás handlers
+const handleDownloadContract = React.useCallback(async () => {
+  if (!hasLoan || !row?.loanRequest?.id) return;
+
+  try {
+    setIsPending(true);
+
+    const res = await fetch(`/api/chat/${row.loanRequest.id}/contract/download`, {
+      method: "GET",
+      headers: { Accept: "application/pdf" },
+    });
+
+    if (!res.ok) {
+      throw new Error(`Error HTTP ${res.status}`);
+    }
+
+    const blob = await res.blob();
+
+    // Intentar obtener el nombre de archivo del header
+    const cd = res.headers.get("Content-Disposition") || res.headers.get("content-disposition") || "";
+    const match = cd.match(/filename="?([^"]+)"?/i);
+    const filename = match?.[1] || `Contrato-${row.loanRequest.id}.pdf`;
+
+    // Descargar en el navegador
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+
+    setAlertMsg("Contrato generado y descargado.");
+    setAlertSeverity("success");
+  } catch (error) {
+    setAlertMsg(error?.message || "No se pudo descargar el contrato.");
+    setAlertSeverity("error");
+  } finally {
+    setIsPending(false);
+    popoverAlert.handleOpen(); // muestra el toast
+    popover.handleClose();     // cierra el menú
+  }
+}, [hasLoan, row?.loanRequest?.id, popover, popoverAlert]);
+
+
 function ShowAlert({ endDateLoanRequest }) {
 	if (!endDateLoanRequest) return null;
 
@@ -510,8 +556,8 @@ export function ActionsCell({ row, permissions, user, role, branch }) {
 				<MenuItem
 					disabled={!hasLoan || (row.loanRequest.status !== "approved"  )}
 					onClick={() => {
-						popover.handleClose();
-						modalApproved.handleOpen();
+						    handleDownloadContract(); // ✅ AGREGADO
+
 					}}
 				>
 					<Typography>Descargar Contrato</Typography>
