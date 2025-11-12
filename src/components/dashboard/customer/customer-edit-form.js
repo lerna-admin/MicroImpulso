@@ -103,6 +103,7 @@ export function CustomerEditForm({ customerToEdit, onlyRead = false }) {
 		id: "",
 		name: "",
 		email: "",
+		city: "",
 		document: "",
 		address: "",
 		status: "",
@@ -130,6 +131,9 @@ export function CustomerEditForm({ customerToEdit, onlyRead = false }) {
 		const c = customerToEdit.client ?? customerToEdit ?? {};
 		const id = c.id ?? customerToEdit.id ?? "";
 
+		console.log(c);
+		
+
 		const parsed = parseStoredPhone(c.phone);
 
 		// customFields deben ser un array
@@ -139,6 +143,7 @@ export function CustomerEditForm({ customerToEdit, onlyRead = false }) {
 			id,
 			name: c.name ?? "",
 			email: c.email ?? "",
+			city: c.city ?? "",
 			document: c.document ?? "",
 			address: c.address ?? "",
 			status: c.status ?? customerToEdit.status ?? "",
@@ -232,6 +237,7 @@ export function CustomerEditForm({ customerToEdit, onlyRead = false }) {
 		const payload = {
 			id: formData.id,
 			name: (formData.name || "").trim(),
+			city: (formData.city || "").trim(),
 			phone,
 			email: (formData.email || "").trim(),
 			document: (formData.document || "").trim(),
@@ -300,6 +306,20 @@ export function CustomerEditForm({ customerToEdit, onlyRead = false }) {
 												</MenuItem>
 											))}
 										</Select>
+									</FormControl>
+								</Grid>
+
+								{/* Ciudad */}
+								<Grid size={{ md: 6, xs: 12 }}>
+									<FormControl fullWidth disabled={onlyRead}>
+										<InputLabel>Ciudad</InputLabel>
+										<OutlinedInput
+											id="city"
+											name="city"
+											value={formData.city}
+											onChange={handleChange}
+											label="Ciudad"
+										/>
 									</FormControl>
 								</Grid>
 
