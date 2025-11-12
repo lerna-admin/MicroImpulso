@@ -228,7 +228,7 @@ async function saveCustomFields(clientId) {
 			typePayment: zod.enum(["QUINCENAL", "MENSUAL"], {
 				errorMap: () => ({ message: "Debes elegir un tipo de pago" }),
 			}),
-			datePayment: zod.enum(["15-30", "5-20", "10-25"], {
+			datePayment: zod.enum(["15-30", "5-20", "10-25", "3.18"], {
 				errorMap: () => ({ message: "Debes elegir una fecha de pago" }),
 			}),
 			selectedDate: zod
@@ -910,6 +910,8 @@ async function saveCustomFields(clientId) {
 												<MenuItem value="15-30">15 - 30</MenuItem>
 												<MenuItem value="5-20">5 - 20</MenuItem>
 												<MenuItem value="10-25">10 - 25</MenuItem>
+												<MenuItem value="3-18">3 - 18</MenuItem>
+												
 											</Select>
 											{errors.datePayment ? <FormHelperText>{errors.datePayment.message}</FormHelperText> : null}
 										</FormControl>

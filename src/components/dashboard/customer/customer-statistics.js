@@ -33,6 +33,8 @@ export function CustomerStatistics({ statistics, filters = {} }) {
 		{ id: 8, action: true, label: "5-20", icon: <CalendarDotsIcon />, value: "" },
 		{ id: 9, action: true, label: "10-25", icon: <CalendarDotsIcon />, value: "" },
 		{ id: 10, action: true, label: "15-30", icon: <CalendarDotsIcon />, value: "" },
+		{ id: 11, action: true, label: "3-18", icon: <CalendarDotsIcon />, value: "" },
+		
 	]);
 
 	React.useEffect(() => {

@@ -228,6 +228,9 @@ export function LoanSimulation({ contact }) {
 						<MenuItem value="15-30">15 - 30</MenuItem>
 						<MenuItem value="5-20">5 - 20</MenuItem>
 						<MenuItem value="10-25">10 - 25</MenuItem>
+						<MenuItem value="3-18">3 - 18</MenuItem>
+						
+												
 					</Select>
 				</Grid>
 				<Grid
