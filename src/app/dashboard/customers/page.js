@@ -1,6 +1,5 @@
 import * as React from "react";
 import { getAllUsers } from "@/app/dashboard/users/hooks/use-users";
-import { ROLES } from "@/constants/roles";
 import Box from "@mui/material/Box";
 import Card from "@mui/material/Card";
 import Divider from "@mui/material/Divider";

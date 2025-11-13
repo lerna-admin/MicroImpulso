@@ -10,6 +10,7 @@ import Grid from "@mui/material/Grid2";
 import Link from "@mui/material/Link";
 import Stack from "@mui/material/Stack";
 import { ArrowLeft as ArrowLeftIcon } from "@phosphor-icons/react/dist/ssr/ArrowLeft";
+import { User as UserIcon } from "@phosphor-icons/react/dist/ssr/User";
 
 import { appConfig } from "@/config/app";
 import { paths } from "@/paths";
