@@ -3,6 +3,7 @@
 import * as React from "react";
 import { useRouter } from "next/navigation";
 import { updateCustomer } from "@/app/dashboard/customers/hooks/use-customers";
+import { Avatar, CardHeader } from "@mui/material";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import Card from "@mui/material/Card";
@@ -20,6 +21,7 @@ import Select from "@mui/material/Select";
 import Stack from "@mui/material/Stack";
 import Tooltip from "@mui/material/Tooltip";
 import Typography from "@mui/material/Typography";
+import { User as UserIcon } from "@phosphor-icons/react/dist/ssr/User";
 
 import { paths } from "@/paths";
 import { usePopover } from "@/hooks/use-popover";
@@ -112,6 +114,11 @@ export function CustomerEditForm({ customerToEdit, onlyRead = false }) {
 		// control de teléfono
 		countryIso2: "CO",
 		localPhone: "",
+		phone2: "",
+		address2: "",
+		referenceName: "",
+		referencePhone: "",
+		referenceRelationship: "",
 	});
 
 	// custom fields locales (siempre array)
@@ -131,9 +138,6 @@ export function CustomerEditForm({ customerToEdit, onlyRead = false }) {
 		const c = customerToEdit.client ?? customerToEdit ?? {};
 		const id = c.id ?? customerToEdit.id ?? "";
 
-		console.log(c);
-		
-
 		const parsed = parseStoredPhone(c.phone);
 
 		// customFields deben ser un array
@@ -151,6 +155,11 @@ export function CustomerEditForm({ customerToEdit, onlyRead = false }) {
 			updatedAt: customerToEdit.updatedAt ?? c.updatedAt ?? "",
 			countryIso2: parsed.iso2,
 			localPhone: parsed.local,
+			phone2: c.phone2 ?? "",
+			address2: c.address2 ?? "",
+			referenceName: c.referenceName ?? "",
+			referencePhone: c.referencePhone ?? "",
+			referenceRelationship: c.referenceRelationship ?? "",
 		});
 
 		setCustomFields(
@@ -243,6 +252,11 @@ export function CustomerEditForm({ customerToEdit, onlyRead = false }) {
 			document: (formData.document || "").trim(),
 			address: (formData.address || "").trim(),
 			// 👇 incluimos customFields al update
+			phone2: formData.phone2.trim(),
+			address2: formData.address2.trim(),
+			referenceName: formData.referenceName.trim(),
+			referencePhone: formData.referencePhone.trim(),
+			referenceRelationship: formData.referenceRelationship.trim(),
 			customFields: sanitizedCFs,
 		};
 
@@ -269,7 +283,7 @@ export function CustomerEditForm({ customerToEdit, onlyRead = false }) {
 			<form onSubmit={handleSubmit}>
 				<input type="hidden" name="id" value={formData.id} />
 
-				<Stack spacing={3} padding={3} >
+				<Stack spacing={3} padding={3}>
 					{/* =================== Datos básicos =================== */}
 					<Card variant="outlined">
 						<CardContent>
@@ -313,13 +327,7 @@ export function CustomerEditForm({ customerToEdit, onlyRead = false }) {
 								<Grid size={{ md: 6, xs: 12 }}>
 									<FormControl fullWidth disabled={onlyRead}>
 										<InputLabel>Ciudad</InputLabel>
-										<OutlinedInput
-											id="city"
-											name="city"
-											value={formData.city}
-											onChange={handleChange}
-											label="Ciudad"
-										/>
+										<OutlinedInput id="city" name="city" value={formData.city} onChange={handleChange} label="Ciudad" />
 									</FormControl>
 								</Grid>
 
@@ -403,6 +411,91 @@ export function CustomerEditForm({ customerToEdit, onlyRead = false }) {
 											value={formData.address}
 											onChange={handleChange}
 											label="Dirección"
+										/>
+									</FormControl>
+								</Grid>
+							</Grid>
+						</CardContent>
+					</Card>
+
+					{/* CONTACTO ADICIONAL */}
+					<Card>
+						<CardHeader
+							avatar={
+								<Avatar>
+									<UserIcon fontSize="var(--Icon-fontSize)" />
+								</Avatar>
+							}
+							title="Contacto adicional"
+						/>
+						<CardContent>
+							<Grid container spacing={3}>
+								<Grid size={{ md: 6, xs: 12 }}>
+									<FormControl fullWidth disabled={onlyRead}>
+										<InputLabel>Celular 2</InputLabel>
+										<OutlinedInput name="phone2" value={formData.phone2} onChange={handleChange} label="Celular 2" />
+									</FormControl>
+								</Grid>
+
+								<Grid size={{ md: 6, xs: 12 }}>
+									<FormControl fullWidth disabled={onlyRead}>
+										<InputLabel>Dirección 2</InputLabel>
+										<OutlinedInput
+											name="address2"
+											value={formData.address2}
+											onChange={handleChange}
+											label="Dirección 2"
+										/>
+									</FormControl>
+								</Grid>
+							</Grid>
+						</CardContent>
+					</Card>
+
+					{/* REFERENCIA PERSONAL */}
+					<Card>
+						<CardHeader
+							avatar={
+								<Avatar>
+									<UserIcon fontSize="var(--Icon-fontSize)" />
+								</Avatar>
+							}
+							title="Referencia personal"
+						/>
+						<CardContent>
+							<Grid container spacing={3}>
+								<Grid size={{ md: 4, xs: 12 }}>
+									<FormControl fullWidth disabled={onlyRead}>
+										<InputLabel>Nombre de la referencia</InputLabel>
+										<OutlinedInput
+											name="referenceName"
+											value={formData.referenceName}
+											onChange={handleChange}
+											label="Nombre de la referencia"
+										/>
+									</FormControl>
+								</Grid>
+
+								<Grid size={{ md: 4, xs: 12 }}>
+									<FormControl fullWidth disabled={onlyRead}>
+										<InputLabel>Teléfono de la referencia</InputLabel>
+										<OutlinedInput
+											name="referencePhone"
+											value={formData.referencePhone}
+											onChange={handleChange}
+											label="Teléfono de la referencia"
+										/>
+									</FormControl>
+								</Grid>
+
+								<Grid size={{ md: 4, xs: 12 }}>
+									<FormControl fullWidth disabled={onlyRead}>
+										<InputLabel>Parentesco / Relación</InputLabel>
+										<OutlinedInput
+											name="referenceRelationship"
+											value={formData.referenceRelationship}
+											onChange={handleChange}
+											label="Parentesco / Relación"
 										/>
 									</FormControl>
 								</Grid>
