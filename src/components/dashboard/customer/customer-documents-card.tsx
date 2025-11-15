@@ -186,6 +186,8 @@ export default function CustomerDocumentsCard({ customerId }) {
 		} finally {
 			setUploading(false);
 		}
+
+		return;
 	};
 
 
