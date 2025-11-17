@@ -4,7 +4,6 @@ import * as React from "react";
 import { stringAvatar } from "@/helpers/avatar-colors";
 import Avatar from "@mui/material/Avatar";
 import IconButton from "@mui/material/IconButton";
-import OutlinedInput from "@mui/material/OutlinedInput";
 import Stack from "@mui/material/Stack";
 import Tooltip from "@mui/material/Tooltip";
 import { Camera as CameraIcon } from "@phosphor-icons/react/dist/ssr/Camera";
@@ -15,49 +14,60 @@ import { useAuth } from "@/components/auth/custom/auth-context";
 
 export function MessageAdd({ disabled = false, onSend }) {
 	const { user } = useAuth();
-
 	const userName = user?.name || "Usuario";
 
 	const [content, setContent] = React.useState("");
+	const editorRef = React.useRef(null);
 	const fileInputRef = React.useRef(null);
 
 	const handleAttach = React.useCallback(() => {
 		fileInputRef.current?.click();
 	}, []);
 
-	const handleChange = React.useCallback((event) => {
-		setContent(event.target.value);
+	const handleInput = React.useCallback(() => {
+		setContent(editorRef.current.innerHTML);
 	}, []);
 
 	const handleSend = React.useCallback(() => {
-		if (!content) {
-			return;
-		}
+		if (!content || content === "<br>" || content === "<p><br></p>") return;
 
 		onSend?.("text", content);
+
 		setContent("");
+		if (editorRef.current) editorRef.current.innerHTML = "";
 	}, [content, onSend]);
 
-	const handleKeyUp = React.useCallback(
-		(event) => {
-			if (event.code === "Enter") {
-				handleSend();
-			}
-		},
-		[handleSend]
-	);
+	const handleKeyDown = (event) => {
+		if (event.key === "Enter" && !event.shiftKey) {
+			event.preventDefault();
+			handleSend();
+		}
+	};
 
 	return (
 		<Stack direction="row" spacing={2} sx={{ alignItems: "center", flex: "0 0 auto", px: 3, py: 1 }}>
 			<Avatar {...stringAvatar(userName)} />
-			<OutlinedInput
-				disabled={disabled}
-				onChange={handleChange}
-				onKeyUp={handleKeyUp}
+
+			<div
+				ref={editorRef}
+				contentEditable={!disabled}
+				onInput={handleInput}
+				onKeyDown={handleKeyDown}
 				placeholder="Leave a message"
-				sx={{ flex: "1 1 auto" }}
-				value={content}
-			/>
+				style={{
+					flex: "1 1 auto",
+					minHeight: "48px",
+					maxHeight: "120px",
+					overflowY: "auto",
+					border: "1px solid rgba(0,0,0,0.23)",
+					borderRadius: "8px",
+					padding: "12px",
+					outline: "none",
+					fontSize: "16px",
+				}}
+				className="editable-input"
+			></div>
+
 			<Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
 				<Tooltip title="Send">
 					<span>
@@ -75,6 +85,7 @@ export function MessageAdd({ disabled = false, onSend }) {
 						</IconButton>
 					</span>
 				</Tooltip>
+
 				<Stack direction="row" spacing={1} sx={{ display: { xs: "none", sm: "flex" } }}>
 					<Tooltip title="Attach photo">
 						<span>
@@ -83,6 +94,7 @@ export function MessageAdd({ disabled = false, onSend }) {
 							</IconButton>
 						</span>
 					</Tooltip>
+
 					<Tooltip title="Attach file">
 						<span>
 							<IconButton disabled={disabled} edge="end" onClick={handleAttach}>
@@ -92,6 +104,7 @@ export function MessageAdd({ disabled = false, onSend }) {
 					</Tooltip>
 				</Stack>
 			</Stack>
+
 			<input hidden ref={fileInputRef} type="file" />
 		</Stack>
 	);

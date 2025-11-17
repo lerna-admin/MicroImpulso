@@ -239,7 +239,6 @@ export function CustomerEditForm({ customerToEdit, onlyRead = false }) {
 
 		// recomponer phone para API
 		const phone = composePhone(formData.countryIso2, formData.localPhone);
-
 		// normalizar CFs y descartar vacíos/incorrectos
 		const sanitizedCFs = customFields.map(sanitizeCustomField).filter(Boolean);
 
@@ -293,7 +292,7 @@ export function CustomerEditForm({ customerToEdit, onlyRead = false }) {
 							<Grid container spacing={3}>
 								{/* País (indicativo del celular) */}
 								<Grid size={{ md: 6, xs: 12 }}>
-									<FormControl fullWidth disabled={onlyRead}>
+									<FormControl fullWidth disabled>
 										<InputLabel>País</InputLabel>
 										<Select
 											label="País"
