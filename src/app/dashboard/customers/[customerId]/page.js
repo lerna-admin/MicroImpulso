@@ -1,6 +1,6 @@
 import * as React from "react";
 import RouterLink from "next/link";
-import { CardContent, Typography } from "@mui/material";
+import { CardContent } from "@mui/material";
 import Avatar from "@mui/material/Avatar";
 import Box from "@mui/material/Box";
 import Card from "@mui/material/Card";
@@ -27,8 +27,6 @@ export const metadata = { title: `Detalle | Clientes | Dashboard | ${appConfig.n
 export default async function Page({ params }) {
 	const { customerId } = await params;
 	const customer = await getCustomerById(customerId);
-	console.log(customer);
-	
 	const allRequestByClient = await getAllRequestsByCustomerId(customerId);
 	return (
 		<Box
@@ -80,81 +78,6 @@ export default async function Page({ params }) {
 								>
 									<CustomerEditForm customerToEdit={customer}></CustomerEditForm>
 								</PropertyList>
-							</Card>
-
-							{/* CONTACTO ADICIONAL */}
-							<Card>
-								<CardHeader
-									avatar={
-										<Avatar>
-											<UserIcon fontSize="var(--Icon-fontSize)" />
-										</Avatar>
-									}
-									title="Contacto adicional"
-								/>
-								<CardContent>
-									<Stack spacing={2}>
-										<Box>
-											<Typography variant="overline" color="text.secondary" display="block">
-												Celular 2
-											</Typography>
-											<Typography variant="body1">
-												{customer?.client.phone2 ? customer.client.phone2 : "—"}
-											</Typography>
-										</Box>
-
-										<Box>
-											<Typography variant="overline" color="text.secondary" display="block">
-												Dirección 2
-											</Typography>
-											<Typography variant="body1">
-												{customer?.client.address2 ? customer.client.address2 : "—"}
-											</Typography>
-										</Box>
-									</Stack>
-								</CardContent>
-							</Card>
-
-							{/* REFERENCIA PERSONAL */}
-							<Card>
-								<CardHeader
-									avatar={
-										<Avatar>
-											<UserIcon fontSize="var(--Icon-fontSize)" />
-										</Avatar>
-									}
-									title="Referencia personal"
-								/>
-								<CardContent>
-									<Stack spacing={2}>
-										<Box>
-											<Typography variant="overline" color="text.secondary" display="block">
-												Nombre de la referencia
-											</Typography>
-											<Typography variant="body1">
-												{customer?.client.referenceName ? customer.client.referenceName : "—"}
-											</Typography>
-										</Box>
-
-										<Box>
-											<Typography variant="overline" color="text.secondary" display="block">
-												Teléfono de la referencia
-											</Typography>
-											<Typography variant="body1">
-												{customer?.client.referencePhone ? customer.client.referencePhone : "—"}
-											</Typography>
-										</Box>
-
-										<Box>
-											<Typography variant="overline" color="text.secondary" display="block">
-												Parentesco / Relación
-											</Typography>
-											<Typography variant="body1">
-												{customer?.client.referenceRelationship ? customer.client.referenceRelationship : "—"}
-											</Typography>
-										</Box>
-									</Stack>
-                                </CardContent>
 							</Card>
 
 							{/* DOCUMENTOS */}

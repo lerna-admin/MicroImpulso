@@ -4,7 +4,7 @@ import * as React from "react";
 import { useRouter } from "next/navigation";
 import { updateCustomer } from "@/app/dashboard/customers/hooks/use-customers";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { FormHelperText, IconButton, MenuItem } from "@mui/material";
+import { Chip, FormHelperText, IconButton, MenuItem } from "@mui/material";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import Drawer from "@mui/material/Drawer";
@@ -32,9 +32,36 @@ const schema = zod.object({
 	}),
 	document: zod.string().min(1, { message: "El documento es obligatorio" }),
 	address: zod.string().min(1, { message: "La dirección es obligatoria" }),
+	address2: zod.string().optional(),
+
 	email: zod.string().min(1, { message: "El correo es obligatorio" }).email(),
 	phone: zod.string().min(1, { message: "El teléfono es obligatorio" }),
+	phone2: zod.string().optional(),
+
+	country: zod.string().min(1, { message: "El país es obligatorio" }),
+	city: zod.string().min(1, { message: "La ciudad es obligatoria" }),
+
+	referenceName: zod.string().optional(),
+	referencePhone: zod.string().optional(),
+	referenceRelationship: zod.string().optional(),
 });
+
+const COUNTRIES = [
+	{ iso2: "CO", name: "Colombia", phoneCode: "57" },
+	{ iso2: "CR", name: "Costa Rica", phoneCode: "506" },
+];
+
+function parseStoredPhone(phone) {
+	const digits = String(phone || "").replace(/\D/g, "");
+	if (!digits) return { iso2: "CO", local: "" }; // por defecto CO
+
+	const match = COUNTRIES.slice()
+		.sort((a, b) => b.phoneCode.length - a.phoneCode.length) // prefijo más largo primero
+		.find((c) => digits.startsWith(c.phoneCode));
+
+	if (!match) return { iso2: "CO", local: digits }; // fallback
+	return { iso2: match.iso2, local: digits.slice(match.phoneCode.length) };
+}
 
 export function SidebarRight({
 	contacts,
@@ -97,6 +124,8 @@ function SidebarContent({ currentThreadId, threads, contacts }) {
 		handleSubmit,
 		formState: { errors },
 		reset,
+		watch,
+		setValue,
 	} = useForm({
 		resolver: zodResolver(schema),
 		defaultValues: {
@@ -104,8 +133,15 @@ function SidebarContent({ currentThreadId, threads, contacts }) {
 			documentType: "",
 			document: "",
 			address: "",
+			address2: "",
 			email: "",
 			phone: "",
+			phone2: "",
+			country: "",
+			city: "",
+			referenceName: "",
+			referencePhone: "",
+			referenceRelationship: "",
 		},
 	});
 
@@ -117,6 +153,8 @@ function SidebarContent({ currentThreadId, threads, contacts }) {
 
 	const [contactFound, setContactFound] = React.useState({
 		id: null,
+		country: "",
+		city: "",
 		name: "",
 		phone: "",
 		email: null,
@@ -160,17 +198,34 @@ function SidebarContent({ currentThreadId, threads, contacts }) {
 				documentType: contactFound.documentType || "",
 				document: contactFound.document || "",
 				address: contactFound.address || "",
+				address2: contactFound.address2 || "",
 				email: contactFound.email || "",
-				phone: contactFound.phone || "",
+				phone: parseStoredPhone(contactFound?.phone)?.local || "",
+				phone2: contactFound.phone2 || "",
+				country: parseStoredPhone(contactFound.phone).iso2 || "",
+				city: contactFound.city || "",
+				referenceName: contactFound.referenceName || "",
+				referencePhone: contactFound.referencePhone || "",
+				referenceRelationship: contactFound.referenceRelationship || "",
 			});
 		}
 	}, [contactFound]);
 
 	const onSubmit = React.useCallback(
 		async (dataForm) => {
-			setIsPending(true);
+			// setIsPending(true);
+			const countryData = COUNTRIES.find((c) => c.iso2 === dataForm.country);
+			const phoneCode = countryData ? countryData.phoneCode : "";
+			const fullPhone = `${phoneCode}${dataForm.phone.replace(/\D/g, "")}`;
 
-			const response = await updateCustomer(dataForm, contactFound.id);
+			const payload = {
+				...dataForm,
+				phone: fullPhone,
+			};
+
+			delete payload.country;
+
+			const response = await updateCustomer(payload, contactFound.id);
 
 			if (response.status == 200) setOpenAlert(true);
 			router.refresh();
@@ -178,6 +233,14 @@ function SidebarContent({ currentThreadId, threads, contacts }) {
 		},
 		[contactFound]
 	);
+
+	const handleChangeCountry = (e) => {
+		const { name, value } = e.target;
+		setValue(name, value);
+	};
+
+	const selectedCountryIso2 = watch("country");
+	const currentCountry = COUNTRIES.find((c) => c.iso2 === selectedCountryIso2);
 
 	return (
 		<React.Fragment>
@@ -198,6 +261,43 @@ function SidebarContent({ currentThreadId, threads, contacts }) {
 				<form onSubmit={handleSubmit(onSubmit)} style={{ height: "100%", overflowY: "auto" }}>
 					<Stack spacing={4} sx={{ p: 3 }}>
 						<Grid container spacing={3}>
+							<Grid size={{ md: 6, xs: 12 }}>
+								<Controller
+									control={control}
+									name="country"
+									render={({ field }) => (
+										<FormControl required fullWidth disabled error={Boolean(errors.country)}>
+											<InputLabel id="country-label">País</InputLabel>
+											<Select {...field} labelId="country-label" label="País" onChange={handleChangeCountry}>
+												{COUNTRIES.map((c) => (
+													<MenuItem key={c.iso2} value={c.iso2}>
+														{`${c.name} (+${c.phoneCode})`}
+													</MenuItem>
+												))}
+											</Select>
+											{errors.country ? <FormHelperText>{errors.country.message}</FormHelperText> : null}
+										</FormControl>
+									)}
+								/>
+							</Grid>
+							<Grid
+								size={{
+									md: 6,
+									xs: 12,
+								}}
+							>
+								<Controller
+									control={control}
+									name="city"
+									render={({ field }) => (
+										<FormControl required fullWidth error={Boolean(errors.city)}>
+											<InputLabel>Ciudad</InputLabel>
+											<OutlinedInput {...field} type="text" />
+											{errors.city ? <FormHelperText>{errors.city.message}</FormHelperText> : null}
+										</FormControl>
+									)}
+								/>
+							</Grid>
 							<Grid
 								size={{
 									md: 6,
@@ -304,14 +404,83 @@ function SidebarContent({ currentThreadId, threads, contacts }) {
 									render={({ field }) => (
 										<FormControl required fullWidth error={Boolean(errors.phone)}>
 											<InputLabel>Numero Celular</InputLabel>
-											<OutlinedInput {...field} type="phone" />
+											<OutlinedInput
+												{...field}
+												type="phone"
+												startAdornment={
+													<Chip
+														size="small"
+														label={currentCountry ? `+${currentCountry.phoneCode}` : "+??"}
+														sx={{ mr: 1 }}
+													/>
+												}
+											/>
 											{errors.phone ? <FormHelperText>{errors.phone.message}</FormHelperText> : null}
 										</FormControl>
 									)}
 								/>
 							</Grid>
+							<Grid size={{ md: 6, xs: 12 }}>
+								<Controller
+									control={control}
+									name="phone2"
+									render={({ field }) => (
+										<FormControl fullWidth>
+											<InputLabel>Celular 2</InputLabel>
+											<OutlinedInput {...field} type="text" />
+										</FormControl>
+									)}
+								/>
+							</Grid>
+							<Grid size={{ md: 6, xs: 12 }}>
+								<Controller
+									control={control}
+									name="address2"
+									render={({ field }) => (
+										<FormControl fullWidth>
+											<InputLabel>Dirección 2</InputLabel>
+											<OutlinedInput {...field} type="text" />
+										</FormControl>
+									)}
+								/>
+							</Grid>
+							<Grid size={{ md: 6, xs: 12 }}>
+								<Controller
+									control={control}
+									name="referenceName"
+									render={({ field }) => (
+										<FormControl fullWidth>
+											<InputLabel>Nombre de Referencia</InputLabel>
+											<OutlinedInput {...field} type="text" />
+										</FormControl>
+									)}
+								/>
+							</Grid>
+							<Grid size={{ md: 6, xs: 12 }}>
+								<Controller
+									control={control}
+									name="referencePhone"
+									render={({ field }) => (
+										<FormControl fullWidth>
+											<InputLabel>Teléfono de Referencia</InputLabel>
+											<OutlinedInput {...field} type="text" />
+										</FormControl>
+									)}
+								/>
+							</Grid>
+							<Grid size={{ md: 6, xs: 12 }}>
+								<Controller
+									control={control}
+									name="referenceRelationship"
+									render={({ field }) => (
+										<FormControl fullWidth>
+											<InputLabel>Parentesco</InputLabel>
+											<OutlinedInput {...field} type="text" />
+										</FormControl>
+									)}
+								/>
+							</Grid>
 						</Grid>
-
 						<Grid
 							size={{
 								md: 6,
@@ -322,7 +491,6 @@ function SidebarContent({ currentThreadId, threads, contacts }) {
 								Guardar
 							</Button>
 						</Grid>
-
 						<Grid
 							size={{
 								md: 6,
