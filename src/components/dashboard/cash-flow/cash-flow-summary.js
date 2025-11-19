@@ -10,6 +10,7 @@ import { TrendDown as TrendDownIcon, TrendUp as TrendUpIcon } from "@phosphor-ic
 
 export function CashFlowSummary({ assets }) {
 	const theme = useTheme();
+	console.log("[CashFlow] CashFlowSummary render", { assets });
 
 	// Detecta breakpoint activo
 	const isLg = useMediaQuery(theme.breakpoints.up("lg"));
@@ -30,6 +31,7 @@ export function CashFlowSummary({ assets }) {
 				}}
 			>
 				{assets.map((asset, index) => {
+					console.log("[CashFlow] CashFlowSummary tile", { index, ...asset });
 					const isLastInRow = (index + 1) % columns === 0;
 
 					return (

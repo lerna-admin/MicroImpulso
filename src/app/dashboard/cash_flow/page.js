@@ -19,12 +19,19 @@ dayjs.locale("es");
 
 export default async function Page({ searchParams }) {
 	const { page, limit, date, search } = await searchParams;
+	console.log("[CashFlow] Page render params", { page, limit, date, search });
 
 	const {
 		data: { user },
 	} = await getUser();
+	console.log("[CashFlow] Page user data", {
+		userId: user?.id,
+		role: user?.role,
+		branchId: user?.branch?.id,
+	});
 
 	const assets = await getCashFlowSummary(user.id, date);
+	console.log("[CashFlow] Page assets payload", assets);
 
 	const {
 		data: movementsData,
@@ -32,6 +39,12 @@ export default async function Page({ searchParams }) {
 		page: movementsPage,
 		limit: movementLimit,
 	} = await getCashMovements(user.branch.id, search, page, limit, date);
+	console.log("[CashFlow] Page movements payload", {
+		movementsTotalItems,
+		movementsPage,
+		movementLimit,
+		movementsCount: movementsData?.length,
+	});
 
 	return (
 		<Box
