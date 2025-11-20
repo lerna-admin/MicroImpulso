@@ -29,7 +29,7 @@ export default async function Page({ searchParams }) {
 				width: "var(--Content-width)",
 			}}
 		>
-			<DetailBalanceList dataBalance={data?.kpis} user={user} filters={{ date }} />
+			<DetailBalanceList dataBalance={data?.kpis} traceData={data} user={user} filters={{ date }} />
 		</Box>
 	);
 }

@@ -27,9 +27,15 @@ import { NotificationAlert } from "../../widgets/notifications/notification-aler
 
 dayjs.locale("es");
 
-export function DetailBalanceList({ dataBalance, user, filters }) {
+export function DetailBalanceList({ dataBalance, traceData, user, filters }) {
 	const { date } = filters;
-	console.log(dataBalance)
+	const kpis = dataBalance ?? {};
+	const resolvedTransfersIn = kpis.transferEntrante ?? traceData?.kpis?.transferEntrante ?? 0;
+	const resolvedTransfersOut = kpis.transferSaliente ?? traceData?.kpis?.transferSaliente ?? 0;
+	const resolvedNuevos = kpis.clientesNuevos ?? traceData?.kpis?.clientesNuevos ?? { cantidad: 0, montoPrestado: 0 };
+	const resolvedRenovados =
+		kpis.clientesRenovados ?? traceData?.kpis?.clientesRenovados ?? { cantidad: 0, montoPrestado: 0 };
+
 	const [assets, setAssets] = React.useState([
 		{ id: 2, name: "Cartera ($)", value: "" },
 		{ id: 1, name: "Base anterior ($)", value: "" },
@@ -48,13 +54,15 @@ export function DetailBalanceList({ dataBalance, user, filters }) {
 	const [alertMsg, setAlertMsg] = React.useState("");
 	const [alertSeverity, setAlertSeverity] = React.useState("");
 
-	const totalAmount =
-		dataBalance.baseAnterior +
-		dataBalance.valorCobradoDia -
-		dataBalance.clientesNuevos?.montoPrestado -
-		dataBalance.clientesRenovados?.montoPrestado +
-		dataBalance.transferEntrante - 
-		dataBalance.transferSaliente;
+	const fallbackTotal =
+		(kpis.baseAnterior ?? 0) +
+		(kpis.valorCobradoDia ?? 0) -
+		(resolvedNuevos?.montoPrestado ?? 0) -
+		(resolvedRenovados?.montoPrestado ?? 0) +
+		resolvedTransfersIn -
+		resolvedTransfersOut;
+
+	const totalAmount = traceData?.totalFinal ?? fallbackTotal;
 
 	const today = dayjs(date);
 	const formattedDate = `${today.format("DD")} ${today.format("MMMM").toUpperCase()} ${today.format("YYYY")}`;
@@ -87,20 +95,20 @@ export function DetailBalanceList({ dataBalance, user, filters }) {
 
 	React.useEffect(() => {
 		const updates = [
-			{ id: 2, value: parseCurrency(dataBalance.valorEnCartera) },
-			{ id: 1, value: parseCurrency(dataBalance.baseAnterior) },
-			{ id: 3, value: parseCurrency(dataBalance.valorCobradoDia) },
-			{ id: 4, value: dataBalance.clientesEnDeuda },
+			{ id: 2, value: parseCurrency(kpis.valorEnCartera ?? 0) },
+			{ id: 1, value: parseCurrency(kpis.baseAnterior ?? 0) },
+			{ id: 3, value: parseCurrency(kpis.valorCobradoDia ?? 0) },
+			{ id: 4, value: kpis.clientesEnDeuda ?? traceData?.kpis?.clientesEnDeuda ?? 0 },
 			{
 				id: 5,
-				value: `${parseCurrency(dataBalance.clientesRenovados?.montoPrestado)} (${dataBalance.clientesRenovados?.cantidad})`,
+				value: `${parseCurrency(resolvedRenovados?.montoPrestado ?? 0)} (${resolvedRenovados?.cantidad ?? 0})`,
 			},
 			{
 				id: 6,
-				value: `${parseCurrency(dataBalance.clientesNuevos?.montoPrestado)} (${dataBalance.clientesNuevos?.cantidad})`,
+				value: `${parseCurrency(resolvedNuevos?.montoPrestado ?? 0)} (${resolvedNuevos?.cantidad ?? 0})`,
 			},
-			{ id: 7, value: parseCurrency(dataBalance.transferEntrante || 0) },
-      		{ id: 8, value: parseCurrency(dataBalance.transferSaliente || 0) },
+			{ id: 7, value: parseCurrency(resolvedTransfersIn || 0) },
+			{ id: 8, value: parseCurrency(resolvedTransfersOut || 0) },
 		];
 		setAssets((prev) =>
 			prev.map((item) => {
@@ -108,7 +116,7 @@ export function DetailBalanceList({ dataBalance, user, filters }) {
 				return update ? { ...item, value: update.value } : item;
 			})
 		);
-	}, [dataBalance]);
+	}, [kpis, resolvedRenovados, resolvedNuevos, resolvedTransfersIn, resolvedTransfersOut, traceData]);
 	
 	const handleRoadClousure = async () => {
 		popover.handleClose();
