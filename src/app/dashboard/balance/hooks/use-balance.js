@@ -1,19 +1,21 @@
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 
+const noStore = { cache: "no-store" };
+
 export async function getClosingSummaryByAgent(agentId) {
-	const res = await fetch(`${BASE_URL}/loan-request/agent/${agentId}/closing-summary`);
+	const res = await fetch(`${BASE_URL}/loan-request/agent/${agentId}/closing-summary`, noStore);
 	if (!res.ok) throw new Error("Error al obtener cierre de ruta");
 	return await res.json();
 }
 
 export async function getDailyTrace(agentId, date) {
-	const res = await fetch(`${BASE_URL}/cash/daily-trace/by-user/${agentId}?date=${date}`);
+	const res = await fetch(`${BASE_URL}/cash/daily-trace/by-user/${agentId}?date=${date}`, noStore);
 	if (!res.ok) throw new Error("Error al obtener cierre de ruta");
 	return await res.json();
 }
 
 export async function getDailyTraceDetailed(agentId, date) {
-	const res = await fetch(`${BASE_URL}/cash/export-daily-trace/?userId=${agentId}&date=${date}`);
+	const res = await fetch(`${BASE_URL}/cash/export-daily-trace/?userId=${agentId}&date=${date}`, noStore);
 	if (!res.ok) throw new Error("Error al obtener descarga detalle cierre de ruta");
 	return await res;
 }
