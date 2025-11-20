@@ -63,6 +63,15 @@ export function DetailBalanceList({ dataBalance, traceData, user, filters }) {
 		resolvedTransfersOut;
 
 	const totalAmount = traceData?.totalFinal ?? fallbackTotal;
+	console.log("[DetailBalanceList] render data", {
+		date,
+		baseAnterior: kpis.baseAnterior,
+		valorCobradoDia: kpis.valorCobradoDia,
+		renovados: resolvedRenovados,
+		nuevos: resolvedNuevos,
+		transfers: { in: resolvedTransfersIn, out: resolvedTransfersOut },
+		totalAmount,
+	});
 
 	const today = dayjs(date);
 	const formattedDate = `${today.format("DD")} ${today.format("MMMM").toUpperCase()} ${today.format("YYYY")}`;
