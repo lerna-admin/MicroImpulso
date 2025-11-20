@@ -13,13 +13,20 @@ export const dynamic = "force-dynamic";
 export default async function Page({ searchParams }) {
 	const { date } = await searchParams;
 
-	const today = dayjs().format("YYYY-MM-DD");;
+	const today = dayjs().format("YYYY-MM-DD");
 
 	const {
 		data: { user },
 	} = await getUser();
 
-	const data = await getDailyTrace(user.id, (date ?? today));
+	console.log("[BalancePage] fetching trace", {
+		userId: user.id,
+		date: date ?? today,
+	});
+
+	const data = await getDailyTrace(user.id, date ?? today);
+
+	console.log("[BalancePage] trace response", JSON.stringify(data, null, 2));
 
 	return (
 		<Box
