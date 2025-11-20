@@ -8,6 +8,7 @@ import { DetailBalanceList } from "@/components/dashboard/balance/detail-balance
 import { dayjs } from "@/lib/dayjs";
 
 export const metadata = { title: `Balance de la ruta | Dashboard | ${appConfig.name}` };
+export const dynamic = "force-dynamic";
 
 export default async function Page({ searchParams }) {
 	const { date } = await searchParams;
