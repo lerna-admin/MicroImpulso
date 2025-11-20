@@ -26,7 +26,20 @@ export default async function Page({ searchParams }) {
 
 	const data = await getDailyTrace(user.id, date ?? today);
 
-	console.log("[BalancePage] trace response", JSON.stringify(data, null, 2));
+	console.log(
+		"[BalancePage] trace KPIs",
+		JSON.stringify(
+			{
+				baseAnterior: data?.baseAnterior,
+				totalIngresosDia: data?.totalIngresosDia,
+				totalEgresosDia: data?.totalEgresosDia,
+				totalFinal: data?.totalFinal,
+				kpis: data?.kpis,
+			},
+			null,
+			2,
+		),
+	);
 
 	return (
 		<Box
