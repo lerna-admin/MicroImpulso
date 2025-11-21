@@ -108,19 +108,16 @@ export function CustomersTable({ rows, permissions, user, role, branch }) {
 			width: "150px",
 		},
 		{
-			formatter: (row) => (
-				<Stack direction="column" spacing={1} sx={{ alignItems: "center" }}>
-					<Typography color="inherit" variant="body2">
-						{fmtDate(row?.loanRequest?.createdAt)}
-					</Typography>
-					<Typography color="inherit" variant="body2">
-						{fmtDate(row?.loanRequest?.endDateAt)}
-					</Typography>
-				</Stack>
-			),
-			name: "Fecha Inicio / Fecha Fin",
+			formatter: (row) => fmtDate(row?.loanRequest?.createdAt),
+			name: "Fecha de creación",
 			align: "center",
 			width: "120px",
+		},
+		{
+			formatter: (row) => fmtDate(row?.loanRequest?.endDateAt),
+			name: "Fecha de pago estimada",
+			align: "center",
+			width: "140px",
 		},
 		{
 			formatter(row) {
