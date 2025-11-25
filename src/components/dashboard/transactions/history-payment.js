@@ -38,6 +38,7 @@ import { dayjs } from "@/lib/dayjs";
 import { usePopover } from "@/hooks/use-popover";
 import { DataTable } from "@/components/core/data-table";
 import { NotificationAlert } from "@/components/widgets/notifications/notification-alert";
+import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { renewRequest } from "@/app/dashboard/requests/hooks/use-requests";
 
 const columns = [
@@ -87,9 +88,18 @@ function createSchema(amountToPay, amountPaid) {
 				.refine((val) => /^\d+$/.test(val), { message: "Solo se permiten números" })
 				.transform(Number)
 				.refine((val) => val > 0, { message: "El monto debe ser mayor a 0" }),
+
+			dateRenovation: zod
+				.custom((val) => {
+					if (val === undefined || val === null || val === "") return true;
+					return dayjs.isDayjs(val) && val.isValid();
+				}, { message: "La fecha es inválida" })
+				
+				.optional(),
 		})
 		.superRefine((data, ctx) => {
 			const restante = amountToPay - amountPaid;
+
 			if (data.amount > restante) {
 				ctx.addIssue({
 					path: ["amount"],
@@ -99,6 +109,8 @@ function createSchema(amountToPay, amountPaid) {
 			}
 		});
 }
+
+
 
 export function HistoryPayments({
 	user,
@@ -159,10 +171,13 @@ export function HistoryPayments({
 		resolver: zodResolver(schema),
 		defaultValues: {
 			amount: 0,
+			dateRenovation: dayjs(),
 		},
 	});
 
 	const montoARenovar = watch("amount");
+	const fechaARenovar = watch("dateRenovation");
+	
 
 	const onSubmit = React.useCallback(async ({ amount }) => {
 		try {
@@ -206,7 +221,7 @@ export function HistoryPayments({
 			setAlertMsg(error.message);
 			setAlertSeverity("error");
 		} finally {
-			await renewRequest({amount: requestedAmount, newDate: todayPlus }, requestId)
+			await renewRequest({amount: requestedAmount, newDate: fechaARenovar.format('YYYY-MM-DD') }, requestId)
 		}
 
 		popover.handleClose();
@@ -308,7 +323,7 @@ export function HistoryPayments({
 				<DialogTitle id="alert-dialog-title">{"Crear pago"}</DialogTitle>
 				<form onSubmit={handleSubmit(onSubmit)}>
 					<DialogContent>
-						<Grid container>
+						<Grid container spacing={3}>
 							<Grid
 								size={{
 									md: 12,
@@ -335,10 +350,28 @@ export function HistoryPayments({
 									)}
 								/>
 							</Grid>
+							<Grid
+								size={{
+									md: 12,
+									xs: 12,
+								}}
+							>
+								<Controller
+									control={control}
+									name="dateRenovation"
+									render={({ field }) => (
+										<FormControl error={Boolean(errors.dateRenovation)} fullWidth>
+											<InputLabel required>Fecha:</InputLabel>
+											<DatePicker {...field} minDate={dayjs()} />
+											{errors.dateRenovation ? <FormHelperText>{errors.dateRenovation.message}</FormHelperText> : null}
+										</FormControl>
+									)}
+								/>
+							</Grid>
 						</Grid>
 					</DialogContent>
 					<DialogActions sx={{ padding: 3 }}>
-						<Button variant="contained" onClick={handleSubmit(renovarAuto)} autoFocus>
+						<Button variant="contained" onClick={handleSubmit(renovarAuto)} autoFocus disabled={!dayjs(fechaARenovar).isAfter(dayjs(), "day")}>
 							Renovar inmediatamente
 						</Button>
 						<Button variant="contained" type="submit" autoFocus>
