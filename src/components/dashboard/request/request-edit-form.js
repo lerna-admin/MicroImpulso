@@ -44,11 +44,16 @@ export function RequestEditForm({ dataRequest }) {
 	const [alertSeverity, setAlertSeverity] = React.useState("success");
 
 	const schema = zod.object({
-		amount: zod
+		requestedAmount: zod
 			.number({ invalid_type_error: "El monto debe ser un número" })
-			.min(1, { message: "El monto es obligatorio" })
+			.min(1, { message: "El monto base es obligatorio" })
 			.min(50, { message: "El monto debe superar los $50.000" })
 			.max(5_000_000, { message: "El monto no puede superar los 5.000.000" }),
+		totalAmount: zod
+			.number({ invalid_type_error: "El valor a pagar debe ser un número" })
+			.min(1, { message: "Debes definir el valor a pagar" })
+			.min(60, { message: "El valor a pagar debe ser mayor que $60.000" })
+			.max(6_000_000, { message: "El valor a pagar no puede superar los 6.000.000" }),
 		typePayment: zod.enum(["QUINCENAL", "MENSUAL"], { errorMap: () => ({ message: "Debes elegir un tipo de pago" }) }),
 		datePayment: zod.enum(["15-30", "5-20", "10-25", "3-18"], {
 			errorMap: () => ({ message: "Debes elegir una fecha de pago" }),
@@ -63,7 +68,8 @@ export function RequestEditForm({ dataRequest }) {
 	});
 
 	const defaultValues = {
-		amount: dataRequest.amount,
+		requestedAmount: dataRequest.requestedAmount ?? Math.round((dataRequest.amount ?? 0) / 1.2),
+		totalAmount: dataRequest.amount ?? Math.round((dataRequest.requestedAmount ?? 0) * 1.2),
 		typePayment: dataRequest.type,
 		datePayment: dataRequest.paymentDay,
 		selectedDate: dayjs(dataRequest.endDateAt),
@@ -74,17 +80,28 @@ export function RequestEditForm({ dataRequest }) {
 		handleSubmit,
 		formState: { errors },
 		reset,
+		setValue,
+		watch,
 	} = useForm({ defaultValues, resolver: zodResolver(schema) });
+
+	const [totalManual, setTotalManual] = React.useState(false);
+	const watchedRequestedAmount = watch("requestedAmount");
+
+	React.useEffect(() => {
+		if (totalManual) return;
+		const total = Math.round((watchedRequestedAmount ?? 0) * 1.2);
+		setValue("totalAmount", total);
+	}, [watchedRequestedAmount, totalManual, setValue]);
 
 	const onSubmit = React.useCallback(async (dataForm) => {
 		try {
 			const bodyRequest = {
 				endDateAt: dataForm.selectedDate.format("YYYY-MM-DD"),
-				requestedAmount: dataForm.amount,
+				requestedAmount: dataForm.requestedAmount,
 				paymentDay: dataForm.datePayment,
 				type: dataForm.typePayment,
-				amount: dataForm.amount * 1.2,
-				mode: formatearCantidad(dataForm.amount),
+				amount: dataForm.totalAmount,
+				mode: formatearCantidad(dataForm.requestedAmount),
 			};
 			await updateRequest(bodyRequest, dataRequest.id);
 			setAlertMsg("¡Editado exitosamente!");
@@ -92,11 +109,12 @@ export function RequestEditForm({ dataRequest }) {
 		} catch (error) {
 			setAlertMsg(error.message);
 			setAlertSeverity("error");
-		} finally {
-			popoverAlert.handleOpen();
-			reset();
-			router.push(paths.dashboard.customers.list);
-		}
+			} finally {
+				popoverAlert.handleOpen();
+				reset(defaultValues);
+				setTotalManual(false);
+				router.push(paths.dashboard.customers.list);
+			}
 	});
 
 	return (
@@ -128,14 +146,18 @@ export function RequestEditForm({ dataRequest }) {
 							>
 								<Controller
 									control={control}
-									name="amount"
+									name="requestedAmount"
 									render={({ field }) => {
 										return (
-											<FormControl error={Boolean(errors.amount)} fullWidth>
-												<InputLabel required>Monto solicitado</InputLabel>
+											<FormControl error={Boolean(errors.requestedAmount)} fullWidth>
+												<InputLabel required>Capital solicitado</InputLabel>
 												<OutlinedInput
 													{...field}
-													value={field.value !== undefined && field.value !== null ? formatCurrency(field.value) : ""}
+													value={
+														field.value !== undefined && field.value !== null
+															? formatCurrency(field.value)
+															: ""
+													}
 													onChange={(e) => {
 														const raw = deleteAlphabeticals(e.target.value);
 														const numericValue = raw ? Number.parseInt(raw, 10) : 0;
@@ -143,10 +165,42 @@ export function RequestEditForm({ dataRequest }) {
 													}}
 													inputProps={{ inputMode: "numeric" }}
 												/>
-												{errors.amount ? <FormHelperText>{errors.amount.message}</FormHelperText> : null}
+												{errors.requestedAmount ? (
+													<FormHelperText>{errors.requestedAmount.message}</FormHelperText>
+												) : null}
 											</FormControl>
 										);
 									}}
+								/>
+							</Grid>
+							<Grid
+								size={{
+									md: 6,
+									xs: 12,
+								}}
+							>
+								<Controller
+									control={control}
+									name="totalAmount"
+									render={({ field }) => (
+										<FormControl error={Boolean(errors.totalAmount)} fullWidth>
+											<InputLabel required>Valor a pagar</InputLabel>
+											<OutlinedInput
+												{...field}
+												value={
+													field.value !== undefined && field.value !== null ? formatCurrency(field.value) : ""
+												}
+												onChange={(e) => {
+													setTotalManual(true);
+													const raw = deleteAlphabeticals(e.target.value);
+													const numericValue = raw ? Number.parseInt(raw, 10) : 0;
+													field.onChange(numericValue);
+												}}
+												inputProps={{ inputMode: "numeric" }}
+											/>
+											{errors.totalAmount ? <FormHelperText>{errors.totalAmount.message}</FormHelperText> : null}
+										</FormControl>
+									)}
 								/>
 							</Grid>
 							<Grid
