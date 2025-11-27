@@ -283,6 +283,7 @@ export function ActionsCell({ row, permissions, user, role, branch }) {
 
 	const hasLoan = Boolean(row?.loanRequest);
 	const canDisburse = (permissions || []).find((per) => per?.name === "CAN_DISBURSE") || { granted: false };
+	const canDownloadStatuses = ["approved", "funded", "renewed"];
 
 	const handlePayment = () => {
 		if (!hasLoan || !row?.loanRequest?.id) return;
@@ -553,11 +554,8 @@ const handleDownloadContract = React.useCallback(async () => {
 					<Typography>Aprobar solicitud</Typography>
 				</MenuItem>
 				<MenuItem
-					disabled={!hasLoan || (row.loanRequest.status !== "approved"  )}
-					onClick={() => {
-						    handleDownloadContract(); // ✅ AGREGADO
-
-					}}
+					disabled={!hasLoan || !canDownloadStatuses.includes(row.loanRequest.status)}
+					onClick={handleDownloadContract}
 				>
 					<Typography>Descargar Contrato</Typography>
 				</MenuItem>
