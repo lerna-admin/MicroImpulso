@@ -561,7 +561,7 @@ const handleDownloadContract = React.useCallback(async () => {
 				</MenuItem>
 				
 
-				<MenuItem disabled={!hasLoan || (row.loanRequest.status !== "approved" && row.loanRequest.status !== "new" && row.loanRequest.status !== "under_review")}  onClick={handleEditRequest}>
+				<MenuItem disabled={!hasLoan || row.loanRequest.status === "new"} onClick={handleEditRequest}>
 					<Typography>Editar solicitud</Typography>
 				</MenuItem>
 
