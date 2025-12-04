@@ -12,6 +12,8 @@ import {
 	Warning as WarningIcon,
 } from "@phosphor-icons/react/dist/ssr";
 
+import { paths } from "@/paths";
+
 export function CustomerStatistics({ statistics, filters = {} }) {
 	const router = useRouter();
 	const { limit, type, paymentDay } = filters;
