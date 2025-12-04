@@ -12,8 +12,6 @@ import {
 	Warning as WarningIcon,
 } from "@phosphor-icons/react/dist/ssr";
 
-import { paths } from "@/paths";
-
 export function CustomerStatistics({ statistics, filters = {} }) {
 	const router = useRouter();
 	const { limit, type, paymentDay } = filters;
@@ -34,7 +32,6 @@ export function CustomerStatistics({ statistics, filters = {} }) {
 		{ id: 9, action: true, label: "10-25", icon: <CalendarDotsIcon />, value: "" },
 		{ id: 10, action: true, label: "15-30", icon: <CalendarDotsIcon />, value: "" },
 		{ id: 11, action: true, label: "3-18", icon: <CalendarDotsIcon />, value: "" },
-		
 	]);
 
 	React.useEffect(() => {
@@ -123,15 +120,23 @@ export function CustomerStatistics({ statistics, filters = {} }) {
 		[activeType, activePaymentDay, updateSearchParams, filters, limit]
 	);
 
+	const containerStyles = {
+		display: "flex",
+		flexWrap: "wrap",
+		gap: 1.25,
+		justifyContent: "center",
+		alignItems: "center",
+	};
+
+	const chipStyles = {
+		fontSize: "0.75rem",
+		px: 1.5,
+		height: 32,
+		minWidth: 110,
+	};
+
 	return (
-		<Box
-			sx={{
-				display: "grid",
-				gridTemplateColumns: isSmallScreen ? "repeat(2, 1fr)" : "repeat(5, 1fr)",
-				gridTemplateRows: isSmallScreen ? "repeat(6, auto)" : "repeat(2, auto)",
-				gap: 1.3,
-			}}
-		>
+		<Box sx={containerStyles}>
 			{filterButtonsAndStatistics.map((item, index) => {
 				const { label, value, icon, action } = item;
 
@@ -148,13 +153,7 @@ export function CustomerStatistics({ statistics, filters = {} }) {
 								}
 								size="small"
 								onClick={action ? () => handleFilterButton(label) : undefined}
-								sx={{
-									fontSize: "0.75rem",
-									px: 1,
-									height: 32,
-									maxWidth: 135,
-									width: "100%",
-								}}
+								sx={chipStyles}
 							/>
 						</Tooltip>
 					</Box>
