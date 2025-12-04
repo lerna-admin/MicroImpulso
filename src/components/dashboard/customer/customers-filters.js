@@ -11,7 +11,6 @@ import Tabs from "@mui/material/Tabs";
 import { paths } from "@/paths";
 
 const tabs = [
-	{ label: "Todos", value: "" },
 	{ label: "Activos", value: "active" },
 	{ label: "Inactivos", value: "inactive" },
 	{ label: "Rechazados", value: "rejected" },
@@ -102,7 +101,7 @@ export function CustomersFilters({ filters = {}, user, allBranches, allAgents })
 
 	return (
 		<div>
-			<Tabs onChange={handleStatusChange} sx={{ px: 3 }} value={status ?? ""} variant="scrollable">
+			<Tabs onChange={handleStatusChange} sx={{ px: 3 }} value={status ?? "active"} variant="scrollable">
 				{tabs.map((tab) => (
 					<Tab
 						iconPosition="end"

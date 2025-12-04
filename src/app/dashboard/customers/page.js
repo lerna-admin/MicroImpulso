@@ -21,6 +21,7 @@ export const metadata = { title: `Clientes | Dashboard | ${appConfig.name}` };
 
 export default async function Page({ searchParams }) {
 	const { status, page, limit, type, paymentDay, branch, agent } = await searchParams;
+	const normalizedStatus = status || "active";
 
 	const {
 		data: { user },
@@ -54,6 +55,8 @@ export default async function Page({ searchParams }) {
 
 	const branches = await getAllBranches(user.country.id);
 
+	const filters = { status: normalizedStatus, page, limit, type, paymentDay, branch, agent };
+
 	return (
 		<Box
 			sx={{
@@ -61,38 +64,40 @@ export default async function Page({ searchParams }) {
 				m: "var(--Content-margin)",
 				p: "var(--Content-padding)",
 				width: "var(--Content-width)",
+				pt: 0,
 			}}
 		>
 			<Stack spacing={4}>
 				<Stack spacing={1}>
 					<Typography variant="h4">Clientes</Typography>
-					<CustomerStatistics statistics={statistics} filters={{ status, page, limit, type, paymentDay }} />
+					<CustomerStatistics
+						statistics={statistics}
+						filters={{ status: normalizedStatus, page, limit, type, paymentDay }}
+					/>
 				</Stack>
 				<CustomersSelectionProvider customers={customers}>
 					<Card>
-						<CustomersFilters
-							filters={{ status, page, limit, type, paymentDay, branch, agent }}
-							allBranches={branches}
-							user={user}
-							allAgents={data}
-						/>
+						<CustomersFilters filters={filters} allBranches={branches} user={user} allAgents={data} />
 						<Divider />
-						<Box sx={{ overflowX: "auto" }}>
-							<CustomersTable
-								rows={customers}
-								permissions={permissions}
-								user={user}
-								role={user.role}
-								branch={user.branch.id}
-							/>
-						</Box>
-						<Divider />
-						<CustomersPagination
-							filters={{ status, page, limit, type, paymentDay }}
-							customerTotalItems={customerTotalItems}
-							customersPage={customersPage - 1}
-							customerLimit={customerLimit}
-						/>
+						<Stack spacing={2} sx={{ px: 3, py: 2 }}>
+							<Box sx={{ display: "flex", justifyContent: "flex-end" }}>
+								<CustomersPagination
+									filters={{ status: normalizedStatus, page, limit, type, paymentDay }}
+									customerTotalItems={customerTotalItems}
+									customersPage={customersPage - 1}
+									customerLimit={customerLimit}
+								/>
+							</Box>
+							<Box sx={{ overflowX: "auto" }}>
+								<CustomersTable
+									rows={customers}
+									permissions={permissions}
+									user={user}
+									role={user.role}
+									branch={user.branch.id}
+								/>
+							</Box>
+						</Stack>
 					</Card>
 				</CustomersSelectionProvider>
 			</Stack>
