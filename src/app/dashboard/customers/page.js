@@ -64,10 +64,8 @@ export default async function Page({ searchParams }) {
 			}}
 		>
 			<Stack spacing={4}>
-				<Stack direction={{ xs: "column", sm: "row" }} spacing={3} sx={{ alignItems: "center" }}>
-					<Box sx={{ flex: "1 1 auto" }}>
-						<Typography variant="h4">Clientes</Typography>
-					</Box>
+				<Stack spacing={1}>
+					<Typography variant="h4">Clientes</Typography>
 					<CustomerStatistics statistics={statistics} filters={{ status, page, limit, type, paymentDay }} />
 				</Stack>
 				<CustomersSelectionProvider customers={customers}>
