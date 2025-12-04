@@ -53,12 +53,12 @@ export function CustomerStatistics({ statistics, filters = {} }) {
 					style: "currency",
 					currency: "COP",
 					minimumFractionDigits: 0,
-				}).format(statistics.remainingTotal),
+				}).format(statistics.remainingTotal ?? 0),
 			},
-			{ id: 4, value: statistics.activeClientsCount },
-			{ id: 3, value: statistics.critical20 },
-			{ id: 2, value: statistics.mora15 },
-			{ id: 1, value: statistics.noPayment30 },
+			{ id: 4, value: statistics.activeClientsCount ?? 0 },
+			{ id: 3, value: statistics.noPayment30 ?? 0 },
+			{ id: 2, value: statistics.mora15 ?? 0 },
+			{ id: 1, value: statistics.delinquentClients ?? 0 },
 		];
 
 		setFilterButtonsAndStatistics((prev) =>

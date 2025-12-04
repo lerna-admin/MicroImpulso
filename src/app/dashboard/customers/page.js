@@ -40,6 +40,7 @@ export default async function Page({ searchParams }) {
 		mora15,
 		critical20,
 		noPayment30,
+		delinquentClients,
 	} = await getAllCustomers({ page, limit, status, type, paymentDay, branch, agent, u_id: user.id });
 
 	const { data } = await getAllUsers({ branchId: user.branchId, role: "AGENT" });
@@ -51,6 +52,7 @@ export default async function Page({ searchParams }) {
 		mora15,
 		critical20,
 		noPayment30,
+		delinquentClients,
 	};
 
 	const branches = await getAllBranches(user.country.id);
