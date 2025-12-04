@@ -80,17 +80,24 @@ export function CustomersTable({ rows, permissions, user, role, branch }) {
 			),
 			name: "#",
 			align: "center",
-			width: "50px",
+			width: "45px",
 		},
 		{
 			formatter: (row) => (
 				<Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
-					<div>
+					<Box sx={{ display: "flex", flexDirection: "column" }}>
 						<Link
 							color="inherit"
 							component={RouterLink}
 							href={paths.dashboard.customers.details(row?.client?.id)}
-							sx={{ whiteSpace: "nowrap" }}
+							sx={{
+								display: "-webkit-box",
+								WebkitBoxOrient: "vertical",
+								WebkitLineClamp: 2,
+								overflow: "hidden",
+								textOverflow: "ellipsis",
+								whiteSpace: "normal",
+							}}
 							variant="subtitle2"
 						>
 							{row?.client?.name || "-"}
@@ -101,23 +108,23 @@ export function CustomersTable({ rows, permissions, user, role, branch }) {
 						<Typography color="text.secondary" variant="body2">
 							{row?.client?.document || "-"}
 						</Typography>
-					</div>
+					</Box>
 				</Stack>
 			),
 			name: "Nombre Completo",
-			width: "150px",
+			width: "120px",
 		},
 		{
 			formatter: (row) => fmtDate(row?.loanRequest?.createdAt),
 			name: "Fecha de creación",
 			align: "center",
-			width: "120px",
+			width: "110px",
 		},
 		{
 			formatter: (row) => fmtDate(row?.loanRequest?.endDateAt),
 			name: "Fecha de pago estimada",
 			align: "center",
-			width: "140px",
+			width: "125px",
 		},
 		{
 			formatter(row) {
@@ -125,7 +132,7 @@ export function CustomersTable({ rows, permissions, user, role, branch }) {
 			},
 			name: "Fecha Ult. Pago",
 			align: "center",
-			width: "120px",
+			width: "110px",
 		},
 		{
 			formatter: (row) => {
@@ -170,7 +177,7 @@ export function CustomersTable({ rows, permissions, user, role, branch }) {
 			},
 			name: "Agente",
 			align: "center",
-			width: "135px",
+			width: "115px",
 		},
 		{
 			formatter(row) {
@@ -178,7 +185,7 @@ export function CustomersTable({ rows, permissions, user, role, branch }) {
 			},
 			name: "Tipo Pago",
 			align: "center",
-			width: "80px",
+			width: "70px",
 		},
 		{
 			formatter(row) {
@@ -187,7 +194,7 @@ export function CustomersTable({ rows, permissions, user, role, branch }) {
 			},
 			name: "Prestamo",
 			align: "center",
-			width: "90px",
+			width: "80px",
 		},
 		{
 			formatter(row) {
@@ -195,7 +202,7 @@ export function CustomersTable({ rows, permissions, user, role, branch }) {
 			},
 			name: "Dia Pago",
 			align: "center",
-			width: "70px",
+			width: "65px",
 		},
 		{ field: "diasMora", name: "Mora", align: "center", width: "60px" },
 		{
@@ -204,7 +211,7 @@ export function CustomersTable({ rows, permissions, user, role, branch }) {
 			},
 			name: "Abono",
 			align: "center",
-			width: "90px",
+			width: "80px",
 		},
 		{
 			formatter(row) {
@@ -224,7 +231,7 @@ export function CustomersTable({ rows, permissions, user, role, branch }) {
 			formatter: (row) => <ActionsCell row={row} permissions={permissions} user={user} role={role} branch={branch} />,
 			name: "Acciones",
 			hideName: true,
-			width: "70px",
+			width: "60px",
 			align: "right",
 		},
 	];
