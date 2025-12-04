@@ -20,7 +20,7 @@ import { getAllCustomers } from "./hooks/use-customers";
 export const metadata = { title: `Clientes | Dashboard | ${appConfig.name}` };
 
 export default async function Page({ searchParams }) {
-	const { status, page, limit, type, paymentDay, branch, agent } = await searchParams;
+	const { status, page, limit, type, paymentDay, branch, agent, mora } = await searchParams;
 	const normalizedStatus = status || "active";
 
 	const {
@@ -29,11 +29,17 @@ export default async function Page({ searchParams }) {
 
 	const { permissions } = user;
 
+	const statsResponse = await getAllCustomers({
+		page: 1,
+		limit: 1,
+		status: "active",
+		branch,
+		agent,
+		u_id: user.id,
+		distinct: true,
+	});
+
 	const {
-		data: customers,
-		page: customersPage,
-		limit: customerLimit,
-		totalItems: customerTotalItems,
 		remainingTotal,
 		totalActiveRepayment,
 		activeClientsCount,
@@ -41,6 +47,13 @@ export default async function Page({ searchParams }) {
 		critical20,
 		noPayment30,
 		delinquentClients,
+	} = statsResponse;
+
+	const {
+		data: customers,
+		page: customersPage,
+		limit: customerLimit,
+		totalItems: customerTotalItems,
 	} = await getAllCustomers({ page, limit, status, type, paymentDay, branch, agent, u_id: user.id });
 
 	const { data } = await getAllUsers({ branchId: user.branchId, role: "AGENT" });
@@ -57,7 +70,26 @@ export default async function Page({ searchParams }) {
 
 	const branches = await getAllBranches(user.country.id);
 
-	const filters = { status: normalizedStatus, page, limit, type, paymentDay, branch, agent };
+	const filters = { status: normalizedStatus, page, limit, type, paymentDay, branch, agent, mora };
+
+	const filteredCustomers = Array.isArray(customers)
+		? customers.filter((row) => {
+				if (!mora) return true;
+				const daysLate = Number(row?.daysLate ?? 0);
+				if (Number.isNaN(daysLate) || daysLate <= 0) return false;
+
+				if (mora === "NP") {
+					return daysLate > 0;
+				}
+				if (mora === "M15") {
+					return daysLate > 15;
+				}
+				if (mora === "CR") {
+					return daysLate >= 30;
+				}
+				return true;
+		  })
+		: customers;
 
 	return (
 		<Box
@@ -74,7 +106,7 @@ export default async function Page({ searchParams }) {
 					<Typography variant="h4">Clientes</Typography>
 					<CustomerStatistics
 						statistics={statistics}
-						filters={{ status: normalizedStatus, page, limit, type, paymentDay }}
+						filters={{ status: normalizedStatus, page, limit, type, paymentDay, branch, agent, mora }}
 					/>
 				</Stack>
 				<CustomersSelectionProvider customers={customers}>
@@ -84,7 +116,7 @@ export default async function Page({ searchParams }) {
 						<Stack spacing={2} sx={{ px: 3, py: 2 }}>
 							<Box sx={{ display: "flex", justifyContent: "flex-end" }}>
 								<CustomersPagination
-									filters={{ status: normalizedStatus, page, limit, type, paymentDay }}
+									filters={{ status: normalizedStatus, page, limit, type, paymentDay, branch, agent, mora }}
 									customerTotalItems={customerTotalItems}
 									customersPage={customersPage - 1}
 									customerLimit={customerLimit}
@@ -92,7 +124,7 @@ export default async function Page({ searchParams }) {
 							</Box>
 							<Box sx={{ overflowX: "auto" }}>
 								<CustomersTable
-									rows={customers}
+									rows={filteredCustomers}
 									permissions={permissions}
 									user={user}
 									role={user.role}

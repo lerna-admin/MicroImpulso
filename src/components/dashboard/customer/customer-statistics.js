@@ -16,16 +16,17 @@ import { paths } from "@/paths";
 
 export function CustomerStatistics({ statistics, filters = {} }) {
 	const router = useRouter();
-	const { limit, type, paymentDay } = filters;
+	const { limit, type, paymentDay, mora } = filters;
 	const [activeType, setActiveType] = React.useState(null);
 	const [activePaymentDay, setActivePaymentDay] = React.useState(null);
+	const [activeMora, setActiveMora] = React.useState(null);
 	const theme = useTheme();
 	const isSmallScreen = useMediaQuery(theme.breakpoints.down("sm"));
 
 	const [filterButtonsAndStatistics, setFilterButtonsAndStatistics] = React.useState([
-		{ id: 1, action: false, label: "NP:", icon: <ThumbsDownIcon />, value: "0" },
-		{ id: 2, action: false, label: "M > 15:", icon: <WarningIcon />, value: "0" },
-		{ id: 3, action: false, label: "CR:", icon: <ReceiptXIcon />, value: "0" },
+		{ id: 1, action: true, label: "NP:", icon: <ThumbsDownIcon />, value: "0" },
+		{ id: 2, action: true, label: "M > 15:", icon: <WarningIcon />, value: "0" },
+		{ id: 3, action: true, label: "CR:", icon: <ReceiptXIcon />, value: "0" },
 		{ id: 4, action: false, label: "", icon: <UserCircleIcon />, value: "0" },
 		{ id: 5, action: false, label: "", icon: <MoneyIcon />, value: "0" },
 		{ id: 6, action: true, label: "Quincenal", icon: <CalendarDotsIcon />, value: "" },
@@ -43,7 +44,12 @@ export function CustomerStatistics({ statistics, filters = {} }) {
 		if (paymentDay === undefined) {
 			setActivePaymentDay(null);
 		}
-	}, [type, paymentDay]);
+		if (mora === undefined) {
+			setActiveMora(null);
+		} else {
+			setActiveMora(mora);
+		}
+	}, [type, paymentDay, mora]);
 
 	React.useEffect(() => {
 		const updates = [
@@ -88,6 +94,15 @@ export function CustomerStatistics({ statistics, filters = {} }) {
 			if (newFilters.paymentDay) {
 				searchParams.set("paymentDay", newFilters.paymentDay);
 			}
+			if (newFilters.branch) {
+				searchParams.set("branch", String(newFilters.branch));
+			}
+			if (newFilters.agent) {
+				searchParams.set("agent", String(newFilters.agent));
+			}
+			if (newFilters.mora) {
+				searchParams.set("mora", newFilters.mora);
+			}
 
 			router.push(`${paths.dashboard.customers.list}?${searchParams.toString()}`);
 		},
@@ -97,6 +112,24 @@ export function CustomerStatistics({ statistics, filters = {} }) {
 	const handleFilterButton = React.useCallback(
 		(value) => {
 			const upperValue = value.toUpperCase();
+
+			if (value === "NP:" || value === "M > 15:" || value === "CR:") {
+				let newMora = activeMora;
+				const moraKey =
+					value === "NP:" ? "NP" : value === "M > 15:" ? "M15" : "CR";
+
+				newMora = activeMora === moraKey ? null : moraKey;
+				setActiveMora(newMora);
+
+				updateSearchParams({
+					...filters,
+					page: 1,
+					limit,
+					mora: newMora || undefined,
+				});
+
+				return;
+			}
 
 			const isType = upperValue === "MENSUAL" || upperValue === "QUINCENAL";
 
@@ -149,7 +182,11 @@ export function CustomerStatistics({ statistics, filters = {} }) {
 								icon={icon}
 								label={`${label} ${value}`.trim()}
 								variant={
-									label.toUpperCase() === activeType || label.toUpperCase() === activePaymentDay
+									label.toUpperCase() === activeType ||
+									label.toUpperCase() === activePaymentDay ||
+									(label === "NP:" && activeMora === "NP") ||
+									(label === "M > 15:" && activeMora === "M15") ||
+									(label === "CR:" && activeMora === "CR")
 										? "contained"
 										: "outlined"
 								}
