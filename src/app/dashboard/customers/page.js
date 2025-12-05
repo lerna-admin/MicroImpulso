@@ -68,7 +68,7 @@ export default async function Page({ searchParams }) {
 		delinquentClients,
 	};
 
-	const branches = await getAllBranches(user.country.id);
+	const branches = await getAllBranches(user.country?.id);
 
 	const filters = { status: normalizedStatus, page, limit, type, paymentDay, branch, agent, mora };
 
