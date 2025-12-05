@@ -65,7 +65,8 @@ export default async function Page({ searchParams }) {
 		mora15,
 		critical20,
 		noPayment30,
-		delinquentClients,
+		// Si hay filtro de mora activo, usa el total filtrado
+		delinquentClients: mora ? customerTotalItems : delinquentClients,
 	};
 
 	const branches = await getAllBranches(user.country?.id);
