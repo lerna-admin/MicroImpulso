@@ -17,6 +17,7 @@ export async function getAllCustomers({
 	page = 1,
 	limit = 10,
 	status = "",
+	mora = "",
 	type = "",
 	paymentDay = "",
 	name = "",
@@ -31,6 +32,7 @@ export async function getAllCustomers({
 	params.append("limit", limit.toString());
 
 	if (status) params.append("status", status);
+	if (mora) params.append("mora", mora);
 	if (type) params.append("type", type);
 	if (paymentDay) params.append("paymentDay", paymentDay);
 	if (name) params.append("name", name);
@@ -138,4 +140,3 @@ export async function getAllCountries() {
 	if (!res.ok) throw new Error("Paises no encontrados");
 	return await res.json();
 }
-

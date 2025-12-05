@@ -54,7 +54,7 @@ export default async function Page({ searchParams }) {
 		page: customersPage,
 		limit: customerLimit,
 		totalItems: customerTotalItems,
-	} = await getAllCustomers({ page, limit, status, type, paymentDay, branch, agent, u_id: user.id });
+	} = await getAllCustomers({ page, limit, status, mora, type, paymentDay, branch, agent, u_id: user.id });
 
 	const { data } = await getAllUsers({ branchId: user.branchId, role: "AGENT" });
 
