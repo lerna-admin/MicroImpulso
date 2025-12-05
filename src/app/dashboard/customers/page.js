@@ -72,24 +72,7 @@ export default async function Page({ searchParams }) {
 
 	const filters = { status: normalizedStatus, page, limit, type, paymentDay, branch, agent, mora };
 
-	const filteredCustomers = Array.isArray(customers)
-		? customers.filter((row) => {
-				if (!mora) return true;
-				const daysLate = Number(row?.daysLate ?? 0);
-				if (Number.isNaN(daysLate) || daysLate <= 0) return false;
-
-				if (mora === "NP") {
-					return daysLate > 0;
-				}
-				if (mora === "M15") {
-					return daysLate > 15;
-				}
-				if (mora === "CR") {
-					return daysLate >= 30;
-				}
-				return true;
-		  })
-		: customers;
+	const filteredCustomers = customers;
 
 	return (
 		<Box
