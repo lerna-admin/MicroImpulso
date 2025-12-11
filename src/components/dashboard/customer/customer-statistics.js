@@ -79,7 +79,7 @@ export function CustomerStatistics({ statistics, filters = {} }) {
 		(newFilters) => {
 			const searchParams = new URLSearchParams();
 
-			if (newFilters.status) {
+			if (newFilters.status && newFilters.status !== "all") {
 				searchParams.set("status", newFilters.status);
 			}
 			if (newFilters.page) {

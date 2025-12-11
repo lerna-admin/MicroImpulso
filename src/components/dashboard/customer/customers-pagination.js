@@ -20,7 +20,7 @@ export function CustomersPagination({ filters, customerTotalItems, customersPage
 		(newFilters) => {
 			const searchParams = new URLSearchParams();
 
-			if (newFilters.status) {
+			if (newFilters.status && newFilters.status !== "all") {
 				searchParams.set("status", newFilters.status);
 			}
 			if (newFilters.page) {
@@ -47,7 +47,8 @@ export function CustomersPagination({ filters, customerTotalItems, customersPage
 			const newPage = 1;
 			setRow(newLimit);
 			setPage(newPage - 1);
-			updateSearchParams({ ...filters, status: status || "", page: newPage, limit: newLimit });
+			const normalizedStatus = status && status !== "all" ? status : undefined;
+			updateSearchParams({ ...filters, status: normalizedStatus, page: newPage, limit: newLimit });
 		},
 		[updateSearchParams, filters]
 	);
@@ -55,7 +56,13 @@ export function CustomersPagination({ filters, customerTotalItems, customersPage
 	const handlePageChange = React.useCallback(
 		(event, newPage) => {
 			setPage(newPage);
-			updateSearchParams({ ...filters, status: status || "", page: (newPage + 1).toString(), limit: row.toString() });
+			const normalizedStatus = status && status !== "all" ? status : undefined;
+			updateSearchParams({
+				...filters,
+				status: normalizedStatus,
+				page: (newPage + 1).toString(),
+				limit: row.toString(),
+			});
 		},
 		[updateSearchParams, filters]
 	);

@@ -21,7 +21,8 @@ export const metadata = { title: `Clientes | Dashboard | ${appConfig.name}` };
 
 export default async function Page({ searchParams }) {
 	const { status, page, limit, type, paymentDay, branch, agent, mora } = await searchParams;
-	const normalizedStatus = status || "active";
+	const normalizedStatus = status ?? "all";
+	const statusFilter = status && status !== "all" ? status : "";
 
 	const {
 		data: { user },
@@ -54,7 +55,17 @@ export default async function Page({ searchParams }) {
 		page: customersPage,
 		limit: customerLimit,
 		totalItems: customerTotalItems,
-	} = await getAllCustomers({ page, limit, status, mora, type, paymentDay, branch, agent, u_id: user.id });
+	} = await getAllCustomers({
+		page,
+		limit,
+		status: statusFilter,
+		mora,
+		type,
+		paymentDay,
+		branch,
+		agent,
+		u_id: user.id,
+	});
 
 	const { data } = await getAllUsers({ branchId: user.branchId, role: "AGENT" });
 

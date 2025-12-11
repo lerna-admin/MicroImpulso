@@ -30,7 +30,9 @@ export function ThreadItem({ active = false, thread, messages, onSelect }) {
 	const recipients = (thread.participants ?? []).filter((participant) => participant.id !== user.id);
 
 	const lastMessage = messages.at(-1);
-	const uuid = extractUuid(lastMessage.content);
+	const needsAttention = lastMessage?.direction === "INCOMING" && !lastMessage.isRead;
+	const uuid = lastMessage ? extractUuid(lastMessage.content) : null;
+	const previewColor = lastMessage?.direction === "INCOMING" && !lastMessage.isRead ? "text.primary" : "text.secondary";
 
 	return (
 		<Box component="li" sx={{ userSelect: "none" }}>
@@ -50,8 +52,15 @@ export function ThreadItem({ active = false, thread, messages, onSelect }) {
 					flex: "0 0 auto",
 					gap: 1,
 					p: 1,
+					...(lastMessage?.direction === "INCOMING" && !lastMessage.isRead && !active
+						? { bgcolor: "rgba(156, 163, 175, 0.2)" }
+						: {}),
 					...(active && { bgcolor: "var(--mui-palette-action-selected)" }),
-					"&:hover": { ...(!active && { bgcolor: "var(--mui-palette-action-hover)" }) },
+					"&:hover": {
+						...(!active && {
+							bgcolor: needsAttention ? "rgba(255, 170, 0, 0.18)" : "var(--mui-palette-action-hover)",
+						}),
+					},
 				}}
 				tabIndex={0}
 			>
@@ -77,23 +86,12 @@ export function ThreadItem({ active = false, thread, messages, onSelect }) {
 						{recipients.map((recipient) => recipient.name).join(", ")}
 					</Typography>
 					<Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
-						{(thread.unreadCount ?? 0) > 0 ? (
-							<Box
-								sx={{
-									bgcolor: "var(--mui-palette-primary-main)",
-									borderRadius: "50%",
-									flex: "0 0 auto",
-									height: "8px",
-									width: "8px",
-								}}
-							/>
-						) : null}
 						{lastMessage && uuid === null ? (
-							<Typography color="text.secondary" noWrap sx={{ flex: "1 1 auto" }} variant="subtitle2">
+							<Typography color={previewColor} noWrap sx={{ flex: "1 1 auto", fontWeight: lastMessage.direction === "INCOMING" && !lastMessage.isRead ? 600 : undefined }} variant="subtitle2">
 								{getDisplayContent(lastMessage, user.id)}
 							</Typography>
 						) : (
-							<Typography color="text.secondary" noWrap sx={{ flex: "1 1 auto" }} variant="subtitle2">
+							<Typography color={previewColor} noWrap sx={{ flex: "1 1 auto", fontWeight: lastMessage?.direction === "INCOMING" && !lastMessage?.isRead ? 600 : undefined }} variant="subtitle2">
 								Documento recibido
 							</Typography>
 						)}

@@ -12,17 +12,29 @@ import { PaperPlaneTilt as PaperPlaneTiltIcon } from "@phosphor-icons/react/dist
 
 import { useAuth } from "@/components/auth/custom/auth-context";
 
-export function MessageAdd({ disabled = false, onSend }) {
+export function MessageAdd({ disabled = false, onSend, onUpload }) {
 	const { user } = useAuth();
 	const userName = user?.name || "Usuario";
 
 	const [content, setContent] = React.useState("");
 	const editorRef = React.useRef(null);
 	const fileInputRef = React.useRef(null);
+	const [attachmentType, setAttachmentType] = React.useState("any");
 
-	const handleAttach = React.useCallback(() => {
+	const handleAttach = React.useCallback((acceptType) => {
+		setAttachmentType(acceptType);
 		fileInputRef.current?.click();
 	}, []);
+
+	const handleFileChange = React.useCallback(
+		(event) => {
+			const file = event.target.files?.[0];
+			if (!file) return;
+			onUpload?.(file);
+			event.target.value = "";
+		},
+		[onUpload]
+	);
 
 	const handleInput = React.useCallback(() => {
 		setContent(editorRef.current.innerHTML);
@@ -89,7 +101,7 @@ export function MessageAdd({ disabled = false, onSend }) {
 				<Stack direction="row" spacing={1} sx={{ display: { xs: "none", sm: "flex" } }}>
 					<Tooltip title="Attach photo">
 						<span>
-							<IconButton disabled={disabled} edge="end" onClick={handleAttach}>
+							<IconButton disabled={disabled} edge="end" onClick={() => handleAttach("image/*")}>
 								<CameraIcon />
 							</IconButton>
 						</span>
@@ -97,7 +109,7 @@ export function MessageAdd({ disabled = false, onSend }) {
 
 					<Tooltip title="Attach file">
 						<span>
-							<IconButton disabled={disabled} edge="end" onClick={handleAttach}>
+							<IconButton disabled={disabled} edge="end" onClick={() => handleAttach("*/*")}>
 								<PaperclipIcon />
 							</IconButton>
 						</span>
@@ -105,7 +117,7 @@ export function MessageAdd({ disabled = false, onSend }) {
 				</Stack>
 			</Stack>
 
-			<input hidden ref={fileInputRef} type="file" />
+			<input hidden ref={fileInputRef} type="file" accept={attachmentType} onChange={handleFileChange} />
 		</Stack>
 	);
 }

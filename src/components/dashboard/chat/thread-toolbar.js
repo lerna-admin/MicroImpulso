@@ -11,7 +11,7 @@ import MenuItem from "@mui/material/MenuItem";
 import Stack from "@mui/material/Stack";
 import Tooltip from "@mui/material/Tooltip";
 import Typography from "@mui/material/Typography";
-import { FileDoc as FileDocIcon, User as UserIcon } from "@phosphor-icons/react/dist/ssr";
+import { FileDoc as FileDocIcon, User as UserIcon, XCircle as XCircleIcon } from "@phosphor-icons/react/dist/ssr";
 import { DotsThree as DotsThreeIcon } from "@phosphor-icons/react/dist/ssr/DotsThree";
 
 import { paths } from "@/paths";
@@ -19,6 +19,7 @@ import { usePopover } from "@/hooks/use-popover";
 import { useAuth } from "@/components/auth/custom/auth-context";
 
 import { ChatContext } from "./chat-context";
+import { rejectClientLoan } from "@/app/dashboard/chat/hooks/use-conversations";
 
 export function ThreadToolbar({ thread }) {
 	const { user } = useAuth();
@@ -28,6 +29,23 @@ export function ThreadToolbar({ thread }) {
 	const recipients = (thread.participants ?? []).filter((participant) => participant.id !== user.id);
 
 	const { setOpenDesktopSidebarRight } = React.useContext(ChatContext);
+
+	const handleRejectLoan = React.useCallback(async () => {
+		const clientId = recipients[0]?.id;
+		if (!clientId) return;
+		if (typeof window !== "undefined") {
+			const confirmReject = window.confirm("¿Marcar la solicitud activa de este cliente como rechazada?");
+			if (!confirmReject) {
+				return;
+			}
+		}
+		try {
+			await rejectClientLoan(clientId);
+			router.refresh();
+		} catch (error) {
+			console.error("Error marcando solicitud como rechazada", error);
+		}
+	}, [recipients, router]);
 
 	return (
 		<React.Fragment>
@@ -96,6 +114,17 @@ export function ThreadToolbar({ thread }) {
 						<UserIcon />
 					</ListItemIcon>
 					<Typography>Ver perfil</Typography>
+				</MenuItem>
+				<MenuItem
+					onClick={() => {
+						popover.handleClose();
+						handleRejectLoan();
+					}}
+				>
+					<ListItemIcon>
+						<XCircleIcon />
+					</ListItemIcon>
+					<Typography>Marcar solicitud como rechazada</Typography>
 				</MenuItem>
 			</Menu>
 		</React.Fragment>

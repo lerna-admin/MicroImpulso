@@ -24,7 +24,6 @@ export function MessageBox({ message }) {
 	const userName = message.author.name || "Usuario";
 	const position = message.direction === "OUTGOING" ? "right" : "left";
 	const uuid = extractUuid(message.content);
-
 	return (
 		<Box sx={{ alignItems: position === "right" ? "flex-end" : "flex-start", flex: "0 0 auto", display: "flex" }}>
 			<Stack
@@ -43,6 +42,9 @@ export function MessageBox({ message }) {
 						sx={{
 							px: 2,
 							py: 1,
+							...(position === "left" && !message.isRead
+								? { bgcolor: "rgba(156, 163, 175, 0.2)" }
+								: {}),
 							...(position === "right" && {
 								bgcolor: "var(--mui-palette-primary-main)",
 								color: "var(--mui-palette-primary-contrastText)",

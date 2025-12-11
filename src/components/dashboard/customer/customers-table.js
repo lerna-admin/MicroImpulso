@@ -85,7 +85,7 @@ export function CustomersTable({ rows, permissions, user, role, branch }) {
 		{
 			formatter: (row) => (
 				<Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
-					<Box sx={{ display: "flex", flexDirection: "column" }}>
+					<Box sx={{ display: "flex", flexDirection: "column", gap: 0.5 }}>
 						<Link
 							color="inherit"
 							component={RouterLink}

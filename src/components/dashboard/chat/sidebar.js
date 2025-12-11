@@ -135,6 +135,25 @@ function SidebarContent({
 		[onSelectThread, onClose, closeOnThreadSelect]
 	);
 
+	const sortedThreads = React.useMemo(() => {
+		return [...threads].sort((a, b) => {
+			const aMsgs = messages.get(a.id) ?? [];
+			const bMsgs = messages.get(b.id) ?? [];
+			const aLast = aMsgs.at(-1);
+			const bLast = bMsgs.at(-1);
+			const aIncoming = aLast?.direction === "INCOMING" && !aLast.isRead;
+			const bIncoming = bLast?.direction === "INCOMING" && !bLast.isRead;
+
+			if (aIncoming !== bIncoming) {
+				return aIncoming ? -1 : 1;
+			}
+
+			const aTime = aLast ? new Date(aLast.createdAt).getTime() : 0;
+			const bTime = bLast ? new Date(bLast.createdAt).getTime() : 0;
+			return bTime - aTime;
+		});
+	}, [threads, messages]);
+
 	return (
 		<Box sx={{ display: "flex", flexDirection: "column", height: "100%" }}>
 			<Stack direction="row" spacing={2} sx={{ alignItems: "center", flex: "0 0 auto", p: 2 }}>
@@ -160,7 +179,7 @@ function SidebarContent({
 					spacing={1}
 					sx={{ display: searchFocused ? "none" : "flex", listStyle: "none", m: 0, p: 0 }}
 				>
-					{threads.map((thread) => (
+					{sortedThreads.map((thread) => (
 						<ThreadItem
 							active={currentThreadId === thread.id}
 							key={thread.id}

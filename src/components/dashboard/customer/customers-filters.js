@@ -11,7 +11,9 @@ import Tabs from "@mui/material/Tabs";
 import { paths } from "@/paths";
 
 const tabs = [
+	{ label: "Todos", value: "all" },
 	{ label: "Activos", value: "active" },
+	{ label: "Aprobados", value: "approved" },
 	{ label: "Inactivos", value: "inactive" },
 	{ label: "Rechazados", value: "rejected" },
 ];
@@ -36,7 +38,7 @@ export function CustomersFilters({ filters = {}, user, allBranches, allAgents })
 		(newFilters) => {
 			const searchParams = new URLSearchParams();
 
-			if (newFilters.status) {
+			if (newFilters.status && newFilters.status !== "all") {
 				searchParams.set("status", newFilters.status);
 			}
 			if (newFilters.page) {
@@ -65,7 +67,8 @@ export function CustomersFilters({ filters = {}, user, allBranches, allAgents })
 
 	const handleStatusChange = React.useCallback(
 		(_, value) => {
-			updateSearchParams({ ...filters, status: value, page: 1 });
+			const normalized = value === "all" ? undefined : value;
+			updateSearchParams({ ...filters, status: normalized, page: 1 });
 		},
 		[updateSearchParams, filters]
 	);
@@ -101,7 +104,7 @@ export function CustomersFilters({ filters = {}, user, allBranches, allAgents })
 
 	return (
 		<div>
-			<Tabs onChange={handleStatusChange} sx={{ px: 3 }} value={status ?? "active"} variant="scrollable">
+			<Tabs onChange={handleStatusChange} sx={{ px: 3 }} value={status && status !== "" ? status : "all"} variant="scrollable">
 				{tabs.map((tab) => (
 					<Tab
 						iconPosition="end"

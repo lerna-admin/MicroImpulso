@@ -205,11 +205,17 @@ export function Queries({ role }) {
 												)}
 											</Box>
 
-											{customer.client.status.toLowerCase() === "inactive" ? (
-												<Chip color="error" label={"Inactivo"} size="small" variant="contained" />
-											) : (
-												<Chip color="success" label={"Activo"} size="small" variant="contained" />
-											)}
+						{(() => {
+							const statusMap = {
+								active: { color: "success", label: "Activo" },
+								inactive: { color: "default", label: "Inactivo" },
+								rejected: { color: "error", label: "Rechazado" },
+								prospect: { color: "warning", label: "Prospecto" },
+							};
+							const normalized = (customer.client.status || "inactive").toLowerCase();
+							const config = statusMap[normalized] ?? statusMap.inactive;
+							return <Chip color={config.color} label={config.label} size="small" variant="contained" />;
+						})()}
 										</Box>
 									}
 								/>

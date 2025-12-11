@@ -29,6 +29,8 @@ const CATEGORY_OPTIONS = [
 	{ value: "UTILITY_BILL", label: "Factura" },
 	{ value: "OTHER", label: "Otro" },
 	{ value: "PAYMENT_DETAIL", label: "Desprendible de Pago" },
+	{ value: "CONTRACT_SIGNED", label: "Contrato firmado" },
+	{ value: "SELFIE", label: "Selfie" },
 ];
 
 // GET documentos del cliente

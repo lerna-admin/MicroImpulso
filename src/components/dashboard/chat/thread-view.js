@@ -26,7 +26,7 @@ function useMessages(threadId) {
 }
 
 export function ThreadView({ threadId }) {
-	const { createMessage, markAsRead } = React.useContext(ChatContext);
+	const { createMessage, markAsRead, sendAttachment } = React.useContext(ChatContext);
 
 	const thread = useThread(threadId);
 
@@ -56,6 +56,13 @@ export function ThreadView({ threadId }) {
 		}
 	}, [messages]);
 
+	const handleUpload = React.useCallback(
+		async (file) => {
+			await sendAttachment({ threadId, file });
+		},
+		[sendAttachment, threadId]
+	);
+
 	if (!thread) {
 		return (
 			<Box sx={{ alignItems: "center", display: "flex", flex: "1 1 auto", justifyContent: "center" }}>
@@ -74,7 +81,7 @@ export function ThreadView({ threadId }) {
 					<MessageBox key={message.id} message={message} />
 				))}
 			</Stack>
-			<MessageAdd onSend={handleSendMessage} />
+			<MessageAdd onSend={handleSendMessage} onUpload={handleUpload} />
 		</Box>
 	);
 }

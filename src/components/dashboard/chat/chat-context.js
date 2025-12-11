@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { getAllConversationsByAgent, sendMessageToClient } from "@/app/dashboard/chat/hooks/use-conversations";
+import { getAllConversationsByAgent, sendMessageToClient, markClientMessagesAsRead, sendAttachmentToClient } from "@/app/dashboard/chat/hooks/use-conversations";
 
 import { useAuth } from "@/components/auth/custom/auth-context";
 import { useEnableAudio } from '@/app/dashboard/chat/hooks/useEnableAudio'; // ajusta el path si es distinto
@@ -17,29 +17,59 @@ function noop() {
   });
 }
 
-function areMessagesEqual(mapA, mapB) {
-	if (mapA.size !== mapB.size) {
-		playNotificationSound(); // 🔔 Diferente número de hilos
+function areMessageListsEqual(listA, listB) {
+	if (!listA && listB) return false;
+	if (!listB && listA) return false;
+	if (!listA && !listB) return true;
+	if (listA.length !== listB.length) {
+		playNotificationSound();
 		return false;
 	}
-
-	for (const [key, msgsA] of mapA.entries()) {
-		const msgsB = mapB.get(key);
-
-		if (!msgsB || msgsA.length !== msgsB.length) {
-			playNotificationSound(); 
+	for (let i = 0; i < listA.length; i++) {
+		if (listA[i].id !== listB[i].id) {
+			playNotificationSound();
 			return false;
 		}
+	}
+	return true;
+}
 
-		for (let i = 0; i < msgsA.length; i++) {
-			if (msgsA[i].id !== msgsB[i].id) {
-				playNotificationSound(); 
-				return false;
+function mergeCollectionById(prev, incoming) {
+	let changed = false;
+	const map = new Map(prev.map((item) => [item.id, item]));
+
+	incoming.forEach((item) => {
+		const existing = map.get(item.id);
+		if (existing) {
+			const keys = Object.keys(item);
+			for (const key of keys) {
+				if (existing[key] !== item[key]) {
+					existing[key] = item[key];
+					changed = true;
+				}
 			}
+		} else {
+			map.set(item.id, item);
+			changed = true;
+		}
+	});
+
+	return changed ? Array.from(map.values()) : prev;
+}
+
+function mergeMessagesMap(prevMap, incomingMap) {
+	let changed = false;
+	const updated = new Map(prevMap);
+
+	for (const [threadId, newList] of incomingMap.entries()) {
+		const existing = updated.get(threadId);
+		if (!existing || !areMessageListsEqual(existing, newList)) {
+			updated.set(threadId, newList);
+			changed = true;
 		}
 	}
 
-	return true;
+	return changed ? updated : prevMap;
 }
 
 // Initial context shape
@@ -50,6 +80,7 @@ export const ChatContext = React.createContext({
 	createThread: noop,
 	markAsRead: noop,
 	createMessage: noop,
+	sendAttachment: noop,
 	updateContact: noop,
 	openDesktopSidebar: true,
 	setOpenDesktopSidebar: noop,
@@ -90,24 +121,24 @@ export function ChatProvider({
 	}, [initialLabels]);
 
 	React.useEffect(() => {
-		// Convert flat message array to Map<threadId, Message[]>
-		setMessages(
-			initialMessages.reduce((acc, curr) => {
-				const byThread = acc.get(curr.threadId) ?? [];
-				byThread.unshift(curr);
-				acc.set(curr.threadId, byThread);
-				return acc;
-			}, new Map())
-		);
+		const map = initialMessages.reduce((acc, curr) => {
+			const byThread = acc.get(curr.threadId) ?? [];
+			byThread.push({ ...curr, isRead: Boolean(curr.isRead) });
+			acc.set(curr.threadId, byThread);
+			return acc;
+		}, new Map());
+		for (const list of map.values()) {
+			list.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+		}
+		setMessages(map);
 	}, [initialMessages]);
 
 	const fetchMessages = React.useCallback(async () => {
 		try {
 			const data = await getAllConversationsByAgent(user.id);
 
-			const newContacts = data.map(({ client }) => client);
-
-			const newThreads = data.map(({ client }) => ({
+			const incomingContacts = data.map(({ client }) => client);
+			const incomingThreads = data.map(({ client }) => ({
 				id: `TRD-${client.id}`,
 				type: "direct",
 				participants: [
@@ -116,37 +147,35 @@ export function ChatProvider({
 				],
 			}));
 
-			const flatMessages = data.flatMap((entry) => {
+			const incomingMessages = new Map();
+			data.forEach((entry) => {
 				const client = entry.client;
 				const threadId = `TRD-${client.id}`;
-				return (entry.messages || []).map((msg) => {
+				const messagesForThread = (entry.messages || []).map((msg) => {
 					const safeClient = msg.client ?? client;
+					const direction = msg.direction ?? "INCOMING";
 					return {
 						id: msg.id,
 						threadId,
 						type: "text",
 						content: msg.content ?? "[Empty message]",
-						direction: msg.direction,
-						author: {
-							id: msg.direction === "INCOMING" ? `USR-${safeClient.id}` : user.id,
-							name: msg.direction === "INCOMING" ? (safeClient.name ?? "Client") : user.name,
-						},
-						createdAt: new Date(msg.createdAt),
+						author:
+							msg.author ??
+							(direction === "OUTGOING"
+								? { id: user.id, name: user.name }
+								: { id: safeClient.id, name: safeClient.name }),
+						direction,
+						createdAt: msg.createdAt ? new Date(msg.createdAt) : new Date(),
+						client: safeClient,
+						isRead: Boolean(msg.isRead),
 					};
-				});
+				}).sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+				incomingMessages.set(threadId, messagesForThread);
 			});
 
-			const newMessageMap = flatMessages.reduce((acc, curr) => {
-				const byThread = acc.get(curr.threadId) ?? [];
-				byThread.unshift(curr);
-				acc.set(curr.threadId, byThread);
-				return acc;
-			}, new Map());
-
-			// Apply updates only if data changed
-			setContacts((prev) => (JSON.stringify(prev) === JSON.stringify(newContacts) ? prev : newContacts));
-			setThreads((prev) => (JSON.stringify(prev) === JSON.stringify(newThreads) ? prev : newThreads));
-			setMessages((prev) => (areMessagesEqual(prev, newMessageMap) ? prev : newMessageMap));
+			setContacts((prev) => mergeCollectionById(prev, incomingContacts));
+			setThreads((prev) => mergeCollectionById(prev, incomingThreads));
+			setMessages((prev) => mergeMessagesMap(prev, incomingMessages));
 		} catch (error) {
 			console.error("❌ Error fetching chat data:", error);
 		}
@@ -211,11 +240,39 @@ export function ChatProvider({
 
 	// Mark thread as read
 	const handleMarkAsRead = React.useCallback(
-		(threadId) => {
-			const updatedThreads = threads.map((thread) => (thread.id === threadId ? { ...thread, unreadCount: 0 } : thread));
+		async (threadId) => {
+			const thread = threads.find((thread) => thread.id === threadId);
+			if (thread) {
+				const recipient = thread.participants.find((p) => p.id !== user.id);
+				if (recipient?.id) {
+					try {
+						await markClientMessagesAsRead(recipient.id);
+					} catch (error) {
+						console.error("Error marcando mensajes como leídos", error);
+					}
+				}
+			}
+
+			const updatedThreads = threads.map((thread) =>
+				thread.id === threadId ? { ...thread, unreadCount: 0 } : thread
+			);
 			setThreads(updatedThreads);
+			setMessages((prev) => {
+				const updated = new Map(prev);
+				const threadMsgs = updated.get(threadId);
+				if (threadMsgs) {
+					const changed = threadMsgs.some((msg) => msg.direction === "INCOMING" && !msg.isRead);
+					if (changed) {
+						const newList = threadMsgs.map((msg) =>
+							msg.direction === "INCOMING" ? { ...msg, isRead: true } : msg
+						);
+						updated.set(threadId, newList);
+					}
+				}
+				return updated;
+			});
 		},
-		[threads]
+		[threads, user?.id]
 	);
 
 	// Send a message to backend and add it to UI
@@ -245,6 +302,35 @@ export function ChatProvider({
 		[threads, user]
 	);
 
+	const handleSendAttachment = React.useCallback(
+		async ({ threadId, file }) => {
+			const thread = threads.find((item) => item.id === threadId);
+			if (!thread) return;
+			const recipient = thread.participants.find((p) => p.id !== user.id);
+			if (!recipient) return;
+
+			await sendAttachmentToClient(recipient.id, file);
+
+			const newMsg = {
+				id: `MSG-${Date.now()}`,
+				threadId,
+				type: "text",
+				content: `📎 Documento enviado: ${file.name}`,
+				author: { id: user.id, name: user.name },
+				direction: "OUTGOING",
+				createdAt: new Date(),
+			};
+
+			setMessages((prev) => {
+				const updated = new Map(prev);
+				const threadMsgs = updated.get(threadId) ?? [];
+				updated.set(threadId, [...threadMsgs, newMsg]);
+				return updated;
+			});
+		},
+		[threads, user]
+	);
+
 	const handleUpdateContact = React.useCallback((updatedContact) => {
 		setContacts((prevContacts) =>
 			prevContacts.map((c) => (c.id === updatedContact.id ? { ...c, ...updatedContact } : c))
@@ -260,6 +346,7 @@ export function ChatProvider({
 				createThread: handleCreateThread,
 				markAsRead: handleMarkAsRead,
 				createMessage: handleCreateMessage,
+				sendAttachment: handleSendAttachment,
 				updateContact: handleUpdateContact,
 				openDesktopSidebar,
 				setOpenDesktopSidebar,

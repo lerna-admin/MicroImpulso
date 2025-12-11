@@ -3,8 +3,9 @@
 import * as React from "react";
 import { useRouter } from "next/navigation";
 import { updateCustomer } from "@/app/dashboard/customers/hooks/use-customers";
+import { updateRequest } from "@/app/dashboard/requests/hooks/use-requests";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Chip, FormHelperText, IconButton, MenuItem } from "@mui/material";
+import { Alert, Chip, CircularProgress, FormHelperText, IconButton, MenuItem } from "@mui/material";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import Drawer from "@mui/material/Drawer";
@@ -23,6 +24,7 @@ import { useMediaQuery } from "@/hooks/use-media-query";
 import { NotificationAlert } from "@/components/widgets/notifications/notification-alert";
 
 import { ChatContext } from "./chat-context";
+import { getClientLoanSnapshot } from "@/app/dashboard/chat/hooks/use-conversations";
 import { LoanSimulation } from "./loan-simulation";
 
 const schema = zod.object({
@@ -50,6 +52,36 @@ const COUNTRIES = [
 	{ iso2: "CO", name: "Colombia", phoneCode: "57" },
 	{ iso2: "CR", name: "Costa Rica", phoneCode: "506" },
 ];
+
+const LOAN_STATUS_CONFIG = {
+	new: { label: "Nueva", color: "info" },
+	under_review: { label: "En estudio", color: "warning" },
+	approved: { label: "Aprobada", color: "success" },
+	funded: { label: "Desembolsado", color: "primary" },
+	renewed: { label: "Renovado", color: "success" },
+	completed: { label: "Completado", color: "default" },
+	rejected: { label: "Rechazada", color: "error" },
+};
+
+const LOAN_STATUS_TRANSITIONS = {
+	new: ["under_review", "rejected"],
+	under_review: ["approved", "rejected"],
+	approved: ["funded", "rejected"],
+	funded: ["completed"],
+	completed: [],
+	rejected: [],
+	renewed: [],
+};
+
+const STATUS_REQUIRES_AMOUNT = new Set(["approved", "funded"]);
+
+const currencyFormatter = new Intl.NumberFormat("es-CO", {
+	style: "currency",
+	currency: "COP",
+	minimumFractionDigits: 0,
+});
+
+const formatCurrency = (value) => currencyFormatter.format(Number(value) || 0);
 
 function parseStoredPhone(phone) {
 	const digits = String(phone || "").replace(/\D/g, "");
@@ -122,7 +154,7 @@ function SidebarContent({ currentThreadId, threads, contacts }) {
 	const {
 		control,
 		handleSubmit,
-		formState: { errors },
+		formState: { errors, isDirty },
 		reset,
 		watch,
 		setValue,
@@ -169,6 +201,21 @@ function SidebarContent({ currentThreadId, threads, contacts }) {
 
 	const [openAlert, setOpenAlert] = React.useState(false);
 	const [isPending, setIsPending] = React.useState(false);
+	const [alertMessage, setAlertMessage] = React.useState("Perfil actualizado!");
+	const [loanSnapshot, setLoanSnapshot] = React.useState({
+		loan: null,
+		loading: false,
+		error: null,
+	});
+	const [loanActionPending, setLoanActionPending] = React.useState(false);
+	const [loanActionError, setLoanActionError] = React.useState(null);
+	const clientIdRef = React.useRef(null);
+	const currentClientId = contactFound?.id ?? null;
+	const loanStatusKey = loanSnapshot.loan?.status ? String(loanSnapshot.loan.status).toLowerCase() : null;
+	const loanStatusConfig = loanStatusKey ? LOAN_STATUS_CONFIG[loanStatusKey] : null;
+	const nextLoanStatuses = loanStatusKey ? LOAN_STATUS_TRANSITIONS[loanStatusKey] ?? [] : [];
+	const requestedAmountValue = Number(loanSnapshot.loan?.requestedAmount ?? 0);
+	const hasRequestedAmount = Number.isFinite(requestedAmountValue) && requestedAmountValue > 0;
 
 	// Cuando cambia currentThreadId, busca el thread
 	React.useEffect(() => {
@@ -185,14 +232,23 @@ function SidebarContent({ currentThreadId, threads, contacts }) {
 		if (threadFound && threadFound.participants?.[1]) {
 			const contact = contacts.find((c) => c.id === threadFound.participants[1].id);
 			if (contact) {
-				setContactFound({ ...contactFound, ...contact });
+				setContactFound((prev) => ({ ...prev, ...contact }));
 			}
 		}
 	}, [threadFound, contacts]);
 
-	// Cuando cambia contactFound, actualiza hace el reset
-	React.useEffect(() => {
-		if (contactFound?.id) {
+		const lastContactIdRef = React.useRef(null);
+
+		// Resetea el formulario al cambiar de contacto o cuando no hay cambios locales
+		React.useEffect(() => {
+			const nextId = contactFound?.id ?? null;
+			if (!nextId) return;
+
+			const isContactChanged = lastContactIdRef.current !== nextId;
+			if (!isContactChanged && isDirty) {
+				return;
+			}
+
 			reset({
 				name: contactFound.name || "",
 				documentType: contactFound.documentType || "",
@@ -208,36 +264,108 @@ function SidebarContent({ currentThreadId, threads, contacts }) {
 				referencePhone: contactFound.referencePhone || "",
 				referenceRelationship: contactFound.referenceRelationship || "",
 			});
+			lastContactIdRef.current = nextId;
+		}, [contactFound, reset, isDirty]);
+
+	const loadLoanSnapshot = React.useCallback(async () => {
+		const targetId = clientIdRef.current;
+		if (!targetId) {
+			setLoanSnapshot({ loan: null, loading: false, error: null });
+			return;
 		}
-	}, [contactFound]);
+		setLoanSnapshot((prev) => ({ ...prev, loading: true, error: null }));
+		try {
+			const loan = await getClientLoanSnapshot(targetId);
+			if (clientIdRef.current !== targetId) {
+				return;
+			}
+			setLoanSnapshot({ loan, loading: false, error: null });
+			setLoanActionError(null);
+		} catch (error) {
+			if (clientIdRef.current !== targetId) {
+				return;
+			}
+			setLoanSnapshot({
+				loan: null,
+				loading: false,
+				error: error?.message || "No se pudo cargar la solicitud.",
+			});
+		}
+	}, []);
+
+	React.useEffect(() => {
+		clientIdRef.current = currentClientId;
+		setLoanActionError(null);
+		setLoanActionPending(false);
+		loadLoanSnapshot();
+	}, [currentClientId, loadLoanSnapshot]);
+
+	const showAlert = React.useCallback((message) => {
+		setAlertMessage(message);
+		setOpenAlert(true);
+	}, []);
 
 	const onSubmit = React.useCallback(
 		async (dataForm) => {
-			// setIsPending(true);
-			const countryData = COUNTRIES.find((c) => c.iso2 === dataForm.country);
-			const phoneCode = countryData ? countryData.phoneCode : "";
-			const fullPhone = `${phoneCode}${dataForm.phone.replace(/\D/g, "")}`;
+			setIsPending(true);
+			try {
+				const countryData = COUNTRIES.find((c) => c.iso2 === dataForm.country);
+				const phoneCode = countryData ? countryData.phoneCode : "";
+				const fullPhone = `${phoneCode}${dataForm.phone.replace(/\D/g, "")}`;
 
-			const payload = {
-				...dataForm,
-				phone: fullPhone,
-			};
+				const payload = {
+					...dataForm,
+					phone: fullPhone,
+				};
 
-			delete payload.country;
+				delete payload.country;
 
-			const response = await updateCustomer(payload, contactFound.id);
+				const response = await updateCustomer(payload, contactFound.id);
 
-			if (response.status == 200) setOpenAlert(true);
-			router.refresh();
-			setIsPending(false);
+				if (response.status === 200) {
+					showAlert("Perfil actualizado!");
+					reset(dataForm); // mantener formulario sincronizado con lo guardado
+				}
+				router.refresh();
+			} catch (error) {
+				console.error("Error al actualizar el perfil del cliente", error);
+			} finally {
+				setIsPending(false);
+			}
 		},
-		[contactFound]
+		[contactFound, router, showAlert]
 	);
 
 	const handleChangeCountry = (e) => {
 		const { name, value } = e.target;
 		setValue(name, value);
 	};
+
+	const handleLoanStatusChange = React.useCallback(
+		async (nextStatus) => {
+			if (!loanSnapshot.loan?.id) return;
+			if (!nextStatus) return;
+			if (loanSnapshot.loan.status === nextStatus) return;
+			const requiresAmount = STATUS_REQUIRES_AMOUNT.has(nextStatus);
+			if (requiresAmount && !hasRequestedAmount) {
+				setLoanActionError("Asigna un monto solicitado mayor a 0 antes de actualizar el estado.");
+				return;
+			}
+			setLoanActionError(null);
+			setLoanActionPending(true);
+			try {
+				await updateRequest({ status: nextStatus }, loanSnapshot.loan.id);
+				showAlert("Estado del préstamo actualizado");
+				await loadLoanSnapshot();
+				router.refresh();
+			} catch (error) {
+				setLoanActionError(error?.message || "No se pudo actualizar el estado.");
+			} finally {
+				setLoanActionPending(false);
+			}
+		},
+		[hasRequestedAmount, loanSnapshot.loan, loadLoanSnapshot, router, showAlert]
+	);
 
 	const selectedCountryIso2 = watch("country");
 	const currentCountry = COUNTRIES.find((c) => c.iso2 === selectedCountryIso2);
@@ -499,6 +627,96 @@ function SidebarContent({ currentThreadId, threads, contacts }) {
 						>
 							<LoanSimulation contact={contactFound} />
 						</Grid>
+						<Box
+							sx={{
+								border: "1px solid var(--mui-palette-divider)",
+								borderRadius: 2,
+								p: 2,
+							}}
+						>
+							<Stack spacing={2}>
+								<Stack direction="row" spacing={1} sx={{ alignItems: "center", justifyContent: "space-between" }}>
+									<Typography variant="subtitle1">Estado del préstamo</Typography>
+									<Button
+										size="small"
+										variant="text"
+										onClick={loadLoanSnapshot}
+										disabled={!currentClientId || loanSnapshot.loading}
+									>
+										Actualizar
+									</Button>
+								</Stack>
+								{!currentClientId ? (
+									<Typography color="text.secondary" variant="body2">
+										Selecciona un chat para ver la solicitud del cliente.
+									</Typography>
+								) : loanSnapshot.loading ? (
+									<Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
+										<CircularProgress size={18} />
+										<Typography color="text.secondary" variant="body2">
+											Cargando estado...
+										</Typography>
+									</Stack>
+								) : loanSnapshot.error ? (
+									<Alert
+										severity="error"
+										action={
+											<Button color="inherit" size="small" onClick={loadLoanSnapshot}>
+												Reintentar
+											</Button>
+										}
+									>
+										{loanSnapshot.error}
+									</Alert>
+								) : loanSnapshot.loan ? (
+									<>
+										<Stack direction="row" spacing={1} sx={{ alignItems: "center", flexWrap: "wrap", gap: 1 }}>
+											<Chip
+												color={loanStatusConfig?.color ?? "default"}
+												label={loanStatusConfig?.label ?? loanSnapshot.loan.status}
+												variant="outlined"
+											/>
+											<Typography color="text.secondary" variant="body2">
+												Solicitado: {formatCurrency(requestedAmountValue)}
+											</Typography>
+										</Stack>
+										{!hasRequestedAmount ? (
+											<Alert severity="warning">
+												Ingresa un monto solicitado mayor a 0 antes de aprobar o desembolsar esta solicitud.
+											</Alert>
+										) : null}
+										{loanActionError ? <Alert severity="error">{loanActionError}</Alert> : null}
+										{nextLoanStatuses.length ? (
+											<Stack direction="row" spacing={1} sx={{ flexWrap: "wrap", rowGap: 1 }}>
+												{nextLoanStatuses.map((nextStatus) => {
+													const requiresAmount = STATUS_REQUIRES_AMOUNT.has(nextStatus);
+													const disabled = loanActionPending || (requiresAmount && !hasRequestedAmount);
+													return (
+														<Button
+															key={nextStatus}
+															variant="outlined"
+															size="small"
+															disabled={disabled}
+															onClick={() => handleLoanStatusChange(nextStatus)}
+														>
+															Marcar como {LOAN_STATUS_CONFIG[nextStatus]?.label ?? nextStatus}
+														</Button>
+													);
+												})}
+											</Stack>
+										) : (
+											<Typography color="text.secondary" variant="body2">
+												No hay acciones disponibles para este estado.
+											</Typography>
+										)}
+									</>
+								) : (
+									<Typography color="text.secondary" variant="body2">
+										Este cliente no tiene solicitudes registradas.
+									</Typography>
+								)}
+							</Stack>
+						</Box>
 					</Stack>
 				</form>
 			</Box>
@@ -506,7 +724,7 @@ function SidebarContent({ currentThreadId, threads, contacts }) {
 			<NotificationAlert
 				openAlert={openAlert}
 				onClose={() => setOpenAlert(false)}
-				msg={"Perfil actualizado!"}
+				msg={alertMessage}
 			></NotificationAlert>
 		</React.Fragment>
 	);
