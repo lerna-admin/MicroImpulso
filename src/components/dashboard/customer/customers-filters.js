@@ -4,15 +4,18 @@ import * as React from "react";
 import { useRouter } from "next/navigation";
 import { getAllUsers } from "@/app/dashboard/users/hooks/use-users";
 import { ROLES } from "@/constants/roles";
-import { Button, Divider, InputLabel, MenuItem, Select, Stack } from "@mui/material";
+import { Button, Divider, InputLabel, MenuItem, Select, Stack, TextField } from "@mui/material";
 import Tab from "@mui/material/Tab";
 import Tabs from "@mui/material/Tabs";
+import { debounce } from "@mui/material/utils";
 
 import { paths } from "@/paths";
 
 const tabs = [
 	{ label: "Todos", value: "all" },
+	{ label: "Leads", value: "lead" },
 	{ label: "Activos", value: "active" },
+	{ label: "En estudio", value: "under_review" },
 	{ label: "Aprobados", value: "approved" },
 	{ label: "Inactivos", value: "inactive" },
 	{ label: "Rechazados", value: "rejected" },
@@ -20,19 +23,23 @@ const tabs = [
 
 export function CustomersFilters({ filters = {}, user, allBranches, allAgents }) {
 	const router = useRouter();
-	const { status, branch, agent, type, paymentDay } = filters;
+	const { status, branch, agent, type, paymentDay, name } = filters;
 
 	const [agents, setAgents] = React.useState(allAgents);
 	const [agentSelected, setAgentSelected] = React.useState("");
 	const [branchSelected, setBranchSelected] = React.useState(user.role === ROLES.GERENTE ? "" : user.branchId);
-	const hasFilters = branch || agent || type || paymentDay;
+	const [searchValue, setSearchValue] = React.useState(name ?? "");
+	const hasFilters = branch || agent || type || paymentDay || name || filters.mora;
+
+	React.useEffect(() => {
+		setSearchValue(name ?? "");
+	}, [name]);
 	
 	React.useEffect(() => {
 		if (user.branchId) {
 			updateSearchParams({ ...filters, branch: user.role === ROLES.GERENTE ? "" : user.branchId, page: 1 });
 		}
 	}, []);
-
 
 	const updateSearchParams = React.useCallback(
 		(newFilters) => {
@@ -53,6 +60,9 @@ export function CustomersFilters({ filters = {}, user, allBranches, allAgents })
 			if (newFilters.paymentDay) {
 				searchParams.set("paymentDay", newFilters.paymentDay);
 			}
+			if (newFilters.name) {
+				searchParams.set("name", newFilters.name);
+			}
 			if (newFilters.agent) {
 				searchParams.set("agent", newFilters.agent);
 			}
@@ -64,6 +74,21 @@ export function CustomersFilters({ filters = {}, user, allBranches, allAgents })
 		},
 		[router]
 	);
+
+	const debouncedSearch = React.useMemo(
+		() =>
+			debounce((value) => {
+				const normalizedName = value ? value : undefined;
+				updateSearchParams({ ...filters, name: normalizedName, page: 1 });
+			}, 500),
+		[filters, updateSearchParams]
+	);
+
+	React.useEffect(() => {
+		return () => {
+			debouncedSearch.clear?.();
+		};
+	}, [debouncedSearch]);
 
 	const handleStatusChange = React.useCallback(
 		(_, value) => {
@@ -92,14 +117,23 @@ export function CustomersFilters({ filters = {}, user, allBranches, allAgents })
 	};
 
 	const handleClearFilters = () => {
+		setSearchValue("");
 		if (user.role === ROLES.GERENTE) {
 			setAgentSelected("");
 			setBranchSelected("");
-			updateSearchParams({});
+			updateSearchParams({ name: undefined, page: 1 });
 		} else if (user.role === ROLES.ADMIN) {
 			setAgentSelected("");
-			updateSearchParams({ branch: user.branchId, page: 1 });
+			updateSearchParams({ branch: user.branchId, page: 1, name: undefined });
+		} else {
+			updateSearchParams({ ...filters, name: undefined, page: 1 });
 		}
+	};
+
+	const handleNameChange = (event) => {
+		const value = event.target.value;
+		setSearchValue(value);
+		debouncedSearch(value.trim() === "" ? undefined : value);
 	};
 
 	return (
@@ -117,14 +151,23 @@ export function CustomersFilters({ filters = {}, user, allBranches, allAgents })
 				))}
 			</Tabs>
 
-			{user.role === ROLES.AGENTE ? null : (
-				<>
-					<Divider />
-					<Stack
-						direction="row"
-						spacing={2}
-						sx={{ alignItems: "center", justifyContent: "end", flexWrap: "wrap", px: 3, py: 2 }}
-					>
+			<Divider />
+			<Stack
+				direction="row"
+				spacing={2}
+				sx={{ alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", px: 3, py: 2, gap: 2 }}
+			>
+				<TextField
+					label="Buscar cliente"
+					placeholder="Nombre o documento"
+					size="small"
+					value={searchValue}
+					onChange={handleNameChange}
+					sx={{ minWidth: { xs: "100%", sm: 240 } }}
+				/>
+
+				{user.role === ROLES.AGENTE ? null : (
+					<>
 						{hasFilters ? <Button onClick={handleClearFilters}>Borrar filtros</Button> : null}
 
 						<InputLabel id="agent-label" disabled={!branchSelected}>
@@ -160,9 +203,9 @@ export function CustomersFilters({ filters = {}, user, allBranches, allAgents })
 								</MenuItem>
 							))}
 						</Select>
-					</Stack>
-				</>
-			)}
+					</>
+				)}
+			</Stack>
 		</div>
 	);
 }

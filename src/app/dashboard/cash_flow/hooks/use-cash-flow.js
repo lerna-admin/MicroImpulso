@@ -110,3 +110,24 @@ export async function createCashMovement(data) {
 	console.log("[CashFlow] createCashMovement ← payload", payload);
 	return payload;
 }
+
+export async function updateCashMovementAmount(id, amount) {
+	console.log("[CashFlow] updateCashMovementAmount → sending", { id, amount });
+	const res = await fetch(`${BASE_URL}/cash/${id}/amount`, {
+		method: "PATCH",
+		headers: { "Content-Type": "application/json" },
+		body: JSON.stringify({ amount }),
+	});
+	console.log("[CashFlow] updateCashMovementAmount ← response meta", {
+		status: res.status,
+		ok: res.ok,
+		statusText: res.statusText,
+	});
+	if (!res.ok) {
+		console.error("[CashFlow] updateCashMovementAmount error body", await res.text());
+		throw new Error("Error al actualizar el monto del movimiento de caja");
+	}
+	const payload = await res.json();
+	console.log("[CashFlow] updateCashMovementAmount ← payload", payload);
+	return payload;
+}

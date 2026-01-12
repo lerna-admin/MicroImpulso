@@ -3,10 +3,20 @@ import Box from "@mui/material/Box";
 import Grid from "@mui/material/Grid2";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
+import Table from "@mui/material/Table";
+import TableBody from "@mui/material/TableBody";
+import TableCell from "@mui/material/TableCell";
+import TableContainer from "@mui/material/TableContainer";
+import TableHead from "@mui/material/TableHead";
+import TableRow from "@mui/material/TableRow";
+import Paper from "@mui/material/Paper";
 import { Users as UsersIcon } from "@phosphor-icons/react/dist/ssr/Users";
+import { CurrencyCircleDollar as CurrencyIcon } from "@phosphor-icons/react/dist/ssr/CurrencyCircleDollar";
+import { GlobeHemisphereWest as GlobeIcon } from "@phosphor-icons/react/dist/ssr/GlobeHemisphereWest";
 
 import { appConfig } from "@/config/app";
 import { dayjs } from "@/lib/dayjs";
+import { getUser } from "@/lib/custom-auth/server";
 import { LoanRequestsByBranches } from "@/components/dashboard/analytics/loan-requests-by-branches";
 import { AgentsByUndisbursed } from "@/components/dashboard/overview/agents-by-undisbursed";
 import { AppLimits } from "@/components/dashboard/overview/app-limits";
@@ -14,6 +24,7 @@ import { NextPayments } from "@/components/dashboard/overview/next-payments";
 import { LatestRequests } from "@/components/dashboard/overview/latest-requests";
 import { LoanRequestsByYear } from "@/components/dashboard/overview/loan-requests-by-year";
 import { Summary } from "@/components/dashboard/overview/summary";
+import { SuperadminCountriesOverview } from "@/components/dashboard/overview/superadmin-countries-overview";
 
 import {
 	getManagerSummary,
@@ -21,10 +32,15 @@ import {
 	getRequestsStatsBranchesMonthlyHistory,
 	getRequestsStatsClientsSummary,
 } from "./hooks/use-stats";
+import { getSuperadminOverview } from "./hooks/use-superadmin-overview";
 
 export const metadata = { title: `Resumen | Dashboard | ${appConfig.name}` };
 
 export default async function Page() {
+	const {
+		data: { user },
+	} = await getUser();
+
 	const reqStatsBranchesCurMonth = await getRequestsStatsBranchesCurrentMonth();
 	const reqStatsMonthHistory = await getRequestsStatsBranchesMonthlyHistory();
 	const { notPaid, critical, lateOver15 } = await getRequestsStatsClientsSummary();
@@ -62,6 +78,12 @@ export default async function Page() {
 
 	const { growth, difference } = calculateFundedGrowth(reqStatsMonthHistory);
 
+	let superSummary = null;
+	if (user.role === "SUPERADMIN") {
+		const today = dayjs().format("YYYY-MM-DD");
+		superSummary = await getSuperadminOverview({ userId: user.id, startDate: dayjs().startOf("month").format("YYYY-MM-DD"), endDate: today });
+	}
+
 	return (
 		<Box
 			sx={{
@@ -74,10 +96,145 @@ export default async function Page() {
 			<Stack spacing={4}>
 				<Stack direction={{ xs: "column", sm: "row" }} spacing={3} sx={{ alignItems: "flex-start" }}>
 					<Box sx={{ flex: "1 1 auto" }}>
-						<Typography variant="h4">Resumen</Typography>
+						<Typography variant="h4">
+							{user.role === "SUPERADMIN" ? "Resumen Global (Superadmin)" : "Resumen"}
+						</Typography>
 					</Box>
 				</Stack>
 				<Grid container spacing={4}>
+					{superSummary ? (
+						<>
+							<Grid
+								size={{
+									md: 3,
+									xs: 12,
+								}}
+							>
+								<Summary
+									title="Cartera activa global"
+									amount={superSummary.totals.activeLoanAmount}
+									diff={0}
+									icon={CurrencyIcon}
+									trend={"increase"}
+									requireTrend={false}
+								/>
+							</Grid>
+							<Grid
+								size={{
+									md: 3,
+									xs: 12,
+								}}
+							>
+								<Summary
+									title="Clientes activos (global)"
+									amount={superSummary.totals.activeClientsCount}
+									diff={0}
+									icon={UsersIcon}
+									trend={"increase"}
+									requireTrend={false}
+								/>
+							</Grid>
+							<Grid
+								size={{
+									md: 3,
+									xs: 12,
+								}}
+							>
+								<Summary
+									title="Monto desembolsado (periodo)"
+									amount={superSummary.totals.disbursedAmount}
+									diff={0}
+									icon={CurrencyIcon}
+									trend={"increase"}
+									requireTrend={false}
+								/>
+							</Grid>
+							<Grid
+								size={{
+									md: 3,
+									xs: 12,
+								}}
+							>
+								<Summary
+									title="Tasa de mora global"
+									amount={Math.round((superSummary.totals.delinquencyRate || 0) * 100)}
+									diff={0}
+									icon={GlobeIcon}
+									trend={"increase"}
+									requireTrend={false}
+								/>
+							</Grid>
+							<Grid
+								size={{
+									md: 6,
+									xs: 12,
+								}}
+							>
+								<SuperadminCountriesOverview data={superSummary.byCountry} />
+							</Grid>
+							<Grid
+								size={{
+									md: 6,
+									xs: 12,
+								}}
+							>
+								<TableContainer component={Paper}>
+									<Table size="small">
+										<TableHead>
+											<TableRow>
+												<TableCell>País</TableCell>
+												<TableCell align="right">Cartera activa</TableCell>
+												<TableCell align="right">Clientes activos</TableCell>
+												<TableCell align="right">Préstamos activos</TableCell>
+												<TableCell align="right">Desembolsado (período)</TableCell>
+												<TableCell align="right">Cobrado (período)</TableCell>
+												<TableCell align="right">Mora %</TableCell>
+											</TableRow>
+										</TableHead>
+										<TableBody>
+											{superSummary.byCountry.map((row) => (
+												<TableRow key={row.countryId ?? row.countryName ?? "unknown"}>
+													<TableCell component="th" scope="row">
+														{row.countryName ?? "Sin país"}
+													</TableCell>
+													<TableCell align="right">
+														{new Intl.NumberFormat("es-CO", {
+															style: "currency",
+															currency: "COP",
+															minimumFractionDigits: 0,
+														}).format(row.activeLoanAmount)}
+													</TableCell>
+													<TableCell align="right">
+														{new Intl.NumberFormat("en-US").format(row.activeClientsCount)}
+													</TableCell>
+													<TableCell align="right">
+														{new Intl.NumberFormat("en-US").format(row.activeLoansCount)}
+													</TableCell>
+													<TableCell align="right">
+														{new Intl.NumberFormat("es-CO", {
+															style: "currency",
+															currency: "COP",
+															minimumFractionDigits: 0,
+														}).format(row.disbursedAmount)}
+													</TableCell>
+													<TableCell align="right">
+														{new Intl.NumberFormat("es-CO", {
+															style: "currency",
+															currency: "COP",
+															minimumFractionDigits: 0,
+														}).format(row.repaidAmount)}
+													</TableCell>
+													<TableCell align="right">
+														{`${Math.round((row.delinquencyRate || 0) * 100)}%`}
+													</TableCell>
+												</TableRow>
+											))}
+										</TableBody>
+									</Table>
+								</TableContainer>
+							</Grid>
+						</>
+					) : null}
 					<Grid
 						size={{
 							md: 4,

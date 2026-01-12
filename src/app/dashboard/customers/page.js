@@ -20,7 +20,7 @@ import { getAllCustomers } from "./hooks/use-customers";
 export const metadata = { title: `Clientes | Dashboard | ${appConfig.name}` };
 
 export default async function Page({ searchParams }) {
-	const { status, page, limit, type, paymentDay, branch, agent, mora } = await searchParams;
+	const { status, page, limit, type, paymentDay, branch, agent, mora, name } = await searchParams;
 	const normalizedStatus = status ?? "all";
 	const statusFilter = status && status !== "all" ? status : "";
 
@@ -60,6 +60,7 @@ export default async function Page({ searchParams }) {
 		limit,
 		status: statusFilter,
 		mora,
+		name,
 		type,
 		paymentDay,
 		branch,
@@ -76,13 +77,13 @@ export default async function Page({ searchParams }) {
 		mora15,
 		critical20,
 		noPayment30,
-		// Si hay filtro de mora activo, usa el total filtrado
-		delinquentClients: mora ? customerTotalItems : delinquentClients,
+		// Solo sobreescribe NP cuando el filtro activo es NP
+		delinquentClients: mora === "NP" ? customerTotalItems : delinquentClients,
 	};
 
 	const branches = await getAllBranches(user.country?.id);
 
-	const filters = { status: normalizedStatus, page, limit, type, paymentDay, branch, agent, mora };
+	const filters = { status: normalizedStatus, page, limit, type, paymentDay, branch, agent, mora, name };
 
 	const filteredCustomers = customers;
 
@@ -101,7 +102,7 @@ export default async function Page({ searchParams }) {
 					<Typography variant="h4">Clientes</Typography>
 					<CustomerStatistics
 						statistics={statistics}
-						filters={{ status: normalizedStatus, page, limit, type, paymentDay, branch, agent, mora }}
+						filters={{ status: normalizedStatus, page, limit, type, paymentDay, branch, agent, mora, name }}
 					/>
 				</Stack>
 				<CustomersSelectionProvider customers={customers}>
@@ -111,7 +112,7 @@ export default async function Page({ searchParams }) {
 						<Stack spacing={2} sx={{ px: 3, py: 2 }}>
 							<Box sx={{ display: "flex", justifyContent: "flex-end" }}>
 								<CustomersPagination
-									filters={{ status: normalizedStatus, page, limit, type, paymentDay, branch, agent, mora }}
+									filters={{ status: normalizedStatus, page, limit, type, paymentDay, branch, agent, mora, name }}
 									customerTotalItems={customerTotalItems}
 									customersPage={customersPage - 1}
 									customerLimit={customerLimit}

@@ -95,8 +95,9 @@ export function RequestEditForm({ dataRequest }) {
 
 	const onSubmit = React.useCallback(async (dataForm) => {
 		try {
+			const normalizedEndDate = dataForm.selectedDate?.clone().startOf("day");
 			const bodyRequest = {
-				endDateAt: dataForm.selectedDate.format("YYYY-MM-DD"),
+				endDateAt: normalizedEndDate ? normalizedEndDate.format("YYYY-MM-DD") : dataForm.selectedDate.format("YYYY-MM-DD"),
 				requestedAmount: dataForm.requestedAmount,
 				paymentDay: dataForm.datePayment,
 				type: dataForm.typePayment,

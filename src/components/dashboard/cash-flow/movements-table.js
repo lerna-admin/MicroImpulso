@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
-import { deleteCashMovement } from "@/app/dashboard/cash_flow/hooks/use-cash-flow";
+import { deleteCashMovement, updateCashMovementAmount } from "@/app/dashboard/cash_flow/hooks/use-cash-flow";
 import {
 	Button,
 	Dialog,
@@ -204,10 +204,12 @@ export function ActionsCell({ row }) {
 	const popover = usePopover();
 	const popoverAlert = usePopover();
 	const modalDeleteMov = usePopover();
+	const modalEditMov = usePopover();
 	const [anchorEl, setAnchorEl] = React.useState(null);
 	const [alertMsg, setAlertMsg] = React.useState("");
 	const [alertSeverity, setAlertSeverity] = React.useState("");
 	const [isPending, setIsPending] = React.useState(false);
+	const [editAmount, setEditAmount] = React.useState(row.amount);
 
 	const handleDeleteMovement = async () => {
 		try {
@@ -230,6 +232,23 @@ export function ActionsCell({ row }) {
 		setAnchorEl(event.currentTarget);
 	};
 
+	const handleUpdateAmount = async () => {
+		setIsPending(true);
+		try {
+			await updateCashMovementAmount(row.id, Number(editAmount));
+			setAlertMsg("Monto actualizado exitosamente");
+			setAlertSeverity("success");
+		} catch (error) {
+			setAlertMsg(error.message);
+			setAlertSeverity("error");
+		} finally {
+			popoverAlert.handleOpen();
+			modalEditMov.handleClose();
+			setIsPending(false);
+			router.refresh();
+		}
+	};
+
 	return (
 		<React.Fragment>
 			<Tooltip title="Más opciones">
@@ -244,6 +263,15 @@ export function ActionsCell({ row }) {
 				onClose={popover.handleClose}
 				slotProps={{ paper: { elevation: 0 } }}
 			>
+				<MenuItem
+					onClick={() => {
+						popover.handleClose();
+						setEditAmount(row.amount);
+						modalEditMov.handleOpen();
+					}}
+				>
+					<Typography>Editar monto</Typography>
+				</MenuItem>
 				<MenuItem
 					onClick={() => {
 						popover.handleClose();
@@ -284,6 +312,46 @@ export function ActionsCell({ row }) {
 						>
 							Cancelar
 						</Button>
+					</Box>
+				</DialogContent>
+			</Dialog>
+
+			{/* Modal para editar monto */}
+			<Dialog
+				fullWidth
+				maxWidth={"xs"}
+				open={modalEditMov.open}
+				onClose={modalEditMov.handleClose}
+				aria-labelledby="edit-dialog-title"
+				aria-describedby="edit-dialog-description"
+			>
+				<DialogTitle id="edit-dialog-title" textAlign={"center"} sx={{ pt: 4 }}>
+					{"Editar monto"}
+				</DialogTitle>
+				<DialogContent>
+					<DialogContentText id="edit-dialog-description" textAlign={"center"} sx={{ pb: 3 }}>
+						{`Ingrese el nuevo monto para este movimiento de caja.`}
+					</DialogContentText>
+					<Box component={"div"} display={"flex"} flexDirection={"column"} gap={2}>
+						<OutlinedInput
+							type="number"
+							value={editAmount}
+							onChange={(e) => setEditAmount(e.target.value)}
+						/>
+						<Box display={"flex"} justifyContent={"flex-end"} gap={2}>
+							<Button variant="contained" disabled={isPending} onClick={handleUpdateAmount} autoFocus>
+								Guardar
+							</Button>
+							<Button
+								variant="outlined"
+								onClick={() => {
+									popover.handleClose();
+									modalEditMov.handleClose();
+								}}
+							>
+								Cancelar
+							</Button>
+						</Box>
 					</Box>
 				</DialogContent>
 			</Dialog>

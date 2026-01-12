@@ -115,16 +115,20 @@ export function CustomersTable({ rows, permissions, user, role, branch }) {
 			width: "120px",
 		},
 		{
-			formatter: (row) => fmtDate(row?.loanRequest?.createdAt),
+			formatter: (row) => fmtDate(row?.client?.createdAt),
 			name: "Fecha de creación",
 			align: "center",
 			width: "110px",
 		},
 		{
-			formatter: (row) => fmtDate(row?.loanRequest?.endDateAt),
-			name: "Fecha de pago estimada",
+			formatter: (row) => {
+				const startDate = fmtDate(row?.loanRequest?.createdAt);
+				const estimatedDate = fmtDate(row?.loanRequest?.endDateAt);
+				return `${startDate} / ${estimatedDate}`;
+			},
+			name: "Fecha inicio / pago estimado",
 			align: "center",
-			width: "125px",
+			width: "180px",
 		},
 		{
 			formatter(row) {
@@ -204,7 +208,18 @@ export function CustomersTable({ rows, permissions, user, role, branch }) {
 			align: "center",
 			width: "65px",
 		},
-		{ field: "diasMora", name: "Mora", align: "center", width: "60px" },
+			{
+				formatter(row) {
+					const rawValue = row?.diasMora ?? row?.daysLate;
+					if (rawValue === null || rawValue === undefined) return "-";
+					const value = Number(rawValue);
+					if (Number.isNaN(value)) return "-";
+					return value;
+				},
+				name: "Mora",
+				align: "center",
+				width: "60px",
+			},
 		{
 			formatter(row) {
 				return fmtMoney(row?.totalRepayment ?? 0);
@@ -289,6 +304,7 @@ export function ActionsCell({ row, permissions, user, role, branch }) {
 	const [loading, setLoading] = React.useState(false);
 
 	const hasLoan = Boolean(row?.loanRequest);
+	const isAdmin = role === "ADMIN";
 	const canDisburse = (permissions || []).find((per) => per?.name === "CAN_DISBURSE") || { granted: false };
 	const canDownloadStatuses = ["approved", "funded", "renewed"];
 
@@ -396,13 +412,15 @@ const handleDownloadContract = React.useCallback(async () => {
 			setAlertMsg("¡Aprobado exitosamente!");
 			setAlertSeverity("success");
 
-			sendContractRequest(row.loanRequest.id)
-				.then((resp) => {
-					console.log(resp);
-				})
-				.catch((error) => {
-					console.error(error);
-				});
+			if (row?.loanRequest?.status !== "rejected") {
+				sendContractRequest(row.loanRequest.id)
+					.then((resp) => {
+						console.log(resp);
+					})
+					.catch((error) => {
+						console.error(error);
+					});
+			}
 		} catch (error) {
 			setAlertMsg(error?.message || "Error al aprobar");
 			setAlertSeverity("error");
@@ -411,6 +429,24 @@ const handleDownloadContract = React.useCallback(async () => {
 		modalApproved.handleClose();
 		setIsPending(false);
 		router.refresh();
+	};
+
+	const handleRecoverRejectedLoanRequest = async () => {
+		if (!hasLoan || row?.loanRequest?.status !== "rejected" || !isAdmin) return;
+		setIsPending(true);
+		try {
+			await updateRequest({ status: "approved" }, row.loanRequest.id);
+			setAlertMsg("Solicitud reactivada correctamente.");
+			setAlertSeverity("success");
+		} catch (error) {
+			setAlertMsg(error?.message || "Error al reactivar la solicitud");
+			setAlertSeverity("error");
+		} finally {
+			setIsPending(false);
+			popoverAlert.handleOpen();
+			popover.handleClose();
+			router.refresh();
+		}
 	};
 
 	const handleRenewLoanRequest = async () => {
@@ -604,6 +640,11 @@ const handleDownloadContract = React.useCallback(async () => {
 				>
 					<Typography>Reasignar solicitud</Typography>
 				</MenuItem>
+				{isAdmin && row.loanRequest?.status === "rejected" ? (
+					<MenuItem disabled={isPending} onClick={handleRecoverRejectedLoanRequest}>
+						<Typography>Reactivar solicitud</Typography>
+					</MenuItem>
+				) : null}
 				<MenuItem
 					disabled={!hasLoan}
 					onClick={() => {

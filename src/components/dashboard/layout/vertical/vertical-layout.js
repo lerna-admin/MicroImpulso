@@ -20,7 +20,14 @@ export function VerticalLayout({ children }) {
 
 	const filteredItems = React.useMemo(() => {
 		if (!userRole || !dashboardConfig?.navItems) return [];
-		return dashboardConfig.navItems.filter((route) => route.key.includes(userRole));
+
+		// Mapeo de roles backend → bloque de menú
+		let effectiveRole = userRole;
+		if (userRole === "SUPERADMIN" || userRole === "ADMIN" || userRole === "MARKETING") {
+			effectiveRole = "MANAGER"; // reutiliza menú de gerente
+		}
+
+		return dashboardConfig.navItems.filter((route) => route.key === effectiveRole);
 	}, [userRole]);
 
 	const navColor = settings.dashboardNavColor ?? dashboardConfig.navColor;

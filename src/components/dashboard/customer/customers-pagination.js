@@ -35,6 +35,18 @@ export function CustomersPagination({ filters, customerTotalItems, customersPage
 			if (newFilters.paymentDay) {
 				searchParams.set("paymentDay", newFilters.paymentDay);
 			}
+			if (newFilters.branch) {
+				searchParams.set("branch", newFilters.branch);
+			}
+			if (newFilters.agent) {
+				searchParams.set("agent", newFilters.agent);
+			}
+			if (newFilters.mora) {
+				searchParams.set("mora", newFilters.mora);
+			}
+			if (newFilters.name) {
+				searchParams.set("name", newFilters.name);
+			}
 
 			router.push(`${paths.dashboard.customers.list}?${searchParams.toString()}`);
 		},
